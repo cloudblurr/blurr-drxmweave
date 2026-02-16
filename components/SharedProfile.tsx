@@ -18,7 +18,7 @@ interface SharedProfileData {
   nodes: ChatNode[];
 }
 
-export const SharedProfile: React.FC<SharedProfileProps> = ({ encodedData, onNavigate }) => {
+export const SharedProfile: React.FC<SharedProfileProps> = ({ encodedData, characterId, onNavigate }) => {
   const [data, setData] = useState<SharedProfileData | null>(null);
   const [activeTab, setActiveTab] = useState<'profile' | 'gallery' | 'chats'>('profile');
   const [viewingMedia, setViewingMedia] = useState<GalleryItem | null>(null);
@@ -80,11 +80,11 @@ export const SharedProfile: React.FC<SharedProfileProps> = ({ encodedData, onNav
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="text-center max-w-md">
           <div className="text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-white mb-2">Invalid Profile Link</h2>
-          <p className="text-slate-400 mb-6">{error}</p>
+          <h2 className="holo-text text-2xl mb-2">Invalid Profile Link</h2>
+          <p className="text-slate-500 mb-6">{error}</p>
           <button
             onClick={() => onNavigate(ViewType.Dashboard)}
-            className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-xl transition-all"
+            className="holo-btn holo-btn-primary px-6 py-3"
           >
             Go to Dashboard
           </button>
@@ -167,13 +167,13 @@ export const SharedProfile: React.FC<SharedProfileProps> = ({ encodedData, onNav
       </div>
 
       {/* Tabs */}
-      <div className="bg-slate-900/90 backdrop-blur-xl border-b border-slate-700/50 flex">
+      <div className="holo-header flex">
         <button
           onClick={() => setActiveTab('profile')}
           className={`flex-1 px-6 py-4 text-center font-medium transition-all border-b-2 ${
             activeTab === 'profile'
-              ? 'text-cyan-400 border-cyan-500 bg-cyan-500/10'
-              : 'text-slate-400 border-transparent hover:text-cyan-300 hover:bg-slate-800/50'
+              ? 'text-holo-cyan border-holo-cyan bg-holo-cyan/10'
+              : 'text-slate-500 border-transparent hover:text-holo-cyan hover:bg-holo-cyan/5'
           }`}
         >
           <User className="w-5 h-5 inline-block mr-2" />
@@ -183,8 +183,8 @@ export const SharedProfile: React.FC<SharedProfileProps> = ({ encodedData, onNav
           onClick={() => setActiveTab('gallery')}
           className={`flex-1 px-6 py-4 text-center font-medium transition-all border-b-2 ${
             activeTab === 'gallery'
-              ? 'text-cyan-400 border-cyan-500 bg-cyan-500/10'
-              : 'text-slate-400 border-transparent hover:text-cyan-300 hover:bg-slate-800/50'
+              ? 'text-holo-cyan border-holo-cyan bg-holo-cyan/10'
+              : 'text-slate-500 border-transparent hover:text-holo-cyan hover:bg-holo-cyan/5'
           }`}
         >
           <ImageIcon className="w-5 h-5 inline-block mr-2" />
@@ -194,8 +194,8 @@ export const SharedProfile: React.FC<SharedProfileProps> = ({ encodedData, onNav
           onClick={() => setActiveTab('chats')}
           className={`flex-1 px-6 py-4 text-center font-medium transition-all border-b-2 ${
             activeTab === 'chats'
-              ? 'text-cyan-400 border-cyan-500 bg-cyan-500/10'
-              : 'text-slate-400 border-transparent hover:text-cyan-300 hover:bg-slate-800/50'
+              ? 'text-holo-cyan border-holo-cyan bg-holo-cyan/10'
+              : 'text-slate-500 border-transparent hover:text-holo-cyan hover:bg-holo-cyan/5'
           }`}
         >
           <MessageSquare className="w-5 h-5 inline-block mr-2" />
@@ -209,8 +209,8 @@ export const SharedProfile: React.FC<SharedProfileProps> = ({ encodedData, onNav
           {activeTab === 'profile' && (
             <div className="grid gap-6">
               {character.personality && (
-                <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6">
-                  <h3 className="text-xl font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+                <div className="holo-panel p-6">
+                  <h3 className="text-xl font-semibold text-holo-cyan mb-3 flex items-center gap-2">
                     🎭 Personality
                   </h3>
                   <p className="text-slate-300 whitespace-pre-wrap leading-relaxed">{character.personality}</p>
@@ -218,8 +218,8 @@ export const SharedProfile: React.FC<SharedProfileProps> = ({ encodedData, onNav
               )}
               
               {character.scenario && (
-                <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6">
-                  <h3 className="text-xl font-semibold text-blue-400 mb-3 flex items-center gap-2">
+                <div className="holo-panel p-6">
+                  <h3 className="text-xl font-semibold text-holo-blue mb-3 flex items-center gap-2">
                     📖 Scenario
                   </h3>
                   <p className="text-slate-300 whitespace-pre-wrap leading-relaxed">{character.scenario}</p>
@@ -227,8 +227,8 @@ export const SharedProfile: React.FC<SharedProfileProps> = ({ encodedData, onNav
               )}
               
               {character.first_mes && (
-                <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6">
-                  <h3 className="text-xl font-semibold text-indigo-400 mb-3 flex items-center gap-2">
+                <div className="holo-panel p-6">
+                  <h3 className="text-xl font-semibold text-holo-purple mb-3 flex items-center gap-2">
                     💬 First Message
                   </h3>
                   <p className="text-slate-300 whitespace-pre-wrap leading-relaxed">{character.first_mes}</p>
@@ -236,8 +236,8 @@ export const SharedProfile: React.FC<SharedProfileProps> = ({ encodedData, onNav
               )}
               
               {character.mes_example && (
-                <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6">
-                  <h3 className="text-xl font-semibold text-purple-400 mb-3 flex items-center gap-2">
+                <div className="holo-panel p-6">
+                  <h3 className="text-xl font-semibold text-holo-purple mb-3 flex items-center gap-2">
                     💭 Example Dialogue
                   </h3>
                   <p className="text-slate-300 whitespace-pre-wrap leading-relaxed font-mono text-sm">{character.mes_example}</p>
@@ -245,13 +245,13 @@ export const SharedProfile: React.FC<SharedProfileProps> = ({ encodedData, onNav
               )}
               
               {character.tags && character.tags.length > 0 && (
-                <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6">
-                  <h3 className="text-xl font-semibold text-slate-300 mb-3 flex items-center gap-2">
+                <div className="holo-panel p-6">
+                  <h3 className="text-xl font-semibold text-holo-cyan mb-3 flex items-center gap-2">
                     🏷️ Tags
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {character.tags.map(tag => (
-                      <span key={tag} className="px-3 py-1 bg-cyan-600/20 text-cyan-300 rounded-lg text-sm">
+                      <span key={tag} className="holo-badge">
                         {tag}
                       </span>
                     ))}
@@ -259,11 +259,11 @@ export const SharedProfile: React.FC<SharedProfileProps> = ({ encodedData, onNav
                 </div>
               )}
               
-              <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6">
-                <h3 className="text-xl font-semibold text-slate-300 mb-3 flex items-center gap-2">
+              <div className="holo-panel p-6">
+                <h3 className="text-xl font-semibold text-holo-cyan mb-3 flex items-center gap-2">
                   ℹ️ Metadata
                 </h3>
-                <div className="space-y-2 text-sm text-slate-400">
+                <div className="space-y-2 text-sm text-slate-500">
                   <p>Created: {new Date(character.createdAt).toLocaleString()}</p>
                   <p>Last Updated: {new Date(character.updatedAt).toLocaleString()}</p>
                 </div>
@@ -279,8 +279,7 @@ export const SharedProfile: React.FC<SharedProfileProps> = ({ encodedData, onNav
                     <div
                       key={item.id}
                       onClick={() => setViewingMedia(item)}
-                      className="relative group cursor-pointer bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-xl overflow-hidden hover:border-cyan-500/50 transition-all"
-                    >
+                      className="relative group cursor-pointer holo-card overflow-hidden hover:border-holo-cyan/40 transition-all">
                       {item.type === 'image' && item.blob && (
                         <img
                           src={URL.createObjectURL(item.blob)}
@@ -296,12 +295,12 @@ export const SharedProfile: React.FC<SharedProfileProps> = ({ encodedData, onNav
                         />
                       )}
                       {item.type === 'embed' && (
-                        <div className="w-full h-48 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
-                          <ExternalLink className="w-12 h-12 text-slate-500" />
+                        <div className="w-full h-48 flex items-center justify-center bg-gradient-to-br from-black/60 to-black/80">
+                          <ExternalLink className="w-12 h-12 text-slate-600" />
                         </div>
                       )}
-                      <div className="p-3 bg-slate-900/80 backdrop-blur">
-                        <p className="text-sm text-slate-300 truncate">{item.name}</p>
+                      <div className="p-3 bg-black/60 backdrop-blur">
+                        <p className="text-sm text-slate-400 truncate">{item.name}</p>
                       </div>
                     </div>
                   ))}
@@ -321,13 +320,13 @@ export const SharedProfile: React.FC<SharedProfileProps> = ({ encodedData, onNav
                 nodes.map((node) => (
                   <div
                     key={node.id}
-                    className="bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6"
+                    className="holo-panel p-6"
                   >
                     <div className="mb-4">
-                      <h3 className="text-xl font-semibold text-white mb-1">
+                      <h3 className="text-xl font-semibold text-holo-cyan mb-1">
                         {node.title || 'Untitled Conversation'}
                       </h3>
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm text-slate-600">
                         {new Date(node.createdAt).toLocaleString()} • {node.messages.length} messages
                       </p>
                     </div>
@@ -337,15 +336,28 @@ export const SharedProfile: React.FC<SharedProfileProps> = ({ encodedData, onNav
                           key={msg.id}
                           className={`p-4 rounded-xl ${
                             msg.role === 'user'
-                              ? 'bg-gradient-to-r from-cyan-600/20 to-blue-600/20 border border-cyan-500/30 ml-8'
-                              : 'bg-slate-800/50 border border-slate-700/50 mr-8'
+                              ? 'holo-msg-user ml-8'
+                              : 'holo-msg-assistant mr-8'
                           }`}
                         >
-                          <div className="text-xs font-semibold text-slate-400 uppercase mb-2">
+                          <div className="text-xs font-semibold text-holo-cyan/50 uppercase mb-2">
                             {msg.role === 'user' ? 'User' : character.name}
                           </div>
                           <div className="prose prose-invert prose-sm max-w-none">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
+                              h1: ({children}) => <h1 className="text-xl font-bold text-white mb-5 mt-8 pb-2.5 border-b-2 border-slate-700/50 first:mt-0 tracking-tight">{children}</h1>,
+                              h2: ({children}) => <h2 className="text-lg font-bold text-white mb-4 mt-8 flex items-center gap-2 first:mt-0 tracking-tight"><span className="w-1 h-6 bg-gradient-to-b from-cyan-400 to-cyan-600 rounded-full"></span>{children}</h2>,
+                              h3: ({children}) => <h3 className="text-base font-semibold text-slate-100 mb-3 mt-6 first:mt-0 tracking-tight">{children}</h3>,
+                              p: ({children}) => <p className="leading-[1.8] mb-5 text-slate-200 text-[15px] last:mb-0 font-normal tracking-normal">{children}</p>,
+                              ul: ({children}) => <ul className="list-disc list-outside ml-4 mb-5 space-y-2 text-slate-200 marker:text-slate-500 text-[14.5px]">{children}</ul>,
+                              ol: ({children}) => <ol className="list-decimal list-outside ml-4 mb-5 space-y-2 text-slate-200 marker:text-slate-500 text-[14.5px]">{children}</ol>,
+                              li: ({children}) => <li className="pl-2 leading-[1.75]">{children}</li>,
+                              blockquote: ({children}) => <blockquote className="border-l-4 border-cyan-600/60 pl-4 py-2.5 my-5 italic text-slate-300 bg-slate-900/50 rounded-r-lg text-[14.5px]">{children}</blockquote>,
+                              a: ({href, children}) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-400/40 hover:decoration-cyan-300/60 underline-offset-2 transition-colors font-medium">{children}</a>,
+                              strong: ({children}) => <strong className="font-semibold text-white">{children}</strong>,
+                              em: ({children}) => <em className="italic text-slate-100">{children}</em>,
+                              code: ({inline, children}: any) => inline ? <code className="bg-slate-900/90 text-cyan-300 px-2 py-0.5 rounded text-[0.9em] font-mono border border-slate-700/60 tracking-tight font-medium">{children}</code> : <code>{children}</code>
+                            }}>
                               {msg.content}
                             </ReactMarkdown>
                           </div>
@@ -371,7 +383,7 @@ export const SharedProfile: React.FC<SharedProfileProps> = ({ encodedData, onNav
       {/* Media Viewer Modal */}
       {viewingMedia && (
         <div
-          className="fixed inset-0 bg-black/95 backdrop-blur-xl z-50 flex items-center justify-center p-4"
+          className="holo-overlay z-50 flex items-center justify-center p-4"
           onClick={() => setViewingMedia(null)}
         >
           <button

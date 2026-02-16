@@ -200,16 +200,6 @@ export interface AgentMode {
 
 export interface Note {
   id: string;
-  name: string;
-  description: string;
-  systemInstruction: string;
-  iconName: 'PenTool' | 'Briefcase' | 'GraduationCap' | 'CheckCircle2' | 'HeartHandshake' | 'Flower2' | 'Code2' | 'Bot' | 'Zap' | 'Brain' | 'Sparkles' | 'Ghost' | 'Gamepad2' | 'Music';
-  features: string[];
-  isCustom?: boolean;
-}
-
-export interface Note {
-  id: string;
   title: string;
   content: string;
   context?: string; 

@@ -623,80 +623,80 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden">
       {/* Header */}
-      <div className="bg-slate-900/90 backdrop-blur-xl border-b border-slate-700/50 p-4">
+      <div className="holo-header p-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => onNavigate(ViewType.Characters)}
-              className="p-2 hover:bg-slate-700/50 rounded-xl transition-colors"
+              className="p-2 hover:bg-holo-cyan/10 rounded-lg transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-slate-400" />
+              <ArrowLeft className="w-5 h-5 text-holo-cyan/60" />
             </button>
             {character.avatar && (
-              <img src={character.avatar} alt={character.name} className="w-10 h-10 rounded-full object-cover" />
+              <img src={character.avatar} alt={character.name} className="w-9 h-9 rounded-full object-cover ring-1 ring-holo-cyan/30" />
             )}
             <div>
-              <h1 className="text-xl font-bold text-white">{character.name}</h1>
-              <p className="text-sm text-slate-400">{activeNode?.title || 'Chat'}</p>
+              <h1 className="text-base font-bold holo-text-glow">{character.name}</h1>
+              <p className="text-[10px] holo-label">{activeNode?.title || 'Comm Channel Active'}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {character.attachedLorebooks && character.attachedLorebooks.length > 0 && (
               <>
                 <button
                   onClick={() => setShowLorebooks(!showLorebooks)}
-                  className="px-3 py-2 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 hover:from-blue-600/30 hover:to-indigo-600/30 border border-blue-500/50 text-blue-300 rounded-xl transition-all flex items-center gap-2 backdrop-blur-xl"
+                  className="holo-btn holo-btn-ghost px-2.5 py-1.5 rounded-lg text-xs flex items-center gap-1.5"
                   title={`${character.attachedLorebooks.length} lorebook(s) attached with ${activeLoreCount} total entries`}
                 >
-                  <BookOpen className="w-4 h-4" />
-                  <span className="text-xs font-medium">{activeLoreCount} lore</span>
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span className="font-medium">{activeLoreCount}</span>
                 </button>
                 <button
                   onClick={() => setShowLoreDex(!showLoreDex)}
-                  className="px-3 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/50 text-indigo-300 rounded-xl transition-all flex items-center gap-2 backdrop-blur-xl"
+                  className="holo-btn holo-btn-ghost px-2.5 py-1.5 rounded-lg text-xs flex items-center gap-1.5"
                   title="Lore Codex - Browse Active Lore Entries"
                 >
-                  <Library className="w-4 h-4" />
-                  Lore Codex
+                  <Library className="w-3.5 h-3.5" />
+                  Codex
                 </button>
               </>
             )}
             <button
               onClick={() => setShowGallery(!showGallery)}
-              className="px-3 py-2 bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/50 text-cyan-300 rounded-xl transition-all flex items-center gap-2 backdrop-blur-xl"
+              className="holo-btn holo-btn-ghost px-2.5 py-1.5 rounded-lg text-xs flex items-center gap-1.5"
             >
-              <ImageIcon className="w-4 h-4" />
+              <ImageIcon className="w-3.5 h-3.5" />
               {galleryItems.length}
             </button>
             <button
               onClick={handleNewNode}
-              className="px-3 py-2 bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/50 text-cyan-300 rounded-xl transition-all flex items-center gap-2 backdrop-blur-xl"
+              className="holo-btn holo-btn-primary px-2.5 py-1.5 rounded-lg text-xs flex items-center gap-1.5"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-3.5 h-3.5" />
               New
             </button>
             <button
               onClick={handleCompileConversation}
               disabled={!activeNode || activeNode.isClosed || isLoading}
-              className="px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/50 text-purple-300 rounded-xl transition-all flex items-center gap-2 backdrop-blur-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className="holo-btn px-2.5 py-1.5 rounded-lg text-xs flex items-center gap-1.5 text-holo-purple border-holo-purple/30 hover:bg-holo-purple/10 disabled:opacity-40 disabled:cursor-not-allowed"
               title="Compile this conversation into memory and archive it"
             >
-              <Archive className="w-4 h-4" />
+              <Archive className="w-3.5 h-3.5" />
               Compile
             </button>
             <button
               onClick={handleExportHTML}
-              className="px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/50 text-blue-300 rounded-xl transition-all backdrop-blur-xl"
+              className="holo-btn holo-btn-ghost px-2 py-1.5 rounded-lg text-xs"
               title="Export as interactive HTML profile"
             >
-              <FileText className="w-4 h-4" />
+              <FileText className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={handleShareHTML}
-              className="px-3 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/50 text-indigo-300 rounded-xl transition-all backdrop-blur-xl"
+              className="holo-btn holo-btn-ghost px-2 py-1.5 rounded-lg text-xs"
               title="Share profile (opens in new tab)"
             >
-              <Share2 className="w-4 h-4" />
+              <Share2 className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -704,17 +704,17 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
 
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar - Conversation Nodes */}
-        <div className="w-64 bg-slate-900/50 backdrop-blur-xl border-r border-slate-700/50 overflow-y-auto">
-          <div className="p-4 space-y-2">
-            <h3 className="text-sm font-semibold text-slate-300 mb-3">Conversations</h3>
+        <div className="w-56 holo-sidebar overflow-y-auto">
+          <div className="p-3 space-y-1.5">
+            <h3 className="holo-label text-[10px] mb-3">Comm Channels</h3>
             {nodes.map(node => (
               <div
                 key={node.id}
                 onClick={() => setActiveNode(node)}
-                className={`p-3 rounded-xl cursor-pointer transition-all group ${
+                className={`p-2.5 rounded-lg cursor-pointer transition-all group ${
                   activeNode?.id === node.id
-                    ? 'bg-cyan-600/20 border border-cyan-500/50 backdrop-blur-xl'
-                    : 'bg-slate-800/50 hover:bg-slate-800 border border-transparent backdrop-blur-xl'
+                    ? 'holo-sidebar-item-active'
+                    : 'holo-sidebar-item'
                 }`}
               >
                 <div className="flex items-start justify-between">
@@ -733,15 +733,15 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                           }
                         }}
                         autoFocus
-                        className="w-full px-2 py-1 bg-slate-900/60 border border-slate-700/50 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500/50"
+                        className="w-full px-2 py-1 holo-input text-xs rounded-lg"
                       />
                     ) : (
-                      <p className="text-sm font-medium text-white truncate">{node.title}</p>
+                      <p className="text-xs font-medium text-holo-cyan truncate">{node.title}</p>
                     )}
                     <div className="flex items-center gap-2 mt-1">
-                      <p className="text-xs text-slate-400">{node.messages.length} messages</p>
+                      <p className="text-[10px] text-slate-600">{node.messages.length} msgs</p>
                       {node.isClosed && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                        <span className="holo-badge-purple text-[9px] px-1.5 py-0.5">
                           Archived
                         </span>
                       )}
@@ -752,18 +752,18 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                       e.stopPropagation();
                       handleDeleteNode(node.id);
                     }}
-                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-600/20 rounded transition-all"
+                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/10 rounded transition-all"
                   >
                     <Trash2 className="w-3 h-3 text-red-400" />
                   </button>
                 </div>
-                <div className="mt-2 flex justify-end">
+                <div className="mt-1.5 flex justify-end">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleStartEditNode(node);
                     }}
-                    className="text-xs text-slate-400 hover:text-cyan-300 transition-colors"
+                    className="text-[10px] text-slate-600 hover:text-holo-cyan transition-colors"
                   >
                     Rename
                   </button>
@@ -783,14 +783,14 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                 className={`flex gap-3 group ${message.role === Role.User ? 'justify-end' : 'justify-start'}`}
               >
                 {message.role === Role.Assistant && character.avatar && (
-                  <img src={character.avatar} alt={character.name} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                  <img src={character.avatar} alt={character.name} className="w-8 h-8 rounded-full object-cover flex-shrink-0 ring-1 ring-holo-cyan/20" />
                 )}
                 <div className="flex flex-col gap-2 max-w-[70%]">
                   <div
-                    className={`rounded-xl p-4 backdrop-blur-xl ${
+                    className={`rounded-xl p-4 ${
                       message.role === Role.User
-                        ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-500/20'
-                        : 'bg-slate-800/50 border border-slate-700/50 text-slate-100'
+                        ? 'holo-msg-user'
+                        : 'holo-msg-assistant'
                     }`}
                   >
                     {editingMessageId === message.id ? (
@@ -798,19 +798,19 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                         <textarea
                           value={editingContent}
                           onChange={(e) => setEditingContent(e.target.value)}
-                          className="w-full px-3 py-2 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white resize-none"
+                          className="w-full px-3 py-2 holo-textarea text-sm resize-none"
                           rows={4}
                         />
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleSaveEdit(message.id)}
-                            className="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white rounded text-sm"
+                            className="holo-btn holo-btn-primary px-3 py-1 rounded-lg text-xs"
                           >
                             Save
                           </button>
                           <button
                             onClick={handleCancelEdit}
-                            className="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded text-sm"
+                            className="holo-btn holo-btn-ghost px-3 py-1 rounded-lg text-xs"
                           >
                             Cancel
                           </button>
@@ -821,20 +821,20 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                         remarkPlugins={[remarkGfm]} 
                         className="prose prose-invert prose-sm max-w-none"
                         components={{
-                          h1: ({children}) => <h1 className="text-xl font-bold text-white mb-5 mt-8 pb-2.5 border-b-2 border-slate-700/50 first:mt-0">{children}</h1>,
-                          h2: ({children}) => <h2 className="text-lg font-bold text-white mb-4 mt-8 flex items-center gap-2 first:mt-0"><span className="w-1 h-6 bg-gradient-to-b from-cyan-400 to-cyan-600 rounded-full"></span>{children}</h2>,
-                          h3: ({children}) => <h3 className="text-base font-semibold text-slate-100 mb-3 mt-6 first:mt-0">{children}</h3>,
+                          h1: ({children}) => <h1 className="text-xl font-bold text-white mb-5 mt-8 pb-2.5 border-b-2 border-slate-700/50 first:mt-0 tracking-tight">{children}</h1>,
+                          h2: ({children}) => <h2 className="text-lg font-bold text-white mb-4 mt-8 flex items-center gap-2 first:mt-0 tracking-tight"><span className="w-1 h-6 bg-gradient-to-b from-cyan-400 to-cyan-600 rounded-full"></span>{children}</h2>,
+                          h3: ({children}) => <h3 className="text-base font-semibold text-slate-100 mb-3 mt-6 first:mt-0 tracking-tight">{children}</h3>,
                           h4: ({children}) => <h4 className="text-sm font-semibold text-slate-200 mb-2.5 mt-5 first:mt-0">{children}</h4>,
-                          p: ({children}) => <p className="leading-[1.75] mb-5 text-slate-300 text-sm last:mb-0">{children}</p>,
-                          ul: ({children}) => <ul className="list-disc list-outside ml-4 mb-5 space-y-2 text-slate-300 marker:text-slate-500">{children}</ul>,
-                          ol: ({children}) => <ol className="list-decimal list-outside ml-4 mb-5 space-y-2 text-slate-300 marker:text-slate-500">{children}</ol>,
-                          li: ({children}) => <li className="pl-1 leading-[1.65]">{children}</li>,
-                          blockquote: ({children}) => <blockquote className="border-l-4 border-cyan-600/50 pl-4 py-2.5 my-5 italic text-slate-400 bg-slate-900/40 rounded-r-lg">{children}</blockquote>,
-                          a: ({href, children}) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-400/30 hover:decoration-cyan-300/50 underline-offset-2 transition-colors">{children}</a>,
+                          p: ({children}) => <p className="leading-[1.8] mb-5 text-slate-200 text-[15px] last:mb-0 font-normal tracking-normal">{children}</p>,
+                          ul: ({children}) => <ul className="list-disc list-outside ml-4 mb-5 space-y-2 text-slate-200 marker:text-slate-500 text-[14.5px]">{children}</ul>,
+                          ol: ({children}) => <ol className="list-decimal list-outside ml-4 mb-5 space-y-2 text-slate-200 marker:text-slate-500 text-[14.5px]">{children}</ol>,
+                          li: ({children}) => <li className="pl-2 leading-[1.75]">{children}</li>,
+                          blockquote: ({children}) => <blockquote className="border-l-4 border-cyan-600/60 pl-4 py-2.5 my-5 italic text-slate-300 bg-slate-900/50 rounded-r-lg text-[14.5px]">{children}</blockquote>,
+                          a: ({href, children}) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-400/40 hover:decoration-cyan-300/60 underline-offset-2 transition-colors font-medium">{children}</a>,
                           hr: () => <hr className="border-slate-700 my-8" />,
                           strong: ({children}) => <strong className="font-semibold text-white">{children}</strong>,
-                          em: ({children}) => <em className="italic text-slate-200">{children}</em>,
-                          code: ({inline, children}: any) => inline ? <code className="bg-slate-800/80 text-cyan-300 px-1.5 py-0.5 rounded text-xs font-mono border border-slate-700/50">{children}</code> : <code>{children}</code>
+                          em: ({children}) => <em className="italic text-slate-100">{children}</em>,
+                          code: ({inline, children}: any) => inline ? <code className="bg-slate-800/90 text-cyan-300 px-2 py-0.5 rounded text-[0.9em] font-mono border border-slate-700/60 tracking-tight font-medium">{children}</code> : <code>{children}</code>
                         }}
                       >
                         {message.content}
@@ -847,14 +847,14 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => handleCopyMessage(message.content)}
-                        className="p-1 hover:bg-slate-700/50 rounded text-slate-400 hover:text-white transition-colors"
+                        className="p-1 hover:bg-holo-cyan/10 rounded text-slate-600 hover:text-holo-cyan transition-colors"
                         title="Copy message"
                       >
                         <Copy className="w-3 h-3" />
                       </button>
                       <button
                         onClick={() => handleEditMessage(message.id)}
-                        className="p-1 hover:bg-slate-700/50 rounded text-slate-400 hover:text-white transition-colors"
+                        className="p-1 hover:bg-holo-cyan/10 rounded text-slate-600 hover:text-holo-cyan transition-colors"
                         title="Edit message"
                       >
                         <Edit2 className="w-3 h-3" />
@@ -865,7 +865,7 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                           <button
                             onClick={() => handleRegenerateResponse(index)}
                             disabled={isLoading}
-                            className="p-1 hover:bg-slate-700/50 rounded text-slate-400 hover:text-cyan-400 transition-colors disabled:opacity-50"
+                            className="p-1 hover:bg-holo-cyan/10 rounded text-slate-600 hover:text-holo-cyan transition-colors disabled:opacity-40"
                             title="Quick Regenerate (default model)"
                           >
                             <RefreshCw className="w-3 h-3" />
@@ -874,7 +874,7 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                           <button
                             onClick={() => openRegenerateModal(index)}
                             disabled={isLoading}
-                            className="p-1 hover:bg-slate-700/50 rounded text-slate-400 hover:text-yellow-400 transition-colors disabled:opacity-50"
+                            className="p-1 hover:bg-holo-amber/10 rounded text-slate-600 hover:text-holo-amber transition-colors disabled:opacity-40"
                             title="Regenerate with model selection"
                           >
                             <ChevronDown className="w-3 h-3" />
@@ -883,7 +883,7 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                       )}
                       <button
                         onClick={() => handleDeleteMessage(message.id)}
-                        className="p-1 hover:bg-red-600/20 rounded text-slate-400 hover:text-red-400 transition-colors"
+                        className="p-1 hover:bg-red-500/10 rounded text-slate-600 hover:text-red-400 transition-colors"
                         title="Delete message"
                       >
                         <Trash2 className="w-3 h-3" />
@@ -896,13 +896,13 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
             {isLoading && (
               <div className="flex gap-3">
                 {character.avatar && (
-                  <img src={character.avatar} alt={character.name} className="w-8 h-8 rounded-full object-cover" />
+                  <img src={character.avatar} alt={character.name} className="w-8 h-8 rounded-full object-cover ring-1 ring-holo-cyan/20" />
                 )}
-                <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-xl p-4">
+                <div className="holo-msg-assistant rounded-xl p-4">
                   <div className="flex gap-2">
-                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="w-2 h-2 bg-holo-cyan rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-holo-cyan rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-holo-cyan rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   </div>
                 </div>
               </div>
@@ -911,7 +911,7 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
           </div>
 
           {/* Input Area */}
-          <div className="border-t border-slate-700/50 p-4 bg-slate-900/90 backdrop-blur-xl">
+          <div className="border-t border-holo-cyan/10 p-4 bg-black/40 backdrop-blur-xl">
             <div className="max-w-4xl mx-auto flex gap-2 items-end">
               <textarea
                 value={input}
@@ -922,10 +922,10 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                     handleSendMessage();
                   }
                 }}
-                placeholder={activeNode?.isClosed ? 'This conversation is archived. Start a new one to continue.' : `Message ${character.name}... (Shift+Enter for new line)`}
+                placeholder={activeNode?.isClosed ? 'This channel is archived. Open a new one to continue.' : `Transmit to ${character.name}... (Shift+Enter for new line)`}
                 disabled={isLoading || activeNode?.isClosed}
                 rows={1}
-                className="flex-1 px-4 py-3 bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 disabled:opacity-50 resize-none overflow-y-auto max-h-40"
+                className="flex-1 px-4 py-3 holo-textarea text-sm placeholder-slate-600 disabled:opacity-40 resize-none overflow-y-auto max-h-40"
                 style={{ minHeight: '48px' }}
                 onInput={(e) => {
                   const target = e.target as HTMLTextAreaElement;
@@ -936,7 +936,7 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
               <button
                 onClick={handleSendMessage}
                 disabled={isLoading || !input.trim() || activeNode?.isClosed}
-                className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-cyan-500/20"
+                className="holo-btn holo-btn-primary px-5 py-3 rounded-lg flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Send className="w-4 h-4" />
               </button>
@@ -947,16 +947,16 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
 
       {/* Lorebook Sidebar */}
       {showLorebooks && (
-        <div className="fixed right-0 top-0 bottom-0 w-80 bg-slate-900/95 backdrop-blur-xl border-l border-slate-700/50 overflow-y-auto z-40">
+        <div className="fixed right-0 top-0 bottom-0 w-80 holo-sidebar z-40">
           <div className="p-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-blue-400" />
+              <h3 className="text-sm font-bold holo-text-glow flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-holo-cyan" />
                 Lore Context
               </h3>
               <button
                 onClick={() => setShowLorebooks(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-600 hover:text-holo-cyan transition-colors"
               >
                 ✕
               </button>
@@ -966,10 +966,10 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                 const lorebook = getLorebooks().find(b => b.id === lorebookId);
                 if (!lorebook) return null;
                 return (
-                  <div key={lorebookId} className="bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-xl p-3">
-                    <h4 className="font-semibold text-white mb-2">{lorebook.name}</h4>
-                    <p className="text-xs text-slate-400 mb-2">{lorebook.description}</p>
-                    <p className="text-xs text-slate-500">{lorebook.entries.length} entries</p>
+                  <div key={lorebookId} className="holo-card p-3">
+                    <h4 className="font-semibold text-holo-cyan text-sm mb-1">{lorebook.name}</h4>
+                    <p className="text-xs text-slate-500 mb-1">{lorebook.description}</p>
+                    <p className="text-[10px] holo-label">{lorebook.entries.length} entries</p>
                   </div>
                 );
               })}
@@ -980,23 +980,23 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
 
       {/* Gallery Sidebar */}
       {showGallery && (
-        <div className="fixed right-0 top-0 bottom-0 w-80 bg-slate-900/95 backdrop-blur-xl border-l border-slate-700/50 overflow-y-auto z-40">
-          <div className="p-4">
+        <div className="fixed right-0 top-0 bottom-0 w-80 holo-sidebar z-40 flex flex-col">
+          <div className="p-4 border-b border-holo-cyan/10 flex-shrink-0">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                <ImageIcon className="w-5 h-5 text-cyan-400" />
-                Gallery
+              <h3 className="text-sm font-bold holo-text-glow flex items-center gap-2">
+                <ImageIcon className="w-4 h-4 text-holo-cyan" />
+                Visual Archive
               </h3>
               <button
                 onClick={() => setShowGallery(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-600 hover:text-holo-cyan transition-colors"
               >
                 ✕
               </button>
             </div>
-            <div className="mb-4 flex items-center justify-between">
-              <p className="text-xs text-slate-500">Upload images or videos to this character.</p>
-              <label className="px-3 py-2 rounded-xl text-xs cursor-pointer border backdrop-blur-xl bg-slate-800/50 border-slate-700/50 hover:border-cyan-500/50 text-white">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] holo-label">Upload imagery to this profile.</p>
+              <label className="holo-btn holo-btn-ghost px-3 py-1.5 rounded-lg text-xs cursor-pointer">
                 <input
                   type="file"
                   accept="image/*,video/*"
@@ -1008,8 +1008,11 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                 {isUploading ? 'Uploading…' : 'Upload'}
               </label>
             </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 min-h-0">
             {galleryItems.length === 0 ? (
-              <p className="text-slate-400 text-sm">No media files for this character yet.</p>
+              <p className="text-slate-600 text-xs">No media files in archive.</p>
             ) : (
               <div className="grid grid-cols-2 gap-2">
                 {galleryItems.map(item => (
@@ -1023,16 +1026,16 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
 
       {/* Lore Codex Sidebar - Enhanced Codex View */}
       {showLoreDex && character.attachedLorebooks && (
-        <div className="fixed right-0 top-0 bottom-0 w-96 bg-slate-900/95 backdrop-blur-xl border-l border-slate-700/50 flex flex-col z-40">
-          <div className="p-4 border-b border-slate-700/50">
+        <div className="fixed right-0 top-0 bottom-0 w-96 holo-sidebar flex flex-col z-40">
+          <div className="p-4 border-b border-holo-cyan/10">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                <Library className="w-5 h-5 text-indigo-400" />
+              <h3 className="text-sm font-bold holo-text-glow flex items-center gap-2">
+                <Library className="w-4 h-4 text-holo-purple" />
                 Lore Codex
               </h3>
               <button
                 onClick={() => setShowLoreDex(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-600 hover:text-holo-cyan transition-colors"
               >
                 ✕
               </button>
@@ -1042,17 +1045,17 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
               placeholder="Search lore entries..."
               value={loreDexSearch}
               onChange={(e) => setLoreDexSearch(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 mb-3"
+              className="w-full px-3 py-2 holo-input text-sm mb-3"
             />
             <div className="flex gap-1 flex-wrap">
               {['all', 'character', 'location', 'event', 'item', 'concept', 'other'].map(cat => (
                 <button
                   key={cat}
                   onClick={() => setLoreDexCategory(cat)}
-                  className={`px-3 py-1 text-xs rounded-lg transition-all ${
+                  className={`px-2.5 py-1 text-[10px] rounded-lg transition-all ${
                     loreDexCategory === cat
-                      ? 'bg-indigo-600/30 text-indigo-300 border border-indigo-500/50'
-                      : 'bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:border-slate-600'
+                      ? 'holo-badge-purple'
+                      : 'holo-badge'
                   }`}
                 >
                   {cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -1087,9 +1090,9 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
               
               return (
                 <div key={lorebookId} className="space-y-2">
-                  <div className="bg-gradient-to-r from-indigo-600/20 to-blue-600/20 border border-indigo-500/30 rounded-xl p-3 backdrop-blur-xl">
-                    <h4 className="font-semibold text-white text-sm">{lorebook.name}</h4>
-                    <p className="text-xs text-slate-400 mt-1">{loreEntries.length} entries shown</p>
+                  <div className="holo-card p-3">
+                    <h4 className="font-semibold text-holo-purple text-sm">{lorebook.name}</h4>
+                    <p className="text-[10px] holo-label mt-1">{loreEntries.length} entries shown</p>
                   </div>
                   {loreEntries.map(entry => {
                     const isExpanded = expandedLoreEntry === entry.id;
@@ -1098,34 +1101,34 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                     return (
                       <div 
                         key={entry.id} 
-                        className="bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-xl p-3 hover:border-indigo-500/30 transition-all cursor-pointer"
+                        className="holo-card p-3 hover:border-holo-purple/30 cursor-pointer transition-all"
                         onClick={() => setExpandedLoreEntry(isExpanded ? null : entry.id)}
                       >
                         <div className="flex items-start justify-between mb-2">
-                          <h5 className="font-medium text-white text-sm flex-1">{entry.name}</h5>
+                          <h5 className="font-medium text-holo-cyan text-sm flex-1">{entry.name}</h5>
                           <div className="flex items-center gap-1 flex-shrink-0 ml-2">
-                            <span className="text-xs px-2 py-1 bg-cyan-600/20 text-cyan-300 rounded-lg">
+                            <span className="holo-badge text-[10px]">
                               {entry.category}
                             </span>
-                            <span className="text-xs px-2 py-1 bg-blue-600/20 text-blue-300 rounded-lg font-medium">
+                            <span className="holo-badge-purple text-[10px] font-medium">
                               {entry.importance}
                             </span>
                           </div>
                         </div>
-                        <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
+                        <p className="text-xs text-slate-400 leading-relaxed whitespace-pre-wrap">
                           {isExpanded ? entry.content : contentPreview}
                         </p>
                         {entry.keys.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-2">
                             {entry.keys.map(key => (
-                              <span key={key} className="text-xs px-2 py-1 bg-slate-700/50 text-slate-300 rounded-lg">
+                              <span key={key} className="holo-badge text-[10px]">
                                 {key}
                               </span>
                             ))}
                           </div>
                         )}
                         {!isExpanded && entry.content.length > 150 && (
-                          <p className="text-xs text-indigo-400 mt-2">Click to expand...</p>
+                          <p className="text-[10px] text-holo-purple mt-2">Click to expand...</p>
                         )}
                       </div>
                     );
@@ -1144,12 +1147,12 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
 
       {/* Regenerate with Model Selection Modal */}
       {showRegenerateModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full mx-4 max-h-[80vh] overflow-hidden">
-            <div className="p-4 border-b border-slate-700 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                <RefreshCw className="w-5 h-5 text-cyan-400" />
-                Regenerate with Different Model
+        <div className="holo-overlay">
+          <div className="holo-modal max-w-lg w-full mx-4 max-h-[80vh] overflow-hidden">
+            <div className="p-4 border-b border-holo-cyan/10 flex items-center justify-between">
+              <h3 className="text-sm font-bold holo-text-glow flex items-center gap-2">
+                <RefreshCw className="w-4 h-4 text-holo-cyan" />
+                Regenerate — Model Selection
               </h3>
               <button
                 onClick={() => {
@@ -1157,22 +1160,22 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                   setSelectedRegenerateModel(null);
                   setRegenerateMessageIndex(null);
                 }}
-                className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+                className="p-1.5 hover:bg-holo-cyan/10 rounded-lg transition-colors"
               >
-                <X className="w-5 h-5 text-slate-400" />
+                <X className="w-4 h-4 text-slate-600" />
               </button>
             </div>
             
             <div className="p-4 overflow-y-auto max-h-[50vh]">
-              <p className="text-sm text-slate-400 mb-4">
-                Select a model to regenerate this response, or use the default model.
+              <p className="text-xs text-slate-500 mb-4">
+                Select a model to regenerate this response, or use the default.
               </p>
               
               {/* Model Groups */}
               <div className="space-y-4">
                 {/* xAI Models */}
                 <div>
-                  <h4 className="text-sm font-medium text-blue-400 mb-2">xAI Models</h4>
+                  <h4 className="holo-label text-[10px] mb-2 text-holo-blue">xAI Models</h4>
                   <div className="space-y-1">
                     {NSFW_ROLEPLAY_MODELS.filter(m => m.provider === 'xai').map(model => (
                       <button
@@ -1180,17 +1183,17 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                         onClick={() => setSelectedRegenerateModel(model)}
                         className={`w-full text-left px-3 py-2 rounded-lg transition-all ${
                           selectedRegenerateModel?.id === model.id
-                            ? 'bg-cyan-500/20 border border-cyan-500/50'
-                            : 'bg-slate-800/50 hover:bg-slate-800 border border-transparent'
+                            ? 'holo-sidebar-item-active'
+                            : 'holo-sidebar-item'
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-white text-sm">{model.name}</span>
+                          <span className="text-holo-cyan text-sm">{model.name}</span>
                           {model.isNsfw && (
-                            <span className="text-xs px-1.5 py-0.5 bg-red-500/20 text-red-400 rounded">NSFW</span>
+                            <span className="holo-badge-danger text-[9px]">NSFW</span>
                           )}
                         </div>
-                        <p className="text-xs text-slate-500 mt-1">{model.pricing}</p>
+                        <p className="text-[10px] text-slate-600 mt-0.5">{model.pricing}</p>
                       </button>
                     ))}
                   </div>
@@ -1198,7 +1201,7 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
 
                 {/* OpenRouter Models */}
                 <div>
-                  <h4 className="text-sm font-medium text-purple-400 mb-2">OpenRouter Models</h4>
+                  <h4 className="holo-label text-[10px] mb-2 text-holo-purple">OpenRouter Models</h4>
                   <div className="space-y-1">
                     {NSFW_ROLEPLAY_MODELS.filter(m => m.provider === 'openrouter').slice(0, 15).map(model => (
                       <button
@@ -1206,17 +1209,17 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                         onClick={() => setSelectedRegenerateModel(model)}
                         className={`w-full text-left px-3 py-2 rounded-lg transition-all ${
                           selectedRegenerateModel?.id === model.id
-                            ? 'bg-cyan-500/20 border border-cyan-500/50'
-                            : 'bg-slate-800/50 hover:bg-slate-800 border border-transparent'
+                            ? 'holo-sidebar-item-active'
+                            : 'holo-sidebar-item'
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-white text-sm">{model.name}</span>
+                          <span className="text-holo-cyan text-sm">{model.name}</span>
                           {model.isNsfw && (
-                            <span className="text-xs px-1.5 py-0.5 bg-red-500/20 text-red-400 rounded">NSFW</span>
+                            <span className="holo-badge-danger text-[9px]">NSFW</span>
                           )}
                         </div>
-                        <p className="text-xs text-slate-500 mt-1">{model.description?.substring(0, 60)}...</p>
+                        <p className="text-[10px] text-slate-600 mt-0.5">{model.description?.substring(0, 60)}...</p>
                       </button>
                     ))}
                   </div>
@@ -1224,7 +1227,7 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
               </div>
             </div>
             
-            <div className="p-4 border-t border-slate-700 flex gap-3">
+            <div className="p-4 border-t border-holo-cyan/10 flex gap-3">
               <button
                 onClick={() => {
                   setShowRegenerateModal(false);
@@ -1232,14 +1235,14 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                     handleRegenerateResponse(regenerateMessageIndex);
                   }
                 }}
-                className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-all"
+                className="flex-1 holo-btn holo-btn-ghost px-4 py-2 rounded-lg font-medium text-sm"
               >
                 Use Default Model
               </button>
               <button
                 onClick={handleRegenerateWithModel}
                 disabled={!selectedRegenerateModel || isLoading}
-                className="flex-1 px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2"
+                className="flex-1 holo-btn holo-btn-primary px-4 py-2 rounded-lg font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-40"
               >
                 {isLoading ? (
                   <>
@@ -1294,27 +1297,33 @@ const GalleryThumb: React.FC<GalleryThumbProps> = ({ item, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className="aspect-square bg-slate-800/50 backdrop-blur-xl rounded-xl overflow-hidden hover:ring-2 hover:ring-cyan-500/50 transition-all border border-slate-700/50"
+      className="aspect-square holo-card overflow-hidden hover:ring-1 hover:ring-holo-cyan/40 transition-all"
     >
       {item.type === 'video' ? (
-        <video
-          src={previewUrl}
-          poster={thumbUrl || undefined}
-          className="w-full h-full object-cover"
-          muted
-          loop
-          playsInline
-          preload="metadata"
-        />
+        previewUrl ? (
+          <video
+            src={previewUrl}
+            poster={thumbUrl || undefined}
+            className="w-full h-full object-cover"
+            muted
+            loop
+            playsInline
+            preload="metadata"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <ImageIcon className="w-8 h-8 text-slate-700" />
+          </div>
+        )
       ) : item.type === 'embed' ? (
-        <div className="w-full h-full bg-slate-900/50 text-cyan-300 text-xs flex items-center justify-center p-2 text-center">
+        <div className="w-full h-full bg-black/40 text-holo-cyan text-xs flex items-center justify-center p-2 text-center">
           Embed
         </div>
       ) : thumbUrl ? (
         <img src={thumbUrl} alt={item.name} className="w-full h-full object-cover" />
       ) : (
         <div className="w-full h-full flex items-center justify-center">
-          <ImageIcon className="w-8 h-8 text-slate-600" />
+          <ImageIcon className="w-8 h-8 text-slate-700" />
         </div>
       )}
     </button>

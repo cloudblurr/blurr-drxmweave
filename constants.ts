@@ -10,7 +10,7 @@ export const XAI_API_URL = "https://api.x.ai/v1/chat/completions";
 export const XAI_MODEL = "grok-4-1-fast-reasoning";  
 
 // OpenRouter configuration
-export const OPENROUTER_API_KEY = (import.meta as any)?.env?.VITE_OPENROUTER_API_KEY || "";
+export const OPENROUTER_API_KEY = import.meta.env?.VITE_OPENROUTER_API_KEY || "";
 export const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 export const OPENROUTER_MODELS_URL = "https://openrouter.ai/api/v1/models";
 
@@ -59,7 +59,18 @@ export const NSFW_ROLEPLAY_MODELS: any[] = [
   { id: 'openai/gpt-4o', name: 'GPT-4o', provider: 'openrouter', contextLength: 128000, isNsfw: false, description: 'Multimodal GPT-4 (limited NSFW compliance)' },
   { id: 'deepseek/deepseek-v3.2', name: 'DeepSeek V3.2', provider: 'openrouter', contextLength: 64000, isNsfw: true, description: 'Advanced reasoning model with strong technical capabilities' },
   { id: 'xiaomi/mimo-v2-flash', name: 'Mimo V2 Flash', provider: 'openrouter', contextLength: 32768, isNsfw: true, description: 'Fast and efficient model with multilingual support' },
-  { id: 'minimax/minimax-m2-her', name: 'MiniMax M2 Her', provider: 'openrouter', contextLength: 16384, isNsfw: true, description: 'Specialized model for conversational scenarios' }
+  { id: 'minimax/minimax-m2-her', name: 'MiniMax M2 Her', provider: 'openrouter', contextLength: 16384, isNsfw: true, description: 'Specialized model for conversational scenarios' },
+  // Free OpenRouter Models
+  { id: 'meta-llama/llama-3.3-70b-instruct:free', name: 'Llama 3.3 70B [FREE]', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Free 70B model with strong creative capabilities' },
+  { id: 'nousresearch/hermes-3-llama-3.1-405b:free', name: 'Hermes 3 Llama 405B [FREE]', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Free ultra-large model excellent for roleplay' },
+  { id: 'nvidia/llama-3.1-nemotron-70b-instruct:free', name: 'Nemotron 70B [FREE]', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Free NVIDIA-tuned model with strong instruction following' },
+  { id: 'meta-llama/llama-3.1-8b-instruct:free', name: 'Llama 3.1 8B [FREE]', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Fast free model for quick responses' },
+  { id: 'google/gemini-2.0-flash-exp:free', name: 'Gemini 2.0 Flash [FREE]', provider: 'openrouter', contextLength: 1000000, isNsfw: true, description: 'Free Google model with massive context window' },
+  { id: 'mistralai/mistral-7b-instruct:free', name: 'Mistral 7B [FREE]', provider: 'openrouter', contextLength: 32768, isNsfw: true, description: 'Free efficient European model' },
+  { id: 'mistralai/mistral-nemo:free', name: 'Mistral Nemo [FREE]', provider: 'openrouter', contextLength: 128000, isNsfw: true, description: 'Free Mistral model optimized for roleplay' },
+  { id: 'microsoft/phi-3-mini-128k-instruct:free', name: 'Phi-3 Mini [FREE]', provider: 'openrouter', contextLength: 128000, isNsfw: true, description: 'Free compact model from Microsoft' },
+  { id: 'qwen/qwen-2-7b-instruct:free', name: 'Qwen 2 7B [FREE]', provider: 'openrouter', contextLength: 32768, isNsfw: true, description: 'Free multilingual model with strong Chinese support' },
+  { id: 'gryphe/mythomist-7b:free', name: 'Mythomist 7B [FREE]', provider: 'openrouter', contextLength: 32768, isNsfw: true, description: 'Free model specifically fine-tuned for creative roleplay' }
 ];
 
 export const AI_MODES: AiMode[] = [
@@ -179,7 +190,21 @@ export const OPENROUTER_MODEL_OPTIONS = [
   { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B' },
   { id: 'mistralai/mistral-large', name: 'Mistral Large' },
   { id: 'openai/gpt-4-turbo', name: 'GPT-4 Turbo' },
-  { id: 'openai/gpt-4o', name: 'GPT-4o' }
+  { id: 'openai/gpt-4o', name: 'GPT-4o' },
+  { id: 'deepseek/deepseek-v3.2', name: 'DeepSeek V3.2' },
+  { id: 'xiaomi/mimo-v2-flash', name: 'Mimo V2 Flash' },
+  { id: 'minimax/minimax-m2-her', name: 'MiniMax M2 Her' },
+  // Free Models
+  { id: 'meta-llama/llama-3.3-70b-instruct:free', name: 'Llama 3.3 70B [FREE]' },
+  { id: 'nousresearch/hermes-3-llama-3.1-405b:free', name: 'Hermes 3 Llama 405B [FREE]' },
+  { id: 'nvidia/llama-3.1-nemotron-70b-instruct:free', name: 'Nemotron 70B [FREE]' },
+  { id: 'meta-llama/llama-3.1-8b-instruct:free', name: 'Llama 3.1 8B [FREE]' },
+  { id: 'google/gemini-2.0-flash-exp:free', name: 'Gemini 2.0 Flash [FREE]' },
+  { id: 'mistralai/mistral-7b-instruct:free', name: 'Mistral 7B [FREE]' },
+  { id: 'mistralai/mistral-nemo:free', name: 'Mistral Nemo [FREE]' },
+  { id: 'microsoft/phi-3-mini-128k-instruct:free', name: 'Phi-3 Mini [FREE]' },
+  { id: 'qwen/qwen-2-7b-instruct:free', name: 'Qwen 2 7B [FREE]' },
+  { id: 'gryphe/mythomist-7b:free', name: 'Mythomist 7B [FREE]' }
 ];
 
 export const getAllModelOptions = () => {

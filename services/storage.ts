@@ -1,5 +1,52 @@
 import { Character, ChatNode, LoreEntry, Lorebook, AppSettings } from '../types';
 import { DEFAULT_THEME_ID } from '../themePresets';
+import * as bunnyClient from './bunnyClient';
+import { getCurrentUser } from './authService';
+
+// ---------------------------------------------------------------------------
+// BunnyDB write-through helper
+// Silently pushes writes to BunnyDB when the user is authenticated.
+// localStorage stays the authoritative sync cache for immediate reads.
+// ---------------------------------------------------------------------------
+
+function isAuthenticated(): boolean {
+  try {
+    return !!getCurrentUser();
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Clear all app data from localStorage.
+ * Called on sign-out and before syncing a new user's data.
+ */
+export function clearLocalUserData(): void {
+  Object.values(STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
+}
+
+/**
+ * Load everything from BunnyDB into localStorage.
+ * Clears existing data first so a new user never sees a previous user's content.
+ * Called once after the user signs in / on page load when authed.
+ */
+export async function syncFromBunnyDB(): Promise<void> {
+  if (!isAuthenticated()) return;
+  try {
+    // Wipe previous user's cached data before populating
+    clearLocalUserData();
+
+    const result = await bunnyClient.syncAll();
+    if (result.characters?.length)  localStorage.setItem(STORAGE_KEYS.CHARACTERS, JSON.stringify(result.characters));
+    if (result.nodes?.length)       localStorage.setItem(STORAGE_KEYS.NODES, JSON.stringify(result.nodes));
+    if (result.loreEntries?.length) localStorage.setItem(STORAGE_KEYS.LORE_ENTRIES, JSON.stringify(result.loreEntries));
+    if (result.lorebooks?.length)   localStorage.setItem(STORAGE_KEYS.LOREBOOKS, JSON.stringify(result.lorebooks));
+    if (result.settings)            localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(result.settings));
+    console.log('[Storage] Synced from BunnyDB');
+  } catch (err) {
+    console.warn('[Storage] BunnyDB sync failed, using local cache', err);
+  }
+}
 
 // Storage Keys
 const STORAGE_KEYS = {
@@ -33,6 +80,7 @@ export function saveCharacter(character: Character): void {
     characters.push(character);
   }
   localStorage.setItem(STORAGE_KEYS.CHARACTERS, JSON.stringify(characters));
+  if (isAuthenticated()) bunnyClient.saveCharacter(character).catch(console.warn);
 }
 
 export function deleteCharacter(id: string): void {
@@ -42,6 +90,7 @@ export function deleteCharacter(id: string): void {
   // Also delete related nodes
   const nodes = getNodes().filter(n => n.characterId !== id);
   localStorage.setItem(STORAGE_KEYS.NODES, JSON.stringify(nodes));
+  if (isAuthenticated()) bunnyClient.deleteCharacter(id).catch(console.warn);
 }
 
 // --- Chat Nodes ---
@@ -68,11 +117,13 @@ export function saveNode(node: ChatNode): void {
     nodes.push(node);
   }
   localStorage.setItem(STORAGE_KEYS.NODES, JSON.stringify(nodes));
+  if (isAuthenticated()) bunnyClient.saveNode(node).catch(console.warn);
 }
 
 export function deleteNode(id: string): void {
   const nodes = getNodes().filter(n => n.id !== id);
   localStorage.setItem(STORAGE_KEYS.NODES, JSON.stringify(nodes));
+  if (isAuthenticated()) bunnyClient.deleteNode(id).catch(console.warn);
 }
 
 // --- Lore Entries ---
@@ -95,6 +146,7 @@ export function saveLoreEntry(entry: LoreEntry): void {
     entries.push(entry);
   }
   localStorage.setItem(STORAGE_KEYS.LORE_ENTRIES, JSON.stringify(entries));
+  if (isAuthenticated()) bunnyClient.saveLoreEntry(entry).catch(console.warn);
 }
 
 export function deleteLoreEntry(id: string): void {
@@ -107,6 +159,7 @@ export function deleteLoreEntry(id: string): void {
     book.entries = book.entries.filter(eId => eId !== id);
   });
   localStorage.setItem(STORAGE_KEYS.LOREBOOKS, JSON.stringify(lorebooks));
+  if (isAuthenticated()) bunnyClient.deleteLoreEntry(id).catch(console.warn);
 }
 
 // --- Lorebooks ---
@@ -129,11 +182,13 @@ export function saveLorebook(lorebook: Lorebook): void {
     lorebooks.push(lorebook);
   }
   localStorage.setItem(STORAGE_KEYS.LOREBOOKS, JSON.stringify(lorebooks));
+  if (isAuthenticated()) bunnyClient.saveLorebook(lorebook).catch(console.warn);
 }
 
 export function deleteLorebook(id: string): void {
   const lorebooks = getLorebooks().filter(b => b.id !== id);
   localStorage.setItem(STORAGE_KEYS.LOREBOOKS, JSON.stringify(lorebooks));
+  if (isAuthenticated()) bunnyClient.deleteLorebook(id).catch(console.warn);
 }
 
 // --- Settings ---
@@ -175,6 +230,7 @@ export function saveSettings(settings: AppSettings): void {
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event('settings-updated'));
   }
+  if (isAuthenticated()) bunnyClient.saveSettings(settings).catch(console.warn);
 }
 
 // --- Utilities ---
@@ -627,120 +683,285 @@ export async function exportCharacterHTML(
  * - Native xKoda format
  * - Any custom JSON with character data
  */
-export function importCharacter(jsonString: string): Character {
-  try {
-    const raw = JSON.parse(jsonString);
-    
-    // Helper to safely get string value
-    const getString = (obj: any, ...keys: string[]): string => {
-      for (const key of keys) {
-        if (obj[key] && typeof obj[key] === 'string') {
-          return obj[key].trim();
+/**
+ * Attempts to fix common JSON formatting issues
+ * - Removes trailing commas
+ * - Adds missing quotes around keys
+ * - Fixes single quotes to double quotes
+ * - Removes comments
+ * - Handles unquoted string values
+ * - Extracts key-value pairs from completely broken input as a last resort
+ */
+function attemptJSONFix(jsonString: string): string {
+  let fixed = jsonString;
+  
+  // Remove C-style comments (// and /* */)
+  fixed = fixed.replace(/\/\/.*$/gm, '');
+  fixed = fixed.replace(/\/\*[\s\S]*?\*\//g, '');
+  
+  // Replace single quotes with double quotes (but not within strings)
+  fixed = fixed.replace(/'/g, '"');
+  
+  // Remove trailing commas before closing braces/brackets
+  fixed = fixed.replace(/,(\s*[}\]])/g, '$1');
+  
+  // Add quotes around unquoted keys
+  fixed = fixed.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":');
+  
+  // Fix missing commas between properties (basic case)
+  fixed = fixed.replace(/("\s*)\s+"/g, '$1, "');
+  fixed = fixed.replace(/(\d)\s+"/g, '$1, "');
+  fixed = fixed.replace(/(true|false|null)\s+"/g, '$1, "');
+  
+  // Remove multiple commas
+  fixed = fixed.replace(/,+/g, ',');
+  
+  // Try to fix common typos
+  fixed = fixed.replace(/:\s*undefined/g, ': null');
+  fixed = fixed.replace(/:\s*NaN/g, ': null');
+  
+  return fixed.trim();
+}
+
+/**
+ * Deep-scan an object tree for values matching known character field names.
+ * Works on any shape of JSON — nested, flat, wrapped in arrays, etc.
+ */
+function deepScanForFields(obj: any, visited = new WeakSet()): Record<string, any> {
+  const found: Record<string, any> = {};
+  if (!obj || typeof obj !== 'object') return found;
+  if (visited.has(obj)) return found;
+  visited.add(obj);
+
+  // All field names we want to find, mapped to our canonical key
+  const FIELD_MAP: Record<string, string> = {
+    // name
+    name: 'name', char_name: 'name', character_name: 'name', characterName: 'name',
+    displayName: 'name', display_name: 'name', title: '_title',
+    // description
+    description: 'description', desc: 'description', bio: 'description',
+    char_persona: 'description', about: 'description', summary: 'description',
+    // personality
+    personality: 'personality', persona: 'personality', traits: 'personality',
+    character_traits: 'personality',
+    // scenario
+    scenario: 'scenario', world_scenario: 'scenario', context: 'scenario',
+    setting: 'scenario', world: 'scenario', background: 'scenario',
+    // first_mes
+    first_mes: 'first_mes', first_message: 'first_mes', firstMessage: 'first_mes',
+    greeting: 'first_mes', char_greeting: 'first_mes', intro: 'first_mes',
+    opening: 'first_mes', opening_message: 'first_mes',
+    // mes_example
+    mes_example: 'mes_example', example_dialogue: 'mes_example',
+    example_messages: 'mes_example', examples: 'mes_example',
+    sampleChat: 'mes_example', sample_chat: 'mes_example',
+    example_dialog: 'mes_example', dialogue_examples: 'mes_example',
+    // avatar
+    avatar: 'avatar', image: 'avatar', profile_pic: 'avatar',
+    icon: 'avatar', picture: 'avatar', char_avatar: 'avatar',
+    profile_image: 'avatar', thumbnail: 'avatar',
+    // tags
+    tags: 'tags', categories: 'tags', labels: 'tags',
+    // gallery
+    gallery: 'gallery', images: 'gallery',
+    // lorebooks
+    attachedLorebooks: 'attachedLorebooks', lorebooks: 'attachedLorebooks',
+    character_book: 'attachedLorebooks',
+  };
+
+  const processValue = (key: string, value: any) => {
+    const lowerKey = key.toLowerCase();
+    // Find matching canonical field (case-insensitive)
+    let canonical: string | undefined;
+    for (const [fieldName, target] of Object.entries(FIELD_MAP)) {
+      if (lowerKey === fieldName.toLowerCase()) {
+        canonical = target;
+        break;
+      }
+    }
+    if (!canonical) return;
+
+    // Only keep the first (shallowest) value found for each canonical field
+    if (found[canonical] !== undefined) return;
+
+    if (typeof value === 'string' && value.trim()) {
+      found[canonical] = value.trim();
+    } else if (Array.isArray(value) && value.length > 0) {
+      found[canonical] = value;
+    } else if (typeof value === 'object' && value !== null) {
+      // For objects like character_book, store as-is
+      found[canonical] = value;
+    }
+  };
+
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      const sub = deepScanForFields(item, visited);
+      for (const [k, v] of Object.entries(sub)) {
+        if (found[k] === undefined) found[k] = v;
+      }
+    }
+  } else {
+    // Process own keys first (shallow), then recurse (deep)
+    for (const [key, value] of Object.entries(obj)) {
+      processValue(key, value);
+    }
+    // Recurse into nested objects for anything not yet found
+    for (const [, value] of Object.entries(obj)) {
+      if (value && typeof value === 'object') {
+        const sub = deepScanForFields(value, visited);
+        for (const [k, v] of Object.entries(sub)) {
+          if (found[k] === undefined) found[k] = v;
         }
       }
-      return '';
-    };
-    
-    // Helper to safely get array
-    const getArray = (obj: any, ...keys: string[]): string[] => {
-      for (const key of keys) {
-        if (Array.isArray(obj[key])) {
-          return obj[key];
-        }
-      }
-      return [];
-    };
-    
-    // Detect format and normalize
-    let normalized: any = {};
-    
-    // Check if it's TavernAI V2 format (has spec and data)
-    if (raw.spec === 'chara_card_v2' || raw.spec_version === '2.0') {
-      const data = raw.data || raw;
-      normalized = {
-        name: getString(data, 'name', 'char_name', 'character_name'),
-        description: getString(data, 'description', 'char_persona', 'persona', 'personality'),
-        personality: getString(data, 'personality', 'char_persona', 'persona'),
-        scenario: getString(data, 'scenario', 'world_scenario', 'context'),
-        first_mes: getString(data, 'first_mes', 'first_message', 'greeting', 'char_greeting'),
-        mes_example: getString(data, 'mes_example', 'example_dialogue', 'example_messages'),
-        avatar: getString(data, 'avatar', 'image', 'profile_pic'),
-        tags: getArray(data, 'tags', 'categories'),
-        attachedLorebooks: getArray(data, 'character_book', 'lorebooks', 'attachedLorebooks'),
-        data: data.extensions || data.metadata || {},
-      };
     }
-    // TavernAI V1 format (char_name, char_persona, etc.)
-    else if (raw.char_name || raw.name) {
-      normalized = {
-        name: getString(raw, 'char_name', 'name', 'character_name'),
-        description: getString(raw, 'description', 'char_persona', 'persona'),
-        personality: getString(raw, 'personality', 'char_persona', 'persona'),
-        scenario: getString(raw, 'scenario', 'world_scenario', 'context'),
-        first_mes: getString(raw, 'first_mes', 'char_greeting', 'greeting', 'first_message'),
-        mes_example: getString(raw, 'mes_example', 'example_dialogue', 'example_messages'),
-        avatar: getString(raw, 'avatar', 'image', 'profile_pic', 'char_avatar'),
-        tags: getArray(raw, 'tags', 'categories'),
-        attachedLorebooks: getArray(raw, 'character_book', 'lorebooks', 'attachedLorebooks'),
-      };
-    }
-    // Agnai format (typically has 'persona' and 'sampleChat')
-    else if (raw.persona || raw.sampleChat) {
-      normalized = {
-        name: getString(raw, 'name', 'character_name'),
-        description: getString(raw, 'persona', 'description', 'personality'),
-        personality: getString(raw, 'persona', 'personality'),
-        scenario: getString(raw, 'scenario', 'context', 'setting'),
-        first_mes: getString(raw, 'greeting', 'first_message', 'firstMessage'),
-        mes_example: getString(raw, 'sampleChat', 'example_dialogue', 'mes_example'),
-        avatar: getString(raw, 'avatar', 'image', 'profile_pic'),
-        tags: getArray(raw, 'tags', 'labels'),
-      };
-    }
-    // Generic fallback - try common field names
-    else {
-      normalized = {
-        name: getString(raw, 'name', 'char_name', 'character_name', 'characterName', 'displayName'),
-        description: getString(raw, 'description', 'desc', 'bio', 'char_persona', 'persona', 'about'),
-        personality: getString(raw, 'personality', 'char_persona', 'persona', 'traits'),
-        scenario: getString(raw, 'scenario', 'world_scenario', 'context', 'setting', 'world'),
-        first_mes: getString(raw, 'first_mes', 'firstMessage', 'greeting', 'char_greeting', 'intro'),
-        mes_example: getString(raw, 'mes_example', 'example_dialogue', 'examples', 'sampleChat', 'example_messages'),
-        avatar: getString(raw, 'avatar', 'image', 'profile_pic', 'icon', 'picture'),
-        tags: getArray(raw, 'tags', 'categories', 'labels'),
-        gallery: getArray(raw, 'gallery', 'images'),
-        attachedLorebooks: getArray(raw, 'attachedLorebooks', 'lorebooks', 'character_book'),
-      };
-    }
-    
-    // Ensure required fields have defaults
-    const character: Character = {
-      id: generateId(),
-      name: normalized.name || 'Unnamed Character',
-      description: normalized.description || '',
-      personality: normalized.personality || normalized.description || '',
-      scenario: normalized.scenario || '',
-      first_mes: normalized.first_mes || '',
-      mes_example: normalized.mes_example || '',
-      avatar: normalized.avatar,
-      tags: normalized.tags || [],
-      gallery: normalized.gallery || [],
-      attachedLorebooks: normalized.attachedLorebooks || [],
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      data: normalized.data || {},
-    };
-    
-    // If personality is empty but description exists, use description
-    if (!character.personality && character.description) {
-      character.personality = character.description;
-    }
-    
-    return character;
-  } catch (error) {
-    console.error('Failed to import character:', error);
-    throw new Error('Invalid character JSON format. Please check the file and try again.');
   }
+
+  return found;
+}
+
+/**
+ * Last-resort: regex-extract "key": "value" pairs from raw text
+ * when JSON.parse fails completely.
+ */
+function extractFieldsFromBrokenText(text: string): Record<string, string> {
+  const found: Record<string, string> = {};
+  // Match "key" : "value" (possibly with single quotes, loose spacing)
+  const pattern = /['"]?(\w+)['"]?\s*[:=]\s*['"]([^'"]{1,10000})['"]/g;
+  let match;
+  while ((match = pattern.exec(text)) !== null) {
+    const key = match[1].toLowerCase();
+    const value = match[2].trim();
+    if (value && !found[key]) {
+      found[key] = value;
+    }
+  }
+  return found;
+}
+
+/**
+ * Forgiving JSON parser: tries multiple strategies and never gives up
+ * unless the input is truly empty.
+ */
+function forgivingParse(jsonString: string): any {
+  // 1. Direct parse
+  try { return JSON.parse(jsonString); } catch {}
+
+  // 2. Fix common issues
+  try { return JSON.parse(attemptJSONFix(jsonString)); } catch {}
+
+  // 3. Aggressive cleaning
+  try {
+    let aggressive = attemptJSONFix(jsonString);
+    aggressive = aggressive.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+    if (!aggressive.trim().startsWith('{') && !aggressive.trim().startsWith('[')) {
+      aggressive = '{' + aggressive + '}';
+    }
+    return JSON.parse(aggressive);
+  } catch {}
+
+  // 4. Try extracting just the first {...} or [...] block
+  try {
+    const braceMatch = jsonString.match(/\{[\s\S]*\}/);
+    if (braceMatch) return JSON.parse(attemptJSONFix(braceMatch[0]));
+  } catch {}
+  try {
+    const bracketMatch = jsonString.match(/\[[\s\S]*\]/);
+    if (bracketMatch) return JSON.parse(attemptJSONFix(bracketMatch[0]));
+  } catch {}
+
+  // 5. All JSON parsing failed — return null so callers use regex fallback
+  return null;
+}
+
+export function importCharacter(jsonString: string): Character {
+  // --- Phase 1: Parse (never throws) ---
+  const raw = forgivingParse(jsonString);
+
+  // --- Phase 2: Extract fields ---
+  let fields: Record<string, any> = {};
+
+  if (raw !== null && typeof raw === 'object') {
+    // Unwrap TavernAI V2 wrapper
+    let root = raw;
+    if (raw.spec === 'chara_card_v2' || raw.spec_version === '2.0') {
+      root = raw.data || raw;
+    }
+
+    // Deep-scan the entire tree for known field names
+    fields = deepScanForFields(root);
+
+    // Also pull extensions/metadata if present
+    if (!fields.data) {
+      const data = root.extensions || root.metadata;
+      if (data && typeof data === 'object') fields.data = data;
+    }
+  }
+
+  // If JSON parsing totally failed, try regex extraction from raw text
+  if (raw === null || Object.keys(fields).length === 0) {
+    console.warn('JSON parsing failed — falling back to regex field extraction');
+    const regexFields = extractFieldsFromBrokenText(jsonString);
+
+    // Map regex-extracted lowercase keys to our canonical fields
+    const REGEX_MAP: Record<string, string> = {
+      name: 'name', char_name: 'name', character_name: 'name',
+      description: 'description', desc: 'description', bio: 'description',
+      personality: 'personality', persona: 'personality', traits: 'personality',
+      scenario: 'scenario', world_scenario: 'scenario', context: 'scenario',
+      setting: 'scenario', world: 'scenario', background: 'scenario',
+      first_mes: 'first_mes', first_message: 'first_mes', greeting: 'first_mes',
+      char_greeting: 'first_mes', intro: 'first_mes',
+      mes_example: 'mes_example', example_dialogue: 'mes_example',
+      samplechat: 'mes_example', sample_chat: 'mes_example',
+      avatar: 'avatar', image: 'avatar', profile_pic: 'avatar',
+    };
+
+    for (const [rawKey, value] of Object.entries(regexFields)) {
+      const canonical = REGEX_MAP[rawKey];
+      if (canonical && !fields[canonical]) {
+        fields[canonical] = value;
+      }
+    }
+  }
+
+  // Resolve the _title vs name ambiguity (title is only used if no name found)
+  if (!fields.name && fields._title) {
+    fields.name = fields._title;
+  }
+
+  // Convert tags/gallery from comma-separated strings if necessary
+  if (typeof fields.tags === 'string') {
+    fields.tags = fields.tags.split(',').map((t: string) => t.trim()).filter(Boolean);
+  }
+  if (typeof fields.gallery === 'string') {
+    fields.gallery = fields.gallery.split(',').map((t: string) => t.trim()).filter(Boolean);
+  }
+
+  // --- Phase 3: Build character (always succeeds) ---
+  const character: Character = {
+    id: generateId(),
+    name: fields.name || 'Unnamed Character',
+    description: fields.description || '',
+    personality: fields.personality || fields.description || '',
+    scenario: fields.scenario || '',
+    first_mes: fields.first_mes || '',
+    mes_example: fields.mes_example || '',
+    avatar: fields.avatar || undefined,
+    tags: Array.isArray(fields.tags) ? fields.tags : [],
+    gallery: Array.isArray(fields.gallery) ? fields.gallery : [],
+    attachedLorebooks: Array.isArray(fields.attachedLorebooks) ? fields.attachedLorebooks : [],
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    data: fields.data || {},
+  };
+
+  if (!character.personality && character.description) {
+    character.personality = character.description;
+  }
+
+  console.log(`Character imported: "${character.name}" — fields found: ${Object.keys(fields).filter(k => fields[k]).join(', ')}`);
+  return character;
 }
 
 export function exportLorebook(lorebook: Lorebook): string {
@@ -748,92 +969,87 @@ export function exportLorebook(lorebook: Lorebook): string {
 }
 
 /**
- * Universal lorebook import function
+ * Universal lorebook import function — forgiving parser
  * Supports multiple formats:
  * - TavernAI character books
  * - SillyTavern lorebooks
  * - World Info formats
  * - Native xKoda format
+ * Never throws — always returns a valid Lorebook.
  */
 export function importLorebook(jsonString: string): Lorebook {
-  try {
-    const raw = JSON.parse(jsonString);
-    
-    // Helper functions
-    const getString = (obj: any, ...keys: string[]): string => {
-      for (const key of keys) {
-        if (obj[key] && typeof obj[key] === 'string') {
-          return obj[key].trim();
-        }
+  const raw = forgivingParse(jsonString);
+
+  // Helper functions
+  const getString = (obj: any, ...keys: string[]): string => {
+    if (!obj || typeof obj !== 'object') return '';
+    for (const key of keys) {
+      if (obj[key] && typeof obj[key] === 'string') {
+        return obj[key].trim();
       }
-      return '';
-    };
-    
-    const getArray = (obj: any, ...keys: string[]): any[] => {
-      for (const key of keys) {
-        if (Array.isArray(obj[key])) {
-          return obj[key];
-        }
+    }
+    return '';
+  };
+
+  const getArray = (obj: any, ...keys: string[]): any[] => {
+    if (!obj || typeof obj !== 'object') return [];
+    for (const key of keys) {
+      if (Array.isArray(obj[key])) {
+        return obj[key];
       }
-      return [];
-    };
-    
-    // Parse entries from various formats
-    const parseEntries = (entriesData: any[]): string[] => {
-      return entriesData.map(entry => {
-        // Create a lore entry
-        const loreEntry: LoreEntry = {
-          id: generateId(),
-          name: getString(entry, 'name', 'key', 'title', 'keyword') || 'Entry',
-          content: getString(entry, 'content', 'text', 'value', 'description', 'entry'),
-          keys: Array.isArray(entry.keys) ? entry.keys : 
-                Array.isArray(entry.keywords) ? entry.keywords :
-                Array.isArray(entry.triggers) ? entry.triggers :
-                entry.key ? [entry.key] : [],
-          category: entry.category || 'other',
-          importance: typeof entry.importance === 'number' ? entry.importance :
-                     typeof entry.priority === 'number' ? entry.priority :
-                     typeof entry.weight === 'number' ? entry.weight : 5,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        };
-        
-        // Save the entry
-        saveLoreEntry(loreEntry);
-        return loreEntry.id;
-      });
-    };
-    
-    let entryIds: string[] = [];
-    let bookName = '';
-    let bookDescription = '';
-    
+    }
+    return [];
+  };
+
+  // Parse entries from various formats
+  const parseEntries = (entriesData: any[]): string[] => {
+    return entriesData.map(entry => {
+      const loreEntry: LoreEntry = {
+        id: generateId(),
+        name: getString(entry, 'name', 'key', 'title', 'keyword') || 'Entry',
+        content: getString(entry, 'content', 'text', 'value', 'description', 'entry'),
+        keys: Array.isArray(entry.keys) ? entry.keys :
+              Array.isArray(entry.keywords) ? entry.keywords :
+              Array.isArray(entry.triggers) ? entry.triggers :
+              entry.key ? [entry.key] : [],
+        category: entry.category || 'other',
+        importance: typeof entry.importance === 'number' ? entry.importance :
+                   typeof entry.priority === 'number' ? entry.priority :
+                   typeof entry.weight === 'number' ? entry.weight : 5,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      saveLoreEntry(loreEntry);
+      return loreEntry.id;
+    });
+  };
+
+  let entryIds: string[] = [];
+  let bookName = '';
+  let bookDescription = '';
+
+  if (raw !== null && typeof raw === 'object') {
     // Detect format
     if (raw.entries && Array.isArray(raw.entries)) {
-      // Standard format with entries array
       entryIds = parseEntries(raw.entries);
       bookName = getString(raw, 'name', 'title', 'book_name');
       bookDescription = getString(raw, 'description', 'desc', 'about');
     } else if (raw.character_book || raw.characterBook) {
-      // TavernAI character book format
       const book = raw.character_book || raw.characterBook;
       const entries = getArray(book, 'entries', 'items');
       entryIds = parseEntries(entries);
       bookName = getString(book, 'name', 'title');
       bookDescription = getString(book, 'description', 'desc');
     } else if (raw.worldInfo) {
-      // World Info format
       const entries = getArray(raw.worldInfo, 'entries', 'items');
       entryIds = parseEntries(entries);
       bookName = getString(raw, 'name', 'title', 'worldName');
       bookDescription = getString(raw, 'description', 'desc');
     } else if (Array.isArray(raw)) {
-      // Array of entries directly
       entryIds = parseEntries(raw);
       bookName = 'Imported Lorebook';
-      bookDescription = '';
     } else {
-      // Try to find any entries-like structure
+      // Try to find any entries-like array in the object
       const possibleEntries = Object.values(raw).find(val => Array.isArray(val));
       if (possibleEntries && Array.isArray(possibleEntries)) {
         entryIds = parseEntries(possibleEntries);
@@ -841,22 +1057,22 @@ export function importLorebook(jsonString: string): Lorebook {
       bookName = getString(raw, 'name', 'title') || 'Imported Lorebook';
       bookDescription = getString(raw, 'description', 'desc');
     }
-    
-    // Create the lorebook
-    const lorebook: Lorebook = {
-      id: generateId(),
-      name: bookName || 'Imported Lorebook',
-      description: bookDescription || 'Imported from external format',
-      entries: entryIds,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    };
-    
-    return lorebook;
-  } catch (error) {
-    console.error('Failed to import lorebook:', error);
-    throw new Error('Invalid lorebook JSON format. Please check the file and try again.');
+  } else {
+    // JSON completely unreadable — create empty lorebook
+    console.warn('Lorebook JSON unparseable — importing as empty lorebook');
   }
+
+  const lorebook: Lorebook = {
+    id: generateId(),
+    name: bookName || 'Imported Lorebook',
+    description: bookDescription || 'Imported from external format',
+    entries: entryIds,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+
+  console.log(`Lorebook imported: "${lorebook.name}" — ${entryIds.length} entries`);
+  return lorebook;
 }
 
 export function exportLoreEntry(entry: LoreEntry): string {
@@ -864,40 +1080,73 @@ export function exportLoreEntry(entry: LoreEntry): string {
 }
 
 /**
- * Universal lore entry import
+ * Universal lore entry import — forgiving parser
+ * Never throws — always returns a valid LoreEntry.
  */
 export function importLoreEntry(jsonString: string): LoreEntry {
-  try {
-    const raw = JSON.parse(jsonString);
-    
-    const getString = (obj: any, ...keys: string[]): string => {
-      for (const key of keys) {
-        if (obj[key] && typeof obj[key] === 'string') {
-          return obj[key].trim();
-        }
+  const raw = forgivingParse(jsonString);
+
+  const getString = (obj: any, ...keys: string[]): string => {
+    if (!obj || typeof obj !== 'object') return '';
+    for (const key of keys) {
+      if (obj[key] && typeof obj[key] === 'string') {
+        return obj[key].trim();
       }
-      return '';
-    };
-    
-    const entry: LoreEntry = {
-      id: generateId(),
-      name: getString(raw, 'name', 'key', 'title', 'keyword') || 'Entry',
-      content: getString(raw, 'content', 'text', 'value', 'description', 'entry'),
-      keys: Array.isArray(raw.keys) ? raw.keys : 
-            Array.isArray(raw.keywords) ? raw.keywords :
-            Array.isArray(raw.triggers) ? raw.triggers :
-            raw.key ? [raw.key] : [],
-      category: raw.category || 'other',
-      importance: typeof raw.importance === 'number' ? raw.importance :
-                 typeof raw.priority === 'number' ? raw.priority :
-                 typeof raw.weight === 'number' ? raw.weight : 5,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    };
-    
-    return entry;
-  } catch (error) {
-    console.error('Failed to import lore entry:', error);
-    throw new Error('Invalid lore entry JSON format. Please check the file and try again.');
+    }
+    return '';
+  };
+
+  let name = '';
+  let content = '';
+  let keys: string[] = [];
+  let category: LoreEntry['category'] = 'other';
+  let importance = 5;
+
+  const coerceCategory = (value: unknown): LoreEntry['category'] => {
+    switch (value) {
+      case 'character':
+      case 'location':
+      case 'event':
+      case 'item':
+      case 'concept':
+      case 'other':
+        return value;
+      default:
+        return 'other';
+    }
+  };
+
+  if (raw !== null && typeof raw === 'object' && !Array.isArray(raw)) {
+    // Deep-scan for lore-entry-like fields
+    name = getString(raw, 'name', 'key', 'title', 'keyword') || 'Entry';
+    content = getString(raw, 'content', 'text', 'value', 'description', 'entry');
+    keys = Array.isArray(raw.keys) ? raw.keys :
+           Array.isArray(raw.keywords) ? raw.keywords :
+           Array.isArray(raw.triggers) ? raw.triggers :
+           raw.key ? [raw.key] : [];
+    category = coerceCategory(raw.category);
+    importance = typeof raw.importance === 'number' ? raw.importance :
+                typeof raw.priority === 'number' ? raw.priority :
+                typeof raw.weight === 'number' ? raw.weight : 5;
+  } else if (raw === null) {
+    // Try regex extraction
+    const regexFields = extractFieldsFromBrokenText(jsonString);
+    name = regexFields['name'] || regexFields['title'] || regexFields['key'] || 'Entry';
+    content = regexFields['content'] || regexFields['text'] || regexFields['description'] || '';
+    if (regexFields['category']) category = coerceCategory(regexFields['category']);
   }
+
+  const entry: LoreEntry = {
+    id: generateId(),
+    name: name || 'Entry',
+    content,
+    keys,
+    category,
+    importance,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+
+  console.log(`Lore entry imported: "${entry.name}"`);
+  return entry;
 }

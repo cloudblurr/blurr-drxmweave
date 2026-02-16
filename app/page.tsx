@@ -1,7 +1,12 @@
 "use client";
 
 import App from "../App";
+import { AuthProvider } from "../components/AuthContext";
 
 export default function HomePage() {
-  return <App />;
+  return (
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  );
 }

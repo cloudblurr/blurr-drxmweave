@@ -413,30 +413,30 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                       <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
                           code({node, inline, className, children, ...props}: any) {
                             const match = /language-(\w+)/.exec(className || '');
-                            return !inline && match ? <CodeBlock language={match[1]} value={String(children).replace(/\n$/, '')} /> : <code className="bg-zinc-800/80 text-zinc-200 px-1.5 py-0.5 rounded text-[0.9em] font-mono border border-zinc-700/50" {...props}>{children}</code>;
+                            return !inline && match ? <CodeBlock language={match[1]} value={String(children).replace(/\n$/, '')} /> : <code className="bg-zinc-800/90 text-cyan-300 px-2 py-0.5 rounded text-[0.92em] font-mono border border-zinc-700/60 tracking-tight font-medium" {...props}>{children}</code>;
                           },
                           table: ({children}) => <div className="my-6 w-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/20 shadow-sm"><table className="min-w-full text-left text-sm">{children}</table></div>,
                           thead: ({children}) => <thead className="bg-zinc-900 border-b border-zinc-800">{children}</thead>,
                           th: ({children}) => <th className="px-4 py-3 font-semibold text-zinc-200 text-xs uppercase tracking-wider">{children}</th>,
                           tr: ({children}) => <tr className="border-b border-zinc-800/50 last:border-0 hover:bg-zinc-900/30 transition-colors">{children}</tr>,
                           td: ({children}) => <td className="px-4 py-3 text-zinc-300">{children}</td>,
-                          h1: ({children}) => <h1 className="text-2xl font-bold text-white mb-6 mt-10 pb-3 border-b-2 border-zinc-700/50 first:mt-0">{children}</h1>,
-                          h2: ({children}) => <h2 className="text-xl font-bold text-white mb-5 mt-10 flex items-center gap-2.5 first:mt-0"><span className="w-1.5 h-7 bg-gradient-to-b from-white to-zinc-400 rounded-full shadow-sm"></span>{children}</h2>,
-                          h3: ({children}) => <h3 className="text-lg font-semibold text-zinc-100 mb-4 mt-8 first:mt-0">{children}</h3>,
+                          h1: ({children}) => <h1 className="text-2xl font-bold text-white mb-6 mt-10 pb-3 border-b-2 border-zinc-700/50 first:mt-0 tracking-tight">{children}</h1>,
+                          h2: ({children}) => <h2 className="text-xl font-bold text-white mb-5 mt-10 flex items-center gap-2.5 first:mt-0 tracking-tight"><span className="w-1.5 h-7 bg-gradient-to-b from-white to-zinc-400 rounded-full shadow-sm"></span>{children}</h2>,
+                          h3: ({children}) => <h3 className="text-lg font-semibold text-zinc-100 mb-4 mt-8 first:mt-0 tracking-tight">{children}</h3>,
                           h4: ({children}) => <h4 className="text-base font-semibold text-zinc-200 mb-3 mt-6 first:mt-0">{children}</h4>,
-                          p: ({children}) => <p className="leading-[1.8] mb-6 text-zinc-300 text-[15px] last:mb-0">{children}</p>,
-                          ul: ({children}) => <ul className="list-disc list-outside ml-5 mb-6 space-y-2.5 text-zinc-300 marker:text-zinc-500">{children}</ul>,
-                          ol: ({children}) => <ol className="list-decimal list-outside ml-5 mb-6 space-y-2.5 text-zinc-300 marker:text-zinc-500">{children}</ol>,
-                          li: ({children}) => <li className="pl-1.5 leading-[1.7]">{children}</li>,
-                          blockquote: ({children}) => <blockquote className="border-l-4 border-zinc-600 pl-5 py-3 my-6 italic text-zinc-400 bg-zinc-900/40 rounded-r-lg">{children}</blockquote>,
-                          a: ({href, children}) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline decoration-blue-400/30 hover:decoration-blue-300/50 underline-offset-2 transition-colors inline-flex items-center gap-1">{children}<ExternalLink size={11} strokeWidth={2.5} className="opacity-70" /></a>,
+                          p: ({children}) => <p className="leading-[1.85] mb-6 text-zinc-200 text-[15.5px] last:mb-0 font-normal tracking-normal">{children}</p>,
+                          ul: ({children}) => <ul className="list-disc list-outside ml-5 mb-6 space-y-2.5 text-zinc-200 marker:text-zinc-500 text-[15px]">{children}</ul>,
+                          ol: ({children}) => <ol className="list-decimal list-outside ml-5 mb-6 space-y-2.5 text-zinc-200 marker:text-zinc-500 text-[15px]">{children}</ol>,
+                          li: ({children}) => <li className="pl-2 leading-[1.8]">{children}</li>,
+                          blockquote: ({children}) => <blockquote className="border-l-4 border-zinc-600/70 pl-5 py-3 my-6 italic text-zinc-300 bg-zinc-900/50 rounded-r-lg text-[15px]">{children}</blockquote>,
+                          a: ({href, children}) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline decoration-blue-400/40 hover:decoration-blue-300/60 underline-offset-2 transition-colors inline-flex items-center gap-1 font-medium">{children}<ExternalLink size={12} strokeWidth={2.5} className="opacity-70" /></a>,
                           hr: () => <hr className="border-zinc-800 my-10" />,
                           strong: ({children}) => <strong className="font-semibold text-white">{children}</strong>,
-                          em: ({children}) => <em className="italic text-zinc-200">{children}</em>
+                          em: ({children}) => <em className="italic text-zinc-100">{children}</em>
                         }}
                       >{msg.content}</ReactMarkdown>
                     </div>
-                  ) : <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">{msg.content}</div>}
+                  ) : <div className="whitespace-pre-wrap break-words text-[15px] leading-relaxed">{msg.content}</div>}
                 </div>
               </div>
             </div>

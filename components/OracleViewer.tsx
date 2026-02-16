@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import Plyr from 'plyr';
-import 'plyr/dist/plyr.css';
-import { Minimize2, Maximize2, X, Move } from 'lucide-react';
+import type Plyr from 'plyr';
+import { Minimize2, Maximize2, X, Move, RotateCcw } from 'lucide-react';
 import { GalleryItem } from '../types';
 
 interface OracleViewerProps {
@@ -36,23 +35,52 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ item, onClose }) => 
   }, [item.type, item.blob]);
 
   useEffect(() => {
-    if (item.type === 'video' && mediaRef.current && mediaUrl) {
-      plyrRef.current = new Plyr(mediaRef.current as HTMLVideoElement, {
-        controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'],
-        settings: ['speed', 'loop'],
-        speed: { selected: 1, options: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] },
-        loop: { active: true },
-        ratio: '16:9',
-        tooltips: { controls: true, seek: true }
-      });
+    let cancelled = false;
 
-      return () => {
-        if (plyrRef.current) {
-          plyrRef.current.destroy();
-        }
-      };
+    // Clean up existing player first
+    if (plyrRef.current) {
+      plyrRef.current.destroy();
+      plyrRef.current = null;
     }
-  }, [item.type, mediaUrl]);
+
+    // Initialize new player for video (dynamic import to avoid SSR "document" error)
+    if (item.type === 'video' && mediaRef.current && mediaUrl) {
+      import('plyr').then((mod) => {
+        if (cancelled || !mediaRef.current) return;
+        // Inject CSS once
+        if (!document.querySelector('link[data-plyr-css]')) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = 'https://cdn.plyr.io/3.7.8/plyr.css';
+          link.setAttribute('data-plyr-css', '');
+          document.head.appendChild(link);
+        }
+        const PlyrClass = mod.default || mod;
+        plyrRef.current = new PlyrClass(mediaRef.current as HTMLVideoElement, {
+          controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'],
+          settings: ['speed', 'loop'],
+          speed: { selected: 1, options: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] },
+          loop: { active: true },
+          ratio: '16:9',
+          tooltips: { controls: true, seek: true },
+          autoplay: false,
+          resetOnEnd: true
+        });
+
+        plyrRef.current.on('ready', () => {
+          console.log('Plyr player ready for:', item.name);
+        });
+      }).catch(err => console.warn('Failed to load Plyr:', err));
+    }
+
+    return () => {
+      cancelled = true;
+      if (plyrRef.current) {
+        plyrRef.current.destroy();
+        plyrRef.current = null;
+      }
+    };
+  }, [item.type, mediaUrl, item.id, item.name]);
 
   const handleDragStart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -62,9 +90,15 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ item, onClose }) => 
 
   const handleMouseMove = (e: MouseEvent) => {
     if (isDragging) {
+      // Add boundary constraints to prevent dragging offscreen
+      const newX = e.clientX - dragStart.x;
+      const newY = e.clientY - dragStart.y;
+      const maxX = window.innerWidth - 100; // Leave at least 100px visible
+      const maxY = window.innerHeight - 50; // Leave at least 50px visible
+      
       setPosition({
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y
+        x: Math.max(-size.width + 100, Math.min(maxX, newX)),
+        y: Math.max(0, Math.min(maxY, newY))
       });
     }
     if (isResizing) {
@@ -81,6 +115,11 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ item, onClose }) => 
     setIsResizing(false);
   };
 
+  const handleResetPosition = () => {
+    setPosition({ x: 100, y: 100 });
+    setSize({ width: 640, height: 480 });
+  };
+
   useEffect(() => {
     if (isDragging || isResizing) {
       document.addEventListener('mousemove', handleMouseMove);
@@ -95,7 +134,7 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ item, onClose }) => 
   return (
     <div
       ref={containerRef}
-      className="fixed bg-slate-900/95 backdrop-blur-xl border-2 border-cyan-500/50 rounded-xl shadow-2xl shadow-cyan-500/20 overflow-hidden"
+      className="fixed bg-black/95 backdrop-blur-xl border-2 border-holo-cyan/40 rounded-xl shadow-2xl shadow-holo-cyan/20 overflow-hidden"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
@@ -106,25 +145,32 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ item, onClose }) => 
     >
       {/* Header */}
       <div 
-        className="oracle-drag-handle bg-slate-800/90 backdrop-blur-xl border-b border-slate-700/50 px-4 py-2 flex items-center justify-between cursor-move select-none"
+        className="oracle-drag-handle holo-header px-4 py-2 flex items-center justify-between cursor-move select-none"
         onMouseDown={handleDragStart}
       >
         <div className="flex items-center gap-2">
-          <Move className="w-4 h-4 text-cyan-400" />
-          <span className="text-sm font-semibold text-white truncate max-w-[200px]">
+          <Move className="w-4 h-4 text-holo-cyan" />
+          <span className="text-sm font-semibold text-holo-cyan truncate max-w-[200px]">
             {item.name}
           </span>
         </div>
         <div className="flex items-center gap-2">
           <button
+            onClick={handleResetPosition}
+            className="p-1 hover:bg-holo-cyan/10 rounded-lg transition-colors"
+            title="Reset Position"
+          >
+            <RotateCcw className="w-4 h-4 text-holo-cyan" />
+          </button>
+          <button
             onClick={() => setIsMinimized(!isMinimized)}
-            className="p-1 hover:bg-slate-700/50 rounded-lg transition-colors"
+            className="p-1 hover:bg-holo-cyan/10 rounded-lg transition-colors"
             title={isMinimized ? 'Maximize' : 'Minimize'}
           >
             {isMinimized ? (
-              <Maximize2 className="w-4 h-4 text-slate-400" />
+              <Maximize2 className="w-4 h-4 text-slate-500" />
             ) : (
-              <Minimize2 className="w-4 h-4 text-slate-400" />
+              <Minimize2 className="w-4 h-4 text-slate-500" />
             )}
           </button>
           <button
@@ -132,7 +178,7 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ item, onClose }) => 
             className="p-1 hover:bg-red-600 rounded-lg transition-colors"
             title="Close"
           >
-            <X className="w-4 h-4 text-slate-400 hover:text-white" />
+            <X className="w-4 h-4 text-slate-500 hover:text-white" />
           </button>
         </div>
       </div>
@@ -141,15 +187,21 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ item, onClose }) => 
       {!isMinimized && (
         <div className="relative w-full h-full bg-black" style={{ height: 'calc(100% - 42px)' }}>
           {item.type === 'video' ? (
-            <video
-              ref={mediaRef as React.RefObject<HTMLVideoElement>}
-              src={mediaUrl}
-              className="w-full h-full"
-              playsInline
-              loop
-            />
+            mediaUrl ? (
+              <video
+                ref={mediaRef as React.RefObject<HTMLVideoElement>}
+                src={mediaUrl}
+                className="w-full h-full"
+                playsInline
+                loop
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">
+                Loading video…
+              </div>
+            )
           ) : item.type === 'embed' ? (
-            <div className="w-full h-full bg-slate-900 flex items-center justify-center">
+            <div className="w-full h-full bg-black flex items-center justify-center">
               {item.embedCode ? (
                 <div
                   className="w-full h-full"
@@ -162,12 +214,18 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ item, onClose }) => 
               )}
             </div>
           ) : (
-            <img
-              ref={mediaRef as React.RefObject<HTMLImageElement>}
-              src={mediaUrl}
-              alt={item.name}
-              className="w-full h-full object-contain"
-            />
+            mediaUrl ? (
+              <img
+                ref={mediaRef as React.RefObject<HTMLImageElement>}
+                src={mediaUrl}
+                alt={item.name}
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">
+                Loading…
+              </div>
+            )
           )}
 
           {/* Resize Handle */}

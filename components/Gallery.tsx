@@ -188,15 +188,21 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, onDelete, onAssignChara
       {/* Thumbnail */}
       <div className="aspect-square bg-gray-900 relative overflow-hidden">
         {item.type === 'video' ? (
-          <video
-            src={previewUrl}
-            poster={thumbnailUrl || undefined}
-            className="w-full h-full object-cover"
-            muted
-            loop
-            playsInline
-            preload="metadata"
-          />
+          previewUrl ? (
+            <video
+              src={previewUrl}
+              poster={thumbnailUrl || undefined}
+              className="w-full h-full object-cover"
+              muted
+              loop
+              playsInline
+              preload="metadata"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <Video className="w-12 h-12 text-gray-600" />
+            </div>
+          )
         ) : item.type === 'embed' ? (
           <div className="w-full h-full bg-gray-800 text-purple-200 text-xs flex items-center justify-center p-3 text-center">
             Embed

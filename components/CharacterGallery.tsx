@@ -199,74 +199,77 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ onNavigate }
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-950 via-slate-900 to-black">
-      <div className="max-w-7xl mx-auto p-6 space-y-6">
+    <div className="flex-1 overflow-y-auto relative">
+      <div className="max-w-7xl mx-auto p-6 space-y-5">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="holo-panel p-5 flex items-center justify-between gap-4 animate-fadeInUp">
           <div>
-            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-              <Users className="w-8 h-8 text-cyan-400" />
-              Character Gallery
+            <h1 className="text-2xl font-bold holo-text-glow flex items-center gap-3">
+              <Users className="w-7 h-7" />
+              Crew Manifest
             </h1>
-            <p className="text-slate-400 mt-1">{characters.length} characters available</p>
+            <p className="holo-label mt-1">{characters.length} crew members registered</p>
           </div>
           <div className="flex gap-2">
             <button
               onClick={handleImportCharacter}
-              className="px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-300 rounded-xl transition-all flex items-center gap-2 backdrop-blur-xl"
+              className="holo-btn-ghost holo-btn px-4 py-2 rounded-xl text-sm flex items-center gap-2"
             >
               <Upload className="w-4 h-4" />
               Import
             </button>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/30 text-cyan-300 rounded-xl transition-all flex items-center gap-2 backdrop-blur-xl shadow-lg shadow-cyan-500/10"
+              className="holo-btn holo-btn-primary px-4 py-2 rounded-xl text-sm flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
-              Create Character
+              Create
             </button>
           </div>
         </div>
 
         {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+        <div className="relative animate-fadeInUp delay-100">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-holo-cyan/40" />
           <input
             type="text"
-            placeholder="Search characters..."
+            placeholder="Search crew manifest..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50"
+            className="w-full pl-12 pr-4 py-3 holo-input text-sm"
           />
         </div>
 
         {/* Character Grid */}
         {filteredCharacters.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredCharacters.map(character => (
+            {filteredCharacters.map((character, idx) => (
               <div
                 key={character.id}
-                className="bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/10 transition-all group"
+                className="holo-card holo-panel-interactive group animate-fadeInUp"
+                style={{ animationDelay: `${Math.min(idx * 0.05, 0.4)}s` }}
               >
                 {/* Avatar */}
                 <div 
-                  className="relative aspect-square cursor-pointer"
+                  className="relative aspect-square cursor-pointer overflow-hidden rounded-t-[19px]"
                   onClick={() => onNavigate(ViewType.CharacterDetail, character.id)}
                 >
                   {character.avatar ? (
                     <img 
                       src={character.avatar} 
                       alt={character.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-cyan-500/20 via-blue-500/20 to-slate-700/30 flex items-center justify-center">
-                      <Users className="w-16 h-16 text-slate-500" />
+                    <div className="w-full h-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(0,229,255,0.08), rgba(213,0,249,0.08))' }}>
+                      <Users className="w-16 h-16 text-slate-600" />
                     </div>
                   )}
+                  {/* Scanline overlay on avatar */}
+                  <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,229,255,0.03) 2px, rgba(0,229,255,0.03) 4px)' }} />
                   <div className="absolute top-2 right-2 flex gap-1">
                     {character.tags?.slice(0, 2).map(tag => (
-                      <span key={tag} className="px-2 py-1 text-xs bg-black/60 backdrop-blur text-slate-300 rounded-lg">
+                      <span key={tag} className="holo-badge text-[10px]">
                         {tag}
                       </span>
                     ))}
@@ -276,24 +279,24 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ onNavigate }
                 {/* Info */}
                 <div className="p-4 space-y-3">
                   <div>
-                    <h3 className="font-semibold text-white text-lg truncate">{character.name}</h3>
-                    <p className="text-sm text-slate-400 line-clamp-2">{character.description}</p>
+                    <h3 className="font-semibold text-holo-cyan text-base truncate">{character.name}</h3>
+                    <p className="text-xs text-slate-500 line-clamp-2 mt-1">{character.description}</p>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex gap-2">
+                  <div className="flex gap-1.5">
                     <button
                       onClick={() => onNavigate(ViewType.CharacterDetail, character.id)}
-                      className="flex-1 px-3 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/30 text-cyan-300 rounded-xl text-sm transition-all flex items-center justify-center gap-2"
+                      className="flex-1 holo-btn px-3 py-2 rounded-lg text-xs flex items-center justify-center gap-1.5"
                     >
-                      <MessageSquare className="w-4 h-4" />
+                      <MessageSquare className="w-3.5 h-3.5" />
                       Chat
                     </button>
                     <button
                       onClick={() => setEditingCharacter(character)}
-                      className="px-3 py-2 bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 text-slate-300 rounded-xl transition-all"
+                      className="holo-btn-ghost holo-btn px-2.5 py-2 rounded-lg"
                     >
-                      <Edit className="w-4 h-4" />
+                      <Edit className="w-3.5 h-3.5" />
                     </button>
                     <div className="relative">
                       <button
@@ -301,14 +304,14 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ onNavigate }
                           e.stopPropagation();
                           setExportMenuOpen(exportMenuOpen === character.id ? null : character.id);
                         }}
-                        className="px-3 py-2 bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 text-slate-300 rounded-xl transition-all flex items-center gap-1"
+                        className="holo-btn-ghost holo-btn px-2.5 py-2 rounded-lg flex items-center gap-0.5"
                       >
-                        <Download className="w-4 h-4" />
+                        <Download className="w-3.5 h-3.5" />
                         <ChevronDown className="w-3 h-3" />
                       </button>
                       {exportMenuOpen === character.id && (
                         <div 
-                          className="absolute right-0 mt-1 w-56 bg-slate-800/95 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-xl z-50 overflow-hidden"
+                          className="absolute right-0 mt-1 w-52 holo-modal z-50 overflow-hidden"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <button
@@ -316,12 +319,12 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ onNavigate }
                               handleExportCharacter(character);
                               setExportMenuOpen(null);
                             }}
-                            className="w-full px-4 py-3 text-left hover:bg-slate-700/50 text-slate-200 flex items-center gap-3 transition-colors border-b border-slate-700/50"
+                            className="w-full px-4 py-3 text-left hover:bg-holo-cyan/5 text-slate-300 flex items-center gap-3 transition-colors border-b border-holo-cyan/10"
                           >
-                            <Download className="w-4 h-4 text-slate-400" />
+                            <Download className="w-4 h-4 text-holo-cyan/60" />
                             <div>
-                              <div className="text-sm font-medium">Export JSON</div>
-                              <div className="text-xs text-slate-500">Raw character data</div>
+                              <div className="text-xs font-medium text-holo-cyan">Export JSON</div>
+                              <div className="text-[10px] text-slate-600">Raw character data</div>
                             </div>
                           </button>
                           <button
@@ -329,12 +332,12 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ onNavigate }
                               handleExportHTML(character);
                               setExportMenuOpen(null);
                             }}
-                            className="w-full px-4 py-3 text-left hover:bg-slate-700/50 text-slate-200 flex items-center gap-3 transition-colors border-b border-slate-700/50"
+                            className="w-full px-4 py-3 text-left hover:bg-holo-cyan/5 text-slate-300 flex items-center gap-3 transition-colors border-b border-holo-cyan/10"
                           >
-                            <FileText className="w-4 h-4 text-cyan-400" />
+                            <FileText className="w-4 h-4 text-holo-blue/60" />
                             <div>
-                              <div className="text-sm font-medium">Export HTML</div>
-                              <div className="text-xs text-slate-500">Interactive profile</div>
+                              <div className="text-xs font-medium text-holo-cyan">Export HTML</div>
+                              <div className="text-[10px] text-slate-600">Interactive profile</div>
                             </div>
                           </button>
                           <button
@@ -342,12 +345,12 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ onNavigate }
                               handleShareHTML(character);
                               setExportMenuOpen(null);
                             }}
-                            className="w-full px-4 py-3 text-left hover:bg-slate-700/50 text-slate-200 flex items-center gap-3 transition-colors"
+                            className="w-full px-4 py-3 text-left hover:bg-holo-cyan/5 text-slate-300 flex items-center gap-3 transition-colors"
                           >
-                            <Share2 className="w-4 h-4 text-blue-400" />
+                            <Share2 className="w-4 h-4 text-holo-purple/60" />
                             <div>
-                              <div className="text-sm font-medium">Share Profile</div>
-                              <div className="text-xs text-slate-500">Open & copy link</div>
+                              <div className="text-xs font-medium text-holo-cyan">Share Profile</div>
+                              <div className="text-[10px] text-slate-600">Open & copy link</div>
                             </div>
                           </button>
                         </div>
@@ -355,9 +358,9 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ onNavigate }
                     </div>
                     <button
                       onClick={() => handleDeleteCharacter(character.id)}
-                      className="px-3 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 rounded-xl transition-all"
+                      className="holo-btn-danger px-2.5 py-2 rounded-lg"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
@@ -365,10 +368,10 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ onNavigate }
             ))}
           </div>
         ) : (
-          <div className="text-center py-16">
-            <Users className="w-16 h-16 mx-auto mb-4 text-slate-600" />
-            <h3 className="text-xl font-semibold text-gray-400 mb-2">No characters found</h3>
-            <p className="text-gray-500">Create your first character to get started</p>
+          <div className="text-center py-16 holo-panel p-8 animate-fadeInUp">
+            <Users className="w-16 h-16 mx-auto mb-4 text-holo-cyan/30 animate-holo-pulse" />
+            <h3 className="text-xl font-semibold holo-text-glow mb-2">No Crew Found</h3>
+            <p className="text-slate-600 text-sm">Commission your first crew member to begin</p>
           </div>
         )}
       </div>
@@ -530,41 +533,41 @@ const CharacterModal: React.FC<CharacterModalProps> = ({ character, onClose, onS
   };
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-xl flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-900/90 backdrop-blur-2xl border border-slate-700/50 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl shadow-cyan-500/10">
-        <div className="p-6 border-b border-slate-700/50 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-white">
-            {character ? 'Edit Character' : 'Create Character'}
+    <div className="fixed inset-0 holo-overlay flex items-center justify-center z-50 p-4">
+      <div className="holo-modal max-w-3xl w-full max-h-[90vh] overflow-y-auto animate-fadeInScale">
+        <div className="p-6 border-b border-holo-cyan/10 flex items-center justify-between">
+          <h2 className="text-xl font-bold holo-text-glow">
+            {character ? 'Edit Crew Member' : 'Commission Crew Member'}
           </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">✕</button>
+          <button onClick={onClose} className="text-slate-500 hover:text-holo-cyan transition-colors">✕</button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Name *</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-holo-cyan/50 mb-2">Name *</label>
             <input
               type="text"
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-xl text-white focus:outline-none focus:border-cyan-500/50"
+              className="w-full px-4 py-2.5 holo-input text-sm"
               placeholder="Character name"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Avatar URL</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-holo-cyan/50 mb-2">Avatar URL</label>
             <div className="flex flex-col gap-3">
               <input
                 type="url"
                 value={formData.avatar}
                 onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
-                className="w-full px-4 py-2 bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-xl text-white focus:outline-none focus:border-cyan-500/50"
+                className="w-full px-4 py-2.5 holo-input text-sm"
                 placeholder="https://... (or upload an image)"
               />
               <div className="flex items-center justify-between">
-                <p className="text-xs text-slate-500">Upload an image to use as the avatar.</p>
-                <label className="px-3 py-2 rounded-xl text-xs cursor-pointer border backdrop-blur-xl bg-slate-800/50 border-slate-700/50 hover:border-cyan-500/50 text-white">
+                <p className="text-xs text-slate-600">Upload an image to use as the avatar.</p>
+                <label className="holo-btn-ghost holo-btn px-3 py-2 rounded-lg text-xs cursor-pointer">
                   <input
                     type="file"
                     accept="image/*"
@@ -579,12 +582,12 @@ const CharacterModal: React.FC<CharacterModalProps> = ({ character, onClose, onS
                   <img
                     src={formData.avatar}
                     alt="Avatar preview"
-                    className="w-16 h-16 rounded-xl object-cover border border-slate-700/50"
+                    className="w-16 h-16 rounded-xl object-cover border border-holo-cyan/20"
                   />
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, avatar: '' })}
-                    className="px-3 py-2 text-xs bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 text-slate-200 rounded-xl"
+                    className="holo-btn-ghost holo-btn px-3 py-2 rounded-lg text-xs"
                   >
                     Clear
                   </button>
@@ -594,57 +597,57 @@ const CharacterModal: React.FC<CharacterModalProps> = ({ character, onClose, onS
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Description</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-holo-cyan/50 mb-2">Description</label>
             <textarea
               rows={3}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-xl text-white focus:outline-none focus:border-cyan-500/50"
+              className="w-full px-4 py-2.5 holo-textarea text-sm"
               placeholder="Concise bio: appearance, vibe, role (avoid long prose)."
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Personality</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-holo-cyan/50 mb-2">Personality</label>
             <textarea
               rows={3}
               value={formData.personality}
               onChange={(e) => setFormData({ ...formData, personality: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-xl text-white focus:outline-none focus:border-cyan-500/50"
+              className="w-full px-4 py-2.5 holo-textarea text-sm"
               placeholder="Use concise bullet-ish traits (tone, style, boundaries)."
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Scenario</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-holo-cyan/50 mb-2">Scenario</label>
             <textarea
               rows={3}
               value={formData.scenario}
               onChange={(e) => setFormData({ ...formData, scenario: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-xl text-white focus:outline-none focus:border-cyan-500/50"
+              className="w-full px-4 py-2.5 holo-textarea text-sm"
               placeholder="Setting + stakes + relationship hooks (short, vivid)."
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">First Message</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-holo-cyan/50 mb-2">First Message</label>
             <textarea
               rows={3}
               value={formData.first_mes}
               onChange={(e) => setFormData({ ...formData, first_mes: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-xl text-white focus:outline-none focus:border-cyan-500/50"
+              className="w-full px-4 py-2.5 holo-textarea text-sm"
               placeholder={`{{char}}: (warm, in-character opener that sets tone and relationship)
 {{char}}: I was starting to think you forgot me. Ready to make trouble together?`}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Example Messages</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-holo-cyan/50 mb-2">Example Messages</label>
             <textarea
               rows={4}
               value={formData.mes_example}
               onChange={(e) => setFormData({ ...formData, mes_example: e.target.value })}
-              className="w-full px-4 py-2 bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-xl text-white focus:outline-none focus:border-cyan-500/50"
+              className="w-full px-4 py-2.5 holo-textarea text-sm"
               placeholder={`<START>
 {{user}}: Hey, what's the plan tonight?
 {{char}}: Whatever gets our hearts racing—street food first, rooftop after. Stay close.
@@ -653,17 +656,17 @@ const CharacterModal: React.FC<CharacterModalProps> = ({ character, onClose, onS
             />
           </div>
 
-          <div className="border-t border-slate-700/50 pt-4 space-y-3">
+          <div className="border-t border-holo-cyan/10 pt-4 space-y-3">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Attached Lorebooks</label>
-              <p className="text-xs text-slate-500 mb-3">Select lorebooks to inject their lore entries during conversations.</p>
+              <label className="block text-xs font-bold uppercase tracking-wider text-holo-cyan/50 mb-2">Attached Lorebooks</label>
+              <p className="text-xs text-slate-600 mb-3">Select lorebooks to inject their lore entries during conversations.</p>
               <div className="space-y-2">
                 {getLorebooks().map(book => {
                   const isAttached = (formData.attachedLorebooks || []).includes(book.id);
                   return (
                     <label
                       key={book.id}
-                      className="flex items-center gap-3 p-3 bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-xl hover:border-cyan-500/50 cursor-pointer transition-all"
+                      className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${isAttached ? 'holo-sidebar-item-active' : 'holo-sidebar-item'}`}
                     >
                       <input
                         type="checkbox"
@@ -675,12 +678,12 @@ const CharacterModal: React.FC<CharacterModalProps> = ({ character, onClose, onS
                             : current.filter(id => id !== book.id);
                           setFormData({ ...formData, attachedLorebooks: updated });
                         }}
-                        className="w-4 h-4 rounded border-slate-600 text-cyan-600 focus:ring-cyan-500 focus:ring-offset-slate-900"
+                        className="w-4 h-4 rounded border-holo-cyan/30 text-holo-cyan focus:ring-holo-cyan focus:ring-offset-black"
                       />
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <BookOpen className="w-4 h-4 text-cyan-400" />
-                          <span className="text-white font-medium text-sm">{book.name}</span>
+                          <BookOpen className="w-4 h-4 text-holo-cyan/60" />
+                          <span className="text-holo-cyan font-medium text-sm">{book.name}</span>
                         </div>
                         <p className="text-xs text-slate-400 mt-1">{book.description}</p>
                         <p className="text-xs text-slate-500 mt-1">{book.entries.length} entries</p>
@@ -695,20 +698,20 @@ const CharacterModal: React.FC<CharacterModalProps> = ({ character, onClose, onS
             </div>
           </div>
 
-          <div className="border-t border-slate-700/50 pt-4 space-y-3">
+          <div className="border-t border-holo-cyan/10 pt-4 space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <label className="block text-sm font-medium text-slate-300">Character Media</label>
-                <p className="text-xs text-slate-500">Upload images/videos directly to this character for quick selection.</p>
+                <label className="block text-xs font-bold uppercase tracking-wider text-holo-cyan/50">Character Media</label>
+                <p className="text-xs text-slate-600">Upload images/videos directly to this character for quick selection.</p>
               </div>
-              <label className={`px-3 py-2 rounded-xl text-sm cursor-pointer border backdrop-blur-xl ${character?.id ? 'bg-slate-800/50 border-slate-700/50 hover:border-cyan-500/50 text-white' : 'bg-slate-800/30 border-slate-700/50 text-slate-500 cursor-not-allowed'}`}>
+              <label className={`holo-btn px-3 py-2 rounded-lg text-xs cursor-pointer ${character?.id ? 'holo-btn-ghost' : 'opacity-40 cursor-not-allowed'}`}>
                 <input type="file" accept="image/*,video/*" multiple className="hidden" disabled={!character?.id || isUploading} onChange={handleMediaUpload} />
                 {isUploading ? 'Uploading…' : 'Upload'}
               </label>
             </div>
 
             {!character?.id && (
-              <p className="text-xs text-slate-500">Save the character first to enable media uploads.</p>
+              <p className="text-xs text-slate-600">Save the character first to enable media uploads.</p>
             )}
 
             {media.length > 0 ? (
@@ -728,29 +731,29 @@ const CharacterModal: React.FC<CharacterModalProps> = ({ character, onClose, onS
             ) : null}
           </div>
 
-          <div className="border-t border-slate-700/50 pt-4 space-y-2">
-            <label className="block text-sm font-medium text-slate-300">Add Embedded Code</label>
-            <p className="text-xs text-slate-500">Paste iframe/embed HTML or a media URL to save as reusable embed.</p>
+          <div className="border-t border-holo-cyan/10 pt-4 space-y-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-holo-cyan/50">Add Embedded Code</label>
+            <p className="text-xs text-slate-600">Paste iframe/embed HTML or a media URL to save as reusable embed.</p>
             <input
               type="text"
               value={embedName}
               onChange={(e) => setEmbedName(e.target.value)}
               placeholder="Title for this embed"
-              className="w-full px-3 py-2 bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-xl text-white text-sm focus:outline-none focus:border-cyan-500/50"
+              className="w-full px-3 py-2.5 holo-input text-sm"
             />
             <textarea
               rows={3}
               value={embedCode}
               onChange={(e) => setEmbedCode(e.target.value)}
               placeholder="<iframe ...></iframe> or https://media-url"
-              className="w-full px-3 py-2 bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-xl text-white text-sm focus:outline-none focus:border-cyan-500/50"
+              className="w-full px-3 py-2.5 holo-textarea text-sm"
             />
             <div className="flex justify-end">
               <button
                 type="button"
                 onClick={handleAddEmbed}
                 disabled={!character?.id || isUploading || !embedName.trim() || !embedCode.trim()}
-                className="px-4 py-2 bg-cyan-600/50 backdrop-blur-xl border border-cyan-500/30 hover:border-cyan-500/50 disabled:opacity-50 text-white rounded-xl text-sm transition-colors"
+                className="holo-btn holo-btn-primary px-4 py-2 rounded-lg text-sm"
               >
                 Save Embed
               </button>
@@ -760,14 +763,14 @@ const CharacterModal: React.FC<CharacterModalProps> = ({ character, onClose, onS
           <div className="flex gap-3 pt-4">
             <button
               type="submit"
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-xl font-semibold transition-colors shadow-lg shadow-cyan-500/20"
+              className="flex-1 holo-btn holo-btn-primary px-6 py-3 rounded-lg font-semibold text-sm"
             >
               {character ? 'Save Changes' : 'Create Character'}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-3 bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 text-white rounded-xl font-semibold transition-colors backdrop-blur-xl"
+              className="holo-btn holo-btn-ghost px-6 py-3 rounded-lg font-semibold text-sm"
             >
               Cancel
             </button>
@@ -820,47 +823,59 @@ const CharacterMediaThumb: React.FC<CharacterMediaThumbProps> = ({ item, onDelet
   }, [item.thumbnail, item.blob, item.type]);
 
   return (
-    <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl overflow-hidden border border-slate-700/50 flex flex-col hover:border-cyan-500/30 transition-colors">
-      <button
-        type="button"
+    <div className="holo-card overflow-hidden flex flex-col hover:border-holo-cyan/30 transition-colors">
+      <div
+        role="button"
+        tabIndex={0}
         onClick={onView}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onView();
+          }
+        }}
         className="aspect-square relative text-left"
       >
         {item.type === 'video' ? (
-          <video
-            src={previewUrl}
-            poster={thumbUrl || undefined}
-            className="w-full h-full object-cover"
-            muted
-            loop
-            playsInline
-            preload="metadata"
-          />
+          previewUrl ? (
+            <video
+              src={previewUrl}
+              poster={thumbUrl || undefined}
+              className="w-full h-full object-cover"
+              muted
+              loop
+              playsInline
+              preload="metadata"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-slate-600 text-sm">No preview</div>
+          )
         ) : item.type === 'embed' ? (
-          <div className="w-full h-full bg-slate-900/50 text-cyan-300 text-xs flex items-center justify-center p-2 text-center">
+          <div className="w-full h-full bg-black/40 text-holo-cyan text-xs flex items-center justify-center p-2 text-center">
             Embed
           </div>
         ) : thumbUrl ? (
           <img src={thumbUrl} alt={item.name} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-500 text-sm">No preview</div>
+          <div className="w-full h-full flex items-center justify-center text-slate-600 text-sm">No preview</div>
         )}
         <button
+          type="button"
           onClick={(event) => {
             event.stopPropagation();
             onDelete(item.id);
           }}
-          className="absolute top-2 right-2 p-1 bg-red-500/80 backdrop-blur-xl hover:bg-red-500 text-white rounded-lg shadow-lg"
+          className="absolute top-2 right-2 p-1 bg-red-500/60 backdrop-blur-sm hover:bg-red-500 text-white rounded-lg shadow-lg shadow-red-500/20"
           title="Delete"
         >
           <Trash2 className="w-4 h-4" />
         </button>
-      </button>
+      </div>
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
         onBlur={() => name.trim() && onRename(item.id, name.trim())}
-        className="px-2 py-1 bg-slate-900/50 border-t border-slate-700/50 text-white text-xs focus:outline-none focus:border-cyan-500/50"
+        className="px-2 py-1.5 bg-black/40 border-t border-holo-cyan/10 text-holo-cyan text-xs focus:outline-none focus:border-holo-cyan/40"
       />
     </div>
   );
