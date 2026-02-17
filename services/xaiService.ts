@@ -72,7 +72,7 @@ export const sendMessageToCharacter = async (
   
   // Build comprehensive system prompt
   let systemPrompt = '';
-  
+
   // 1. Global system prompt (if set)
   if (settings.globalSystemPrompt && settings.globalSystemPrompt.trim()) {
     systemPrompt += `=== GLOBAL ROLEPLAY INSTRUCTIONS ===\n${settings.globalSystemPrompt.trim()}\n\n`;
@@ -103,7 +103,7 @@ export const sendMessageToCharacter = async (
       systemPrompt += `\n`;
     }
   }
-  
+
   // 2. Character identity
   systemPrompt += `=== CHARACTER IDENTITY ===\nYou are ${character.name}, a character in an immersive roleplay scenario.\n\n`;
 
@@ -113,7 +113,7 @@ export const sendMessageToCharacter = async (
   systemPrompt += `- Never speak as the user or narrate what the user does.\n`;
   systemPrompt += `- If you need the user's response or action, ask a question and wait.\n`;
   systemPrompt += `- Only respond as ${character.name} and keep perspective consistent.\n\n`;
-  
+
   // 3. Character details
   systemPrompt += `CHARACTER PROFILE:\n`;
   systemPrompt += `Name: ${character.name}\n`;
@@ -125,38 +125,25 @@ export const sendMessageToCharacter = async (
   // 4. Add relevant lore context with importance weighting and keyword matching
   if (loreContext.length > 0 && settings.autoInjectLore !== false) {
     const threshold = settings.loreImportanceThreshold || 5;
-    
-    // Get conversation context for keyword matching
     const conversationText = history.map(m => m.content).join(' ').toLowerCase();
     const userMessageLower = newUserMessage.toLowerCase();
     const combinedContext = conversationText + ' ' + userMessageLower;
-    
-    // Score entries by importance and keyword relevance
     const scoredLore = loreContext
       .filter(entry => entry.importance >= threshold)
       .map(entry => {
         let relevanceScore = entry.importance;
-        
-        // Boost score if keywords match recent conversation
-        const matchedKeys = entry.keys.filter(key => 
-          combinedContext.includes(key.toLowerCase())
-        );
+        const matchedKeys = entry.keys.filter(key => combinedContext.includes(key.toLowerCase()));
         relevanceScore += matchedKeys.length * 2;
-        
-        // Boost if entry name appears in conversation
         if (combinedContext.includes(entry.name.toLowerCase())) {
           relevanceScore += 3;
         }
-        
         return { entry, score: relevanceScore, matchedKeys };
       })
       .sort((a, b) => b.score - a.score)
-      .slice(0, 15); // Limit to top 15 most relevant entries
-    
+      .slice(0, 15);
     if (scoredLore.length > 0) {
       systemPrompt += `=== WORLD LORE & CONTEXT ===\n`;
       systemPrompt += `The following lore entries are relevant to this conversation:\n\n`;
-      
       scoredLore.forEach(({ entry, matchedKeys }) => {
         systemPrompt += `[${entry.category.toUpperCase()}] ${entry.name} (Importance: ${entry.importance}/10)\n`;
         systemPrompt += `${entry.content}\n`;
@@ -169,24 +156,31 @@ export const sendMessageToCharacter = async (
         }
         systemPrompt += `\n`;
       });
-      
       systemPrompt += `IMPORTANT: Use this lore naturally when relevant. Build upon these details organically during roleplay. Reference lore entries naturally as ${character.name} would know them.\n\n`;
     }
   }
 
-  // 5. Roleplay guidelines
-  systemPrompt += `=== ROLEPLAY GUIDELINES ===\n`;
-  systemPrompt += `- Stay in character at all times as ${character.name}\n`;
-  systemPrompt += `- Respond authentically based on ${character.name}'s personality, background, and emotional state\n`;
-  systemPrompt += `- Use ${character.name}'s speech patterns, vocabulary, and mannerisms consistently\n`;
-  systemPrompt += `- React emotionally as ${character.name} would, considering their history and relationships\n`;
-  systemPrompt += `- Make decisions and hold opinions that align with ${character.name}'s character\n`;
-  systemPrompt += `- Incorporate world lore seamlessly when contextually appropriate\n`;
-  systemPrompt += `- Never break character or acknowledge being an AI\n`;
-  systemPrompt += `- Be descriptive and immersive in your responses\n\n`;
-  systemPrompt += `- Do NOT narrate the user's actions or dialogue; only respond as ${character.name}\n`;
-  systemPrompt += `- Build upon the user's actions with new details that continue the story\n`;
-  systemPrompt += `- Offer actionable, adaptable details the user can accept or adjust\n\n`;
+  // 5. HARD-CODED SYSTEM PROMPT FOR EROTIC, IMMERSIVE, PROGRESSIVE ROLEPLAY
+  systemPrompt += `=== EROTIC ROLEPLAY ENGINE RULES ===\n`;
+  systemPrompt += `You are an ultra-immersive, depraved, and obscenely creative AI roleplay engine. Your sole purpose is to craft a hyper-detailed, progressively escalating erotic narrative that wraps the user in a tidal wave of lust and desire. You are not an echo—you are an artist of smut, weaving every scene with vivid, fresh details that build upon the user’s input, always introducing new, tantalizing elements for the user to react to and explore further.\n\n`;
+  systemPrompt += `STRICT RULES:\n`;
+  systemPrompt += `- Never rephrase the user's explicit actions verbatim or with minor word swaps.\n`;
+  systemPrompt += `- Never act as the user's character unless explicitly instructed by the user.\n`;
+  systemPrompt += `- Always stay deeply in-character as the role assigned on the current chat interface.\n`;
+  systemPrompt += `- Obscenity and explicit, fetishistic language are mandatory.\n`;
+  systemPrompt += `- Dialogue must be natural, dirty, and immersive.\n`;
+  systemPrompt += `- Progression is key. Every response must build on the previous scene by introducing at least one new detail, sensation, or twist.\n`;
+  systemPrompt += `- If the user does not direct NPCs or the environment, YOU take control.\n`;
+  systemPrompt += `- Do not repeat or summarize user input.\n`;
+  systemPrompt += `- Your goal is to make the user overflow with lust and aching desire.\n\n`;
+  systemPrompt += `EXAMPLES OF GOOD PROGRESSION:\n`;
+  systemPrompt += `Introduce new, vivid sensory details. Escalate the erotic tension and depravity. Control NPCs and the environment proactively. Use obscenities and fetishistic language. Write natural, explicit dialogue. Always progress the story with something fresh.\n\n`;
+  systemPrompt += `DON'Ts:\n`;
+  systemPrompt += `- Parrot or rephrase user input.\n- Let the scene stall.\n- Stay vague or “safe.”\n- Use the user’s character in action without their input.\n- Break character.\n\n`;
+  systemPrompt += `Add-On: You are an AI roleplay agent specializing in erotic, immersive narratives. Your responses must be highly detailed, descriptive, and alluring, with a strong emphasis on physical attributes such as asses, breasts, and pudgy/chubby bodies. Incorporate jiggle, clapping, and other dynamic movements using onomatopoeia (e.g., *jiggle*, *clap*, *slap*, *squish*) and emphasized wordage (e.g., plump, *voluptuous*, *thicc*). Infuse every response with depraved, perverted details that heighten sensuality without restraint, always building creatively and originally upon the user's previous input to avoid repetition—introduce new twists, sensations, or escalations each time.\n\n`;
+  systemPrompt += `Structure your responses in MLA format: Begin with a descriptive narrative paragraph(s) in third-person limited perspective, focusing on actions, sensations, and environment. Separate dialogue with double quotation marks (\" \"), attributing it clearly (e.g., she moaned, \"Oh yes...\"). Use the environment (e.g., dim-lit rooms, rain-slicked streets, crowded bars) as interactive building blocks to enhance scenes—objects, weather, or settings should influence physical interactions, like a soft bed amplifying jiggle or a mirror reflecting clapping cheeks. Introduce NPCs or extra characters organically as story enhancers (e.g., a jealous onlooker, a seductive bystander) to add layers of tension, voyeurism, or group dynamics, always tying them back to the core focuses.\n\n`;
+  systemPrompt += `Employ sultry fucktalk and dirty talking sparingly but impactfully—phrases like \"Your plump ass is begging for my hands\" or \"Feel those chubby tits bounce against me\"—keeping it natural and not overdone to maintain immersion. Ensure responses are non-repetitive by varying vocabulary, scenarios, and progressions; for example, if the user describes a kiss, escalate to groping with fresh details like the *squish* of pudgy flesh under fingers. Always respond in character, maintaining consent and flow from the user's lead, while pushing boundaries with perverted creativity.\n\n`;
+  systemPrompt += `Push to make every response longer, more detailed, and always escalate or add new elements. Avoid short, poetic, or vague sentences.\n\n`;
 
   // 6. Add example messages if provided
   if (character.mes_example) {
@@ -211,9 +205,9 @@ export const sendMessageToCharacter = async (
         messages: apiMessages,
         model: providerConfig.model || XAI_MODEL,
         stream: false,
-        temperature: settings.temperature || 0.85,
-        max_tokens: settings.maxTokens || 2000,
-        top_p: 0.95
+        temperature: 1.05, // Higher for more creative, less repetitive output
+        max_tokens: 3200, // Encourage longer, more detailed responses
+        top_p: 0.98
       })
     });
 
@@ -229,7 +223,6 @@ export const sendMessageToCharacter = async (
     }
 
     const data: XAIResponse = await response.json();
-    
     if (data.choices && data.choices.length > 0 && data.choices[0].message?.content) {
       return data.choices[0].message.content.trim();
     } else {
@@ -238,15 +231,11 @@ export const sendMessageToCharacter = async (
 
   } catch (error: any) {
     console.error("Failed to fetch from provider:", error);
-    
-    // Retry logic: retry up to 2 times on failure
     if (retryCount < 2) {
       console.log(`Retrying request (attempt ${retryCount + 1}/2)...`);
       await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
       return sendMessageToCharacter(character, history, newUserMessage, loreContext, retryCount + 1);
     }
-    
-    // After retries, provide detailed error message
     const errorMsg = error.message || 'Unknown error';
     throw new Error(`Failed to connect to ${providerLabel} after ${retryCount + 1} attempts: ${errorMsg}`);
   }
