@@ -188,9 +188,9 @@ export async function sendEnhancedMessage(
           model: providerConfig.model,
           stream: false,
           temperature: settings.temperature || 0.85,
-          max_tokens: settings.maxTokens || 6000,
+          max_tokens: Math.max(settings.maxTokens || 6000, 6000),
           top_p: 0.95,
-          min_tokens: 600
+          min_tokens: 800
         })
       });
 

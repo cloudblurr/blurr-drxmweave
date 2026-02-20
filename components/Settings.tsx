@@ -238,15 +238,15 @@ export const Settings: React.FC<SettingsProps> = ({ onNavigate }) => {
             </label>
             <input
               type="range"
-              min="500"
-              max="4000"
-              step="100"
+              min="2000"
+              max="8000"
+              step="500"
               value={settings.maxTokens}
               onChange={(e) => setSettings({ ...settings, maxTokens: parseInt(e.target.value) })}
               className="w-full accent-holo-cyan"
             />
             <p className="text-[10px] text-slate-600 mt-1">
-              Maximum length of AI responses
+              Maximum length of AI responses (minimum 2000 for quality output)
             </p>
           </div>
         </div>

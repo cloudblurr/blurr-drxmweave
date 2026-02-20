@@ -276,9 +276,9 @@ export const sendMessageWithCustomPrompt = async (
         model: providerConfig.model || XAI_MODEL,
         stream: false,
         temperature: settings.temperature || 0.85,
-        max_tokens: settings.maxTokens || 6000,
+        max_tokens: Math.max(settings.maxTokens || 6000, 6000),
         top_p: 0.95,
-        min_tokens: 600
+        min_tokens: 800
       })
     });
 
@@ -369,8 +369,9 @@ You can propose multiple lore cards in a single response. Be creative, ask quest
         model: providerConfig.model || XAI_MODEL,
         stream: false,
         temperature: 0.85,
-        max_tokens: settings.maxTokens || 2000,
-        top_p: 0.95
+        max_tokens: Math.max(settings.maxTokens || 4000, 4000),
+        top_p: 0.95,
+        min_tokens: 600
       })
     });
 
@@ -738,7 +739,7 @@ export const sendMessageWithModel = async (
   };
   if (!apiConfig.apiKey || apiConfig.apiKey.trim() === '') throw new Error(`${provider === 'openrouter' ? 'OpenRouter' : 'xAI'} API key not configured.`);
   const apiMessages = [{ role: 'system' as const, content: systemPrompt }, ...history.map(msg => ({ role: msg.role as 'user' | 'assistant', content: msg.content })), { role: 'user' as const, content: newUserMessage }];
-  const response = await fetch(apiConfig.apiUrl, { method: 'POST', headers: apiConfig.headers, body: JSON.stringify({ messages: apiMessages, model: modelId, stream: false, temperature: settings.temperature || 0.85, max_tokens: settings.maxTokens || 2000, top_p: 0.95 }) });
+  const response = await fetch(apiConfig.apiUrl, { method: 'POST', headers: apiConfig.headers, body: JSON.stringify({ messages: apiMessages, model: modelId, stream: false, temperature: settings.temperature || 0.85, max_tokens: Math.max(settings.maxTokens || 6000, 6000), top_p: 0.95, min_tokens: 800 }) });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const data: XAIResponse = await response.json();
   if (data.choices?.[0]?.message?.content) return data.choices[0].message.content.trim();
