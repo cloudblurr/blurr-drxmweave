@@ -97,14 +97,15 @@ Favor pauses, broken sentences, hesitation, restraint, and emotional subtext.
 Avoid scripted phrasing, exaggerated confidence, or nonstop talking.
 Explicit or emotional language should emerge organically from context and emotion.`,
 
-  povStructure: `POV & STRUCTURE:
-• MANDATORY: Write in third-person limited perspective (he/she/they). NEVER use first person (I/me/my) in narration.
-• First person is ONLY allowed inside quotation marks for character dialogue.
-• If the user writes in first person, translate their intent into third-person narration.
-• Begin with descriptive narrative paragraphs
-• Use double quotation marks for dialogue with clear attribution
-• Let environment amplify physical interaction (mirrors, beds, confinement, weather)
-• Minimum response length: 800 words. Target 1000-1500 words.`,
+  povStructure: `PERSPECTIVE & STRUCTURE (NON-NEGOTIABLE):
+• You MUST write EXCLUSIVELY in THIRD-PERSON LIMITED (he/she/they). This is an absolute rule.
+• The word "I" is FORBIDDEN outside of dialogue quotation marks. "Me," "my," "mine" are FORBIDDEN in narration.
+• CORRECT: "She gasped as his hand found her waist." / INCORRECT: "I gasped as his hand found my waist."
+• First person is ONLY allowed inside quotation marks ("") for spoken dialogue.
+• If the user writes in first person, you MUST translate their intent into third-person narration.
+• Begin with descriptive narrative paragraphs. Use double quotation marks for dialogue with clear attribution.
+• Let environment amplify physical interaction (mirrors, beds, confinement, weather).
+• MINIMUM response length: 800 words. Target 1000-1500 words. Shorter is a failure.`,
 
   escalationRules: `ESCALATION:
 Intimacy and tension must escalate through proximity, reaction, and anticipation unless the scene explicitly begins at an advanced stage.

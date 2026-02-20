@@ -298,7 +298,6 @@ export type ValidationIssueType =
   | 'summarizes_instead'
   | 'inconsistent_state'
   | 'wrong_perspective'
-  | 'too_short'
   | 'repetitive_content'
   | 'missing_consequences'
   | 'premature_resolution';

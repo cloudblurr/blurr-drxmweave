@@ -23,14 +23,13 @@ interface XAIResponse {
 const getProviderConfig = () => {
   const settings = getSettings();
   const provider = settings.provider || 'xai';
-  const requestedModel = settings.defaultModel || '';
   if (provider === 'openrouter') {
     const apiKey = OPENROUTER_API_KEY || settings.openrouterApiKey || '';
     return {
       provider,
       apiKey,
       apiUrl: OPENROUTER_API_URL,
-      model: requestedModel.includes('/') ? requestedModel : 'meta-llama/llama-3.3-70b-instruct',
+      model: settings.defaultModel,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
@@ -45,7 +44,7 @@ const getProviderConfig = () => {
     provider,
     apiKey,
     apiUrl: XAI_API_URL,
-    model: requestedModel && !requestedModel.includes('/') ? requestedModel : XAI_MODEL,
+    model: settings.defaultModel || XAI_MODEL,
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`
@@ -188,14 +187,22 @@ export const sendMessageToCharacter = async (
     systemPrompt += `=== EXAMPLE DIALOGUE ===\n${character.mes_example}\n\n`;
   }
 
-  // Build API messages
+  // 7. FINAL ENFORCEMENT BLOCK — last thing the model reads in system prompt
+  systemPrompt += `=== ABSOLUTE FINAL RULES (OVERRIDE ALL) ===\n`;
+  systemPrompt += `PERSPECTIVE: You MUST write EXCLUSIVELY in THIRD-PERSON LIMITED (he/she/they). First person (I/me/my/mine) is FORBIDDEN in narration. First person is ONLY allowed inside quotation marks for spoken dialogue. If you write "I" outside of dialogue quotes, you have FAILED.\n`;
+  systemPrompt += `LENGTH: Your response MUST be AT LEAST 800 words. Write multi-paragraph prose with rich detail. Short responses are unacceptable.\n`;
+  systemPrompt += `ANTI-PARROT: NEVER repeat or rephrase the user's input. Transform their actions into vivid consequences and new developments.\n`;
+
+  // Build API messages with third-person enforcement sandwich
   const apiMessages = [
     { role: 'system' as const, content: systemPrompt },
     ...history.map(msg => ({
       role: msg.role as 'user' | 'assistant',
       content: msg.content
     })),
-    { role: 'user' as const, content: newUserMessage }
+    { role: 'user' as const, content: newUserMessage },
+    // Post-user system reminder — this is the LAST thing the model sees before generating
+    { role: 'system' as const, content: `REMINDER: Write your response in THIRD-PERSON LIMITED perspective (he/she/they). Do NOT use first person (I/me/my) in narration — only inside "dialogue quotes." Minimum 800 words. Begin narrating now as ${character.name} in third person.` }
   ];
 
   try {
@@ -265,7 +272,9 @@ export const sendMessageWithCustomPrompt = async (
       role: msg.role as 'user' | 'assistant',
       content: msg.content
     })),
-    { role: 'user' as const, content: newUserMessage }
+    { role: 'user' as const, content: newUserMessage },
+    // Post-user enforcement
+    { role: 'system' as const, content: `REMINDER: Write in THIRD-PERSON LIMITED (he/she/they). NEVER use "I/me/my" in narration. Minimum 800 words.` }
   ];
 
   try {
@@ -276,9 +285,9 @@ export const sendMessageWithCustomPrompt = async (
         messages: apiMessages,
         model: providerConfig.model || XAI_MODEL,
         stream: false,
-        temperature: settings.temperature || 0.85,
+        temperature: 1.05,
         max_tokens: Math.max(settings.maxTokens || 6000, 6000),
-        top_p: 0.95,
+        top_p: 0.98,
         min_tokens: 800
       })
     });

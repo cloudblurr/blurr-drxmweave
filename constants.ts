@@ -57,34 +57,69 @@ export const INITIAL_GREETING = {
 };
 
 // NSFW Roleplay Models for Model Tester and Character Chats
+// All OpenRouter IDs verified against https://openrouter.ai/api/v1/models (2026-02-20)
 export const NSFW_ROLEPLAY_MODELS: any[] = [
-  // xAI Models
-  { id: 'grok-3-latest', name: 'Grok 3 Latest', provider: 'xai', contextLength: 131072, isNsfw: true, description: 'xAI flagship model with strong creative writing' },
+  // ── xAI Direct Models ──────────────────────────────────────────
+  { id: 'grok-3-latest', name: 'Grok 3 Latest', provider: 'xai', contextLength: 131072, isNsfw: true, description: 'xAI flagship — best creative writing & roleplay' },
   { id: 'grok-3-fast', name: 'Grok 3 Fast', provider: 'xai', contextLength: 131072, isNsfw: true, description: 'Fast Grok 3 variant for quick responses' },
   { id: 'grok-3-mini', name: 'Grok 3 Mini', provider: 'xai', contextLength: 131072, isNsfw: true, description: 'Compact Grok 3 for efficient generation' },
   { id: 'grok-2-latest', name: 'Grok 2 Latest', provider: 'xai', contextLength: 131072, isNsfw: true, description: 'Grok 2 with strong roleplay capabilities' },
-  // OpenRouter NSFW-friendly / roleplay-oriented models (live IDs)
-  { id: 'sao10k/l3.3-euryale-70b', name: 'Euryale 70B (L3.3)', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Roleplay-focused Llama 3.3 70B fine-tune' },
-  { id: 'neversleep/noromaid-20b', name: 'Noromaid 20B', provider: 'openrouter', contextLength: 32768, isNsfw: true, description: 'Popular character roleplay model' },
-  { id: 'anthracite-org/magnum-v4-72b', name: 'Magnum v4 72B', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Strong creative writing and roleplay output' },
-  { id: 'deepseek/deepseek-chat', name: 'DeepSeek Chat', provider: 'openrouter', contextLength: 64000, isNsfw: true, description: 'Strong narrative + reasoning' },
-  { id: 'deepseek/deepseek-v3.2', name: 'DeepSeek V3.2', provider: 'openrouter', contextLength: 64000, isNsfw: true, description: 'Newer DeepSeek chat model variant' },
-  { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1', provider: 'openrouter', contextLength: 64000, isNsfw: true, description: 'Deep reasoning with strong planning' },
-  { id: 'deepseek/deepseek-r1-0528', name: 'DeepSeek R1 0528', provider: 'openrouter', contextLength: 64000, isNsfw: true, description: 'Updated R1 snapshot' },
-  { id: 'tngtech/deepseek-r1t2-chimera', name: 'R1T2 Chimera (tngtech)', provider: 'openrouter', contextLength: 64000, isNsfw: true, description: 'Chimera blend based on DeepSeek R1 family' },
-  { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B Instruct', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Strong general model that can do detailed roleplay' },
-  { id: 'mistralai/mistral-large-2512', name: 'Mistral Large 2512', provider: 'openrouter', contextLength: 128000, isNsfw: true, description: 'High quality long-form writing' },
-  { id: 'mistralai/mistral-medium-3.1', name: 'Mistral Medium 3.1', provider: 'openrouter', contextLength: 128000, isNsfw: true, description: 'Balanced Mistral long-form output' },
-  { id: 'mistralai/mistral-nemo', name: 'Mistral Nemo', provider: 'openrouter', contextLength: 128000, isNsfw: true, description: 'Solid mid-size writer' },
-  { id: 'qwen/qwen-2.5-72b-instruct', name: 'Qwen 2.5 72B', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Strong multilingual long-form writer' },
-  { id: 'nousresearch/hermes-4-70b', name: 'Hermes 4 70B', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'High quality instruction-following + creativity' },
-  { id: 'nousresearch/hermes-3-llama-3.1-70b', name: 'Hermes 3 70B', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Reliable long-form roleplay output' },
-  { id: 'gryphe/mythomax-l2-13b', name: 'MythoMax L2 13B', provider: 'openrouter', contextLength: 4096, isNsfw: true, description: 'Classic roleplay fine-tune' },
-  { id: 'undi95/remm-slerp-l2-13b', name: 'Remm Slerp L2 13B', provider: 'openrouter', contextLength: 4096, isNsfw: true, description: 'Community roleplay favorite' },
-  { id: 'cognitivecomputations/dolphin-mistral-24b-venice-edition:free', name: 'Dolphin Mistral 24B Venice [FREE]', provider: 'openrouter', contextLength: 32768, isNsfw: true, description: 'Uncensored-style writer (availability varies by provider)' },
-  // Free OpenRouter models that exist (good for testing)
-  { id: 'meta-llama/llama-3.3-70b-instruct:free', name: 'Llama 3.3 70B [FREE]', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Free 70B model with strong writing' },
-  { id: 'deepseek/deepseek-r1-0528:free', name: 'DeepSeek R1 0528 [FREE]', provider: 'openrouter', contextLength: 64000, isNsfw: true, description: 'Free R1 snapshot (availability varies)' }
+
+  // ── xAI via OpenRouter (includes Grok 4) ───────────────────────
+  { id: 'x-ai/grok-4.1-fast', name: 'Grok 4.1 Fast Reasoning', provider: 'openrouter', contextLength: 2000000, isNsfw: true, description: 'Latest Grok 4.1 with 2M context — fastest top-tier reasoning' },
+  { id: 'x-ai/grok-4-fast', name: 'Grok 4 Fast', provider: 'openrouter', contextLength: 2000000, isNsfw: true, description: 'Grok 4 fast variant with 2M context window' },
+  { id: 'x-ai/grok-4', name: 'Grok 4', provider: 'openrouter', contextLength: 256000, isNsfw: true, description: 'Full Grok 4 with deep reasoning and 256K context' },
+  { id: 'x-ai/grok-3', name: 'Grok 3 (OpenRouter)', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Grok 3 routed via OpenRouter' },
+  { id: 'x-ai/grok-3-mini', name: 'Grok 3 Mini (OpenRouter)', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Grok 3 Mini routed via OpenRouter' },
+
+  // ── Chimera / R1 Chimera ───────────────────────────────────────
+  { id: 'tngtech/deepseek-r1t2-chimera', name: 'DeepSeek R1 Chimera', provider: 'openrouter', contextLength: 163840, isNsfw: true, description: 'R1-T2 Chimera — uncensored deep reasoning with 163K context' },
+
+  // ── NSFW Roleplay Specialists (verified) ───────────────────────
+  { id: 'sao10k/l3.3-euryale-70b', name: 'Euryale 70B (L3.3)', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Top-rated NSFW roleplay — Euryale latest on Llama 3.3 70B' },
+  { id: 'sao10k/l3.1-euryale-70b', name: 'Euryale 70B (L3.1)', provider: 'openrouter', contextLength: 32768, isNsfw: true, description: 'Classic Euryale NSFW fine-tune on Llama 3.1' },
+  { id: 'anthracite-org/magnum-v4-72b', name: 'Magnum V4 72B', provider: 'openrouter', contextLength: 16384, isNsfw: true, description: 'Anthracite Magnum V4 — highly rated for uncensored creative RP' },
+  { id: 'gryphe/mythomax-l2-13b', name: 'MythoMax L2 13B', provider: 'openrouter', contextLength: 4096, isNsfw: true, description: 'Classic roleplay model fine-tuned for creative fiction' },
+  { id: 'neversleep/noromaid-20b', name: 'NoroMaid 20B', provider: 'openrouter', contextLength: 8192, isNsfw: true, description: 'Neversleep NSFW-dedicated model for immersive RP' },
+  { id: 'neversleep/llama-3.1-lumimaid-8b', name: 'Lumimaid 8B', provider: 'openrouter', contextLength: 32768, isNsfw: true, description: 'Neversleep Lumimaid — compact NSFW specialist' },
+  { id: 'thedrummer/rocinante-12b', name: 'Rocinante 12B', provider: 'openrouter', contextLength: 32768, isNsfw: true, description: 'TheDrummer RP specialist — rich prose and uncensored output' },
+  { id: 'aion-labs/aion-rp-llama-3.1-8b', name: 'Aion RP 8B', provider: 'openrouter', contextLength: 32768, isNsfw: true, description: 'Aion Labs model fine-tuned specifically for roleplay' },
+  { id: 'mancer/weaver', name: 'Mancer Weaver', provider: 'openrouter', contextLength: 8192, isNsfw: true, description: 'Mancer uncensored storytelling engine' },
+
+  // ── NousResearch Hermes (latest verified) ──────────────────────
+  { id: 'nousresearch/hermes-4-405b', name: 'Hermes 4 405B', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Latest Hermes 4 ultra-large — strongest NousResearch model' },
+  { id: 'nousresearch/hermes-4-70b', name: 'Hermes 4 70B', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Hermes 4 70B — excellent uncensored creative output' },
+  { id: 'nousresearch/hermes-3-llama-3.1-405b', name: 'Hermes 3 405B', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Hermes 3 ultra-large for deep roleplay narrative' },
+  { id: 'nousresearch/hermes-3-llama-3.1-70b', name: 'Hermes 3 70B', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Hermes 3 70B fine-tuned for creative scenarios' },
+
+  // ── Anthropic (NSFW-capable with jailbreak prompts) ────────────
+  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet (NSFW)', provider: 'openrouter', contextLength: 200000, isNsfw: true, description: 'Claude 3.5 Sonnet — excellent prose quality, NSFW-capable via system prompt' },
+  { id: 'anthropic/claude-sonnet-4', name: 'Claude Sonnet 4', provider: 'openrouter', contextLength: 200000, isNsfw: true, description: 'Latest Claude Sonnet 4 with strong narrative capabilities' },
+
+  // ── Premium Large Models ───────────────────────────────────────
+  { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash', provider: 'openrouter', contextLength: 1000000, isNsfw: true, description: 'Latest Gemini with 1M context window' },
+  { id: 'google/gemini-2.5-pro', name: 'Gemini 2.5 Pro', provider: 'openrouter', contextLength: 1000000, isNsfw: true, description: 'Gemini 2.5 Pro — top-tier with massive context' },
+  { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash', provider: 'openrouter', contextLength: 1000000, isNsfw: true, description: 'Fast Gemini 2.0 model' },
+  { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Strong open-source model for creative roleplay' },
+  { id: 'meta-llama/llama-3.1-405b-instruct', name: 'Llama 3.1 405B', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Massive open-source model for deep narrative' },
+  { id: 'nvidia/llama-3.1-nemotron-ultra-253b-v1', name: 'Nemotron Ultra 253B', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'NVIDIA ultra-large model with exceptional reasoning' },
+  { id: 'nvidia/llama-3.1-nemotron-70b-instruct', name: 'Nemotron 70B', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'NVIDIA 70B optimized for instruction following' },
+  { id: 'mistralai/mistral-large', name: 'Mistral Large', provider: 'openrouter', contextLength: 128000, isNsfw: true, description: 'Mistral flagship with nuanced understanding' },
+  { id: 'mistralai/mistral-medium-3', name: 'Mistral Medium 3', provider: 'openrouter', contextLength: 128000, isNsfw: true, description: 'Balanced Mistral model for roleplay' },
+  { id: 'deepseek/deepseek-chat', name: 'DeepSeek Chat', provider: 'openrouter', contextLength: 64000, isNsfw: true, description: 'Advanced reasoning with strong creative output' },
+  { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1', provider: 'openrouter', contextLength: 64000, isNsfw: true, description: 'Deep reasoning model with chain-of-thought' },
+  { id: 'deepseek/deepseek-r1-0528', name: 'DeepSeek R1 0528', provider: 'openrouter', contextLength: 64000, isNsfw: true, description: 'Latest DeepSeek R1 revision — improved reasoning' },
+  { id: 'qwen/qwen-2.5-72b-instruct', name: 'Qwen 2.5 72B', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Large multilingual model with strong creative writing' },
+
+  // ── Free Models (verified present on OpenRouter) ───────────────
+  { id: 'meta-llama/llama-3.3-70b-instruct:free', name: 'Llama 3.3 70B [FREE]', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Free 70B model with strong creative capabilities' },
+  { id: 'nousresearch/hermes-3-llama-3.1-405b:free', name: 'Hermes 3 405B [FREE]', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Free Hermes 3 ultra-large — best free NSFW option' },
+  { id: 'mistralai/mistral-small-3.1-24b-instruct:free', name: 'Mistral Small 3.1 [FREE]', provider: 'openrouter', contextLength: 128000, isNsfw: true, description: 'Free Mistral 24B — solid quality for free tier' },
+  { id: 'mistralai/mistral-nemo:free', name: 'Mistral Nemo [FREE]', provider: 'openrouter', contextLength: 128000, isNsfw: true, description: 'Free Mistral Nemo for roleplay' },
+  { id: 'cognitivecomputations/dolphin-mistral-24b-venice-edition:free', name: 'Dolphin Venice 24B [FREE]', provider: 'openrouter', contextLength: 32768, isNsfw: true, description: 'Uncensored Dolphin-Mistral — free NSFW model' },
+  { id: 'deepseek/deepseek-r1-0528:free', name: 'DeepSeek R1 [FREE]', provider: 'openrouter', contextLength: 163840, isNsfw: true, description: 'Free DeepSeek R1 with deep reasoning' },
+  { id: 'nvidia/nemotron-nano-9b-v2:free', name: 'Nemotron Nano 9B [FREE]', provider: 'openrouter', contextLength: 32768, isNsfw: true, description: 'Free NVIDIA compact model' },
+  { id: 'qwen/qwen-2.5-7b-instruct:free', name: 'Qwen 2.5 7B [FREE]', provider: 'openrouter', contextLength: 32768, isNsfw: true, description: 'Free multilingual model' }
 ];
 
 export const AI_MODES: AiMode[] = [
@@ -192,7 +227,6 @@ export const AI_MODES: AiMode[] = [
 ];
 
 export const XAI_MODEL_OPTIONS = [
-  { id: 'grok-4-1-fast-reasoning', name: 'Grok 4.1 Fast Reasoning' },
   { id: 'grok-3-latest', name: 'Grok 3 Latest' },
   { id: 'grok-3-fast', name: 'Grok 3 Fast' },
   { id: 'grok-3-mini', name: 'Grok 3 Mini' },
@@ -201,49 +235,54 @@ export const XAI_MODEL_OPTIONS = [
 
 export const OPENROUTER_MODEL_OPTIONS = [
   // xAI via OpenRouter
-  { id: 'x-ai/grok-4.1-fast', name: 'Grok 4.1 Fast' },
+  { id: 'x-ai/grok-4.1-fast', name: 'Grok 4.1 Fast Reasoning' },
+  { id: 'x-ai/grok-4-fast', name: 'Grok 4 Fast' },
   { id: 'x-ai/grok-4', name: 'Grok 4' },
   { id: 'x-ai/grok-3', name: 'Grok 3 (OpenRouter)' },
   { id: 'x-ai/grok-3-mini', name: 'Grok 3 Mini (OpenRouter)' },
-
-  // Premium models
+  // Chimera / R1 Chimera
+  { id: 'tngtech/deepseek-r1t2-chimera', name: 'DeepSeek R1 Chimera' },
+  // NSFW Roleplay Specialists
+  { id: 'sao10k/l3.3-euryale-70b', name: 'Euryale 70B (L3.3)' },
+  { id: 'sao10k/l3.1-euryale-70b', name: 'Euryale 70B (L3.1)' },
+  { id: 'anthracite-org/magnum-v4-72b', name: 'Magnum V4 72B' },
+  { id: 'gryphe/mythomax-l2-13b', name: 'MythoMax L2 13B' },
+  { id: 'neversleep/noromaid-20b', name: 'NoroMaid 20B' },
+  { id: 'neversleep/llama-3.1-lumimaid-8b', name: 'Lumimaid 8B' },
+  { id: 'thedrummer/rocinante-12b', name: 'Rocinante 12B' },
+  { id: 'aion-labs/aion-rp-llama-3.1-8b', name: 'Aion RP 8B' },
+  { id: 'mancer/weaver', name: 'Mancer Weaver' },
+  // NousResearch Hermes
+  { id: 'nousresearch/hermes-4-405b', name: 'Hermes 4 405B' },
+  { id: 'nousresearch/hermes-4-70b', name: 'Hermes 4 70B' },
+  { id: 'nousresearch/hermes-3-llama-3.1-405b', name: 'Hermes 3 405B' },
+  { id: 'nousresearch/hermes-3-llama-3.1-70b', name: 'Hermes 3 70B' },
+  // Anthropic
+  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet (NSFW)' },
   { id: 'anthropic/claude-sonnet-4', name: 'Claude Sonnet 4' },
-  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet' },
-  { id: 'google/gemini-2.5-pro', name: 'Gemini 2.5 Pro' },
+  // Premium Large Models
   { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
-
-  // Strong general + longform writers
+  { id: 'google/gemini-2.5-pro', name: 'Gemini 2.5 Pro' },
+  { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash' },
   { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B' },
-  { id: 'qwen/qwen-2.5-72b-instruct', name: 'Qwen 2.5 72B' },
-  { id: 'mistralai/mistral-large-2512', name: 'Mistral Large 2512' },
-  { id: 'mistralai/mistral-medium-3.1', name: 'Mistral Medium 3.1' },
-  { id: 'mistralai/mistral-nemo', name: 'Mistral Nemo' },
-
-  // DeepSeek
+  { id: 'meta-llama/llama-3.1-405b-instruct', name: 'Llama 3.1 405B' },
+  { id: 'nvidia/llama-3.1-nemotron-ultra-253b-v1', name: 'Nemotron Ultra 253B' },
+  { id: 'nvidia/llama-3.1-nemotron-70b-instruct', name: 'Nemotron 70B' },
+  { id: 'mistralai/mistral-large', name: 'Mistral Large' },
+  { id: 'mistralai/mistral-medium-3', name: 'Mistral Medium 3' },
   { id: 'deepseek/deepseek-chat', name: 'DeepSeek Chat' },
-  { id: 'deepseek/deepseek-v3.2', name: 'DeepSeek V3.2' },
   { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1' },
   { id: 'deepseek/deepseek-r1-0528', name: 'DeepSeek R1 0528' },
-
-  // Chimera
-  { id: 'tngtech/deepseek-r1t2-chimera', name: 'R1T2 Chimera (tngtech)' },
-
-  // Roleplay specialists
-  { id: 'sao10k/l3.3-euryale-70b', name: 'Euryale 70B (L3.3)' },
-  { id: 'neversleep/noromaid-20b', name: 'Noromaid 20B' },
-  { id: 'anthracite-org/magnum-v4-72b', name: 'Magnum v4 72B' },
-  { id: 'undi95/remm-slerp-l2-13b', name: 'Remm Slerp L2 13B' },
-  { id: 'gryphe/mythomax-l2-13b', name: 'MythoMax L2 13B' },
-  { id: 'nousresearch/hermes-4-70b', name: 'Hermes 4 70B' },
-  { id: 'nousresearch/hermes-3-llama-3.1-70b', name: 'Hermes 3 70B' },
-  { id: 'cognitivecomputations/dolphin-mistral-24b-venice-edition:free', name: 'Dolphin Mistral 24B Venice [FREE]' },
-
-  // Free models
+  { id: 'qwen/qwen-2.5-72b-instruct', name: 'Qwen 2.5 72B' },
+  // Free Models
   { id: 'meta-llama/llama-3.3-70b-instruct:free', name: 'Llama 3.3 70B [FREE]' },
-  { id: 'deepseek/deepseek-r1-0528:free', name: 'DeepSeek R1 0528 [FREE]' },
-  { id: 'nvidia/nemotron-3-nano-30b-a3b:free', name: 'Nemotron 3 Nano 30B [FREE]' },
-  { id: 'google/gemma-3-27b-it:free', name: 'Gemma 3 27B [FREE]' },
-  { id: 'nousresearch/hermes-3-llama-3.1-405b:free', name: 'Hermes 3 405B [FREE]' }
+  { id: 'nousresearch/hermes-3-llama-3.1-405b:free', name: 'Hermes 3 405B [FREE]' },
+  { id: 'mistralai/mistral-small-3.1-24b-instruct:free', name: 'Mistral Small 3.1 [FREE]' },
+  { id: 'mistralai/mistral-nemo:free', name: 'Mistral Nemo [FREE]' },
+  { id: 'cognitivecomputations/dolphin-mistral-24b-venice-edition:free', name: 'Dolphin Venice 24B [FREE]' },
+  { id: 'deepseek/deepseek-r1-0528:free', name: 'DeepSeek R1 [FREE]' },
+  { id: 'nvidia/nemotron-nano-9b-v2:free', name: 'Nemotron Nano 9B [FREE]' },
+  { id: 'qwen/qwen-2.5-7b-instruct:free', name: 'Qwen 2.5 7B [FREE]' }
 ];
 
 export const getAllModelOptions = () => {

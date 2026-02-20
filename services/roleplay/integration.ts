@@ -20,7 +20,6 @@ import {
 const getProviderConfig = () => {
   const settings = getSettings();
   const provider = settings.provider || 'xai';
-  const requestedModel = settings.defaultModel || '';
   
   if (provider === 'openrouter') {
     const apiKey = settings.openrouterApiKey || '';
@@ -28,7 +27,7 @@ const getProviderConfig = () => {
       provider,
       apiKey,
       apiUrl: 'https://openrouter.ai/api/v1/chat/completions',
-      model: requestedModel.includes('/') ? requestedModel : 'meta-llama/llama-3.3-70b-instruct',
+      model: settings.defaultModel,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
@@ -43,7 +42,7 @@ const getProviderConfig = () => {
     provider,
     apiKey,
     apiUrl: 'https://api.x.ai/v1/chat/completions',
-    model: requestedModel && !requestedModel.includes('/') ? requestedModel : 'grok-3-latest',
+    model: settings.defaultModel || 'grok-3-latest',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`
@@ -155,8 +154,7 @@ export async function sendEnhancedMessage(
   let response = '';
   let turnResult: TurnResult | null = null;
   let regenerationCount = 0;
-  const autoRegenerate = options.autoRegenerate ?? true;
-  const maxRetries = options.maxRetries ?? 3;
+  const maxRetries = options.maxRetries ?? 2;
 
   // Generation loop with potential regeneration
   while (regenerationCount <= maxRetries) {
@@ -167,7 +165,9 @@ export async function sendEnhancedMessage(
         role: msg.role as 'user' | 'assistant',
         content: msg.content
       })),
-      { role: 'user' as const, content: userMessage }
+      { role: 'user' as const, content: userMessage },
+      // Post-user enforcement — last thing model sees before generating
+      { role: 'system' as const, content: `REMINDER: Write in THIRD-PERSON LIMITED (he/she/they). NEVER use "I/me/my" in narration — only inside "dialogue quotes." Minimum 800 words. Begin.` }
     ];
 
     // Add regeneration guidance if this is a retry
@@ -189,9 +189,9 @@ export async function sendEnhancedMessage(
           messages: apiMessages,
           model: providerConfig.model,
           stream: false,
-          temperature: settings.temperature || 0.85,
+          temperature: 1.05,
           max_tokens: Math.max(settings.maxTokens || 6000, 6000),
-          top_p: 0.95,
+          top_p: 0.98,
           min_tokens: 800
         })
       });
@@ -211,7 +211,7 @@ export async function sendEnhancedMessage(
       turnResult = engine.processResponse(response, context);
 
       // Check if regeneration is needed
-      if (turnResult.validation.valid || !autoRegenerate) {
+      if (turnResult.validation.valid || !options.autoRegenerate) {
         break;
       }
 
@@ -281,6 +281,12 @@ function buildIntegratedSystemPrompt(
   if (userNotes) {
     sections.push(`=== USER MODEL ===\n${userNotes}`);
   }
+
+  // 9. FINAL ENFORCEMENT (last section — highest priority for model attention)
+  sections.push(`=== ABSOLUTE RULES (OVERRIDE ALL) ===
+PERSPECTIVE: Write EXCLUSIVELY in THIRD-PERSON LIMITED (he/she/they). The word "I" is FORBIDDEN outside dialogue quotation marks. "Me/my/mine" are FORBIDDEN in narration.
+LENGTH: Every response MUST be at least 800 words. Multi-paragraph prose with rich sensory detail. Short responses are unacceptable.
+ANTI-PARROT: Never repeat the user's input. Transform actions into vivid consequences.`);
 
   return sections.join('\n\n');
 }
