@@ -1,7 +1,14 @@
 # Deployment Configuration for Shareable Character Profiles
 
+> Guide for configuring server-side routing, share URLs, and deployment settings.
+
+---
+
 ## Overview
-Character profiles can now be shared via URL routes that work on the deployed website. Users can share full character profiles with galleries, conversations, and all metadata.
+
+Character profiles can be shared via URL routes on the deployed website. Users can share full character profiles with galleries, conversations, and all metadata.
+
+---
 
 ## Required Configuration
 
@@ -124,12 +131,16 @@ Users can:
 2. **Export HTML** - Standalone HTML file (no server needed)
 3. **Share Profile** - Generate shareable URL for deployed site
 
+---
+
 ## Security Considerations
 
-1. **Data Privacy**: Share links contain all character data in the URL. Users should be aware they're sharing everything.
-2. **URL Length**: Very large profiles may hit browser URL limits.
-3. **No Authentication**: Shared profiles are publicly accessible by anyone with the link.
-4. **Data Validation**: The app validates and sanitizes shared profile data on load.
+| Concern | Details |
+|---------|--------|
+| **Data Privacy** | Share links contain all character data in the URL — users should be aware they're sharing everything |
+| **URL Length** | Very large profiles may hit browser URL limits |
+| **No Authentication** | Shared profiles are publicly accessible by anyone with the link |
+| **Data Validation** | The app validates and sanitizes shared profile data on load |
 
 ## Troubleshooting
 
@@ -145,11 +156,12 @@ Users can:
 ### Issue: Profile shows "Invalid Profile Link"
 **Solution**: The share link may be corrupted. Ensure URL is copied completely.
 
+---
+
 ## Future Enhancements
 
-Consider implementing:
-- Backend storage service for shorter URLs
-- Share link expiration/revocation
-- View analytics for shared profiles
-- Social media preview cards (Open Graph tags)
-- QR code generation for easy mobile sharing
+- [ ] Backend storage service for shorter URLs
+- [ ] Share link expiration / revocation
+- [ ] View analytics for shared profiles
+- [ ] Social media preview cards (Open Graph tags)
+- [ ] QR code generation for easy mobile sharing

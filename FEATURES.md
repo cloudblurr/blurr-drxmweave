@@ -1,9 +1,22 @@
-# Ooda Muse Engine - Advanced Features Documentation
+# Ooda Muse Engine — Advanced Features Documentation
 
-## Overview
-Ooda Muse Engine is a sophisticated AI-powered roleplay engine built with React 19, TypeScript, and xAI's Grok API. This document covers the advanced features implemented.
+> Comprehensive feature reference for the Ooda Muse Engine roleplay platform.
 
-## New Features
+---
+
+## Table of Contents
+
+- [Enhanced Settings Panel](#1-enhanced-settings-panel)
+- [LoreAI Builder](#2-loreai-builder)
+- [Gallery System](#3-gallery-system)
+- [OracleViewer](#4-oracleviewer)
+- [Chat Interface Integration](#5-chat-interface-integration)
+- [Technical Architecture](#technical-architecture)
+- [API Reference](#api-reference)
+
+---
+
+## Features
 
 ### 1. Enhanced Settings Panel
 **Location:** `components/Settings.tsx`
@@ -119,6 +132,8 @@ Content: Detailed description...
   - Multiple viewers can be open simultaneously
   - Each viewer is independent (drag/resize separately)
 
+---
+
 ## Technical Architecture
 
 ### Storage Layers
@@ -169,6 +184,8 @@ blocks with Name, Category, Keys, Importance, and Content fields.
 - **Gallery**: Media library management (NEW)
 - **Settings**: Configure API, prompts, and lore behavior (ENHANCED)
 
+---
+
 ## Usage Patterns
 
 ### Creating a Character with Media
@@ -193,6 +210,8 @@ blocks with Name, Category, Keys, Importance, and Content fields.
 3. This applies to ALL character chats automatically
 4. Useful for consistent behavior across characters
 
+---
+
 ## Tips & Best Practices
 
 ### Lore Management
@@ -216,7 +235,9 @@ blocks with Name, Category, Keys, Importance, and Content fields.
 - Thumbnails are cached as data URLs for instant display
 - Large video files load on-demand in OracleViewer
 
-## Future Enhancements (Potential)
+---
+
+## Future Enhancements
 - Gallery search and advanced filtering
 - Batch media operations
 - Media sharing between characters
@@ -224,6 +245,8 @@ blocks with Name, Category, Keys, Importance, and Content fields.
 - Export/import for lorebooks
 - Voice narration for lore entries
 - Collaborative worldbuilding features
+
+---
 
 ## Troubleshooting
 
@@ -241,6 +264,8 @@ blocks with Name, Category, Keys, Importance, and Content fields.
 - Verify video codec support (MP4/WebM recommended)
 - Check Plyr console errors
 - Try different video file
+
+---
 
 ## API Reference
 
@@ -266,4 +291,4 @@ sendMessageToCharacter(character: Character, messages: Message[], activeNodeId: 
 Built with React 19, TypeScript, Vite, Tailwind CSS, xAI Grok API, Plyr, and IndexedDB.
 
 ---
-Ooda Muse Engine © 2024
+Ooda Muse Engine © 2025

@@ -1,17 +1,21 @@
-# Ooda Muse Engine
+# Ooda Muse Engine — Setup Guide
 
-An advanced AI-powered roleplay platform featuring immersive character-driven narrative simulation, dynamic lore management, and multi-model support.
+> Detailed setup and configuration instructions for development and deployment.
+
+---
 
 ## 🌟 Features
 
 - **Advanced Roleplay Engine**: Immersive, continuous character-driven narrative simulation with action continuity and scene state management
 - **Character Gallery**: Create, manage, and interact with custom AI characters
 - **Lore World System**: Build rich worldbuilding with lorebooks, entries, and dynamic context injection
-- **Multi-Model Support**: Compatible with xAI (Grok) and OpenRouter models (Claude, GPT-4, Gemini, Llama, Mistral)
+- **Multi-Model Support**: Compatible with xAI (Grok 3) and OpenRouter models (Claude, Gemini, Llama, Mistral, DeepSeek, Chimera)
 - **Model Tester**: Compare up to 5 models side-by-side for roleplay quality
 - **Character Memory System**: Advanced brain with recent responses, memory bank summaries, and overview memory
 - **Media Gallery**: Upload and manage images/videos for characters
 - **Share Profiles**: Export and share character profiles via URL
+
+---
 
 ## 🚀 Quick Start
 
@@ -47,6 +51,8 @@ npm run build
 npm run preview
 ```
 
+---
+
 ## 🔑 API Keys
 
 The app supports two AI providers:
@@ -58,6 +64,8 @@ The app supports two AI providers:
 ### OpenRouter
 1. Get your API key from [OpenRouter](https://openrouter.ai)
 2. Add to Settings or set `VITE_OPENROUTER_API_KEY` environment variable
+
+---
 
 ## 📚 Core Architecture
 
@@ -80,16 +88,22 @@ The `prompts.txt` file contains three layered prompts:
 - Characters, lorebooks, chat nodes, and gallery items stored locally
 - Import/export functionality for data portability
 
+---
+
 ## 🛠️ Tech Stack
 
-- **Framework**: React 19 + Vite
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Animation**: Framer Motion
-- **Storage**: IndexedDB (via idb)
-- **Markdown**: react-markdown + remark-gfm
-- **Icons**: Lucide React
-- **Media**: Plyr
+| Technology | Purpose |
+|-----------|--------|
+| React 19 + Vite | Framework & build tool |
+| TypeScript | Type safety |
+| Tailwind CSS | Styling |
+| Framer Motion | Animations |
+| IndexedDB (idb) | Client-side media storage |
+| react-markdown + remark-gfm | Message rendering |
+| Lucide React | Icons |
+| Plyr | Media player |
+
+---
 
 ## 📁 Project Structure
 
@@ -109,6 +123,8 @@ The `prompts.txt` file contains three layered prompts:
 ├── types.ts            # TypeScript interfaces
 └── prompts.txt         # Roleplay prompt templates
 ```
+
+---
 
 ## 🎮 Usage
 
@@ -136,17 +152,25 @@ The `prompts.txt` file contains three layered prompts:
 3. Enter a test prompt
 4. Compare responses side-by-side
 
+---
+
 ## 🔒 Privacy
 
 All data is stored locally in your browser's IndexedDB. No data is sent to external servers except API calls to your configured AI provider.
+
+---
 
 ## 📄 License
 
 MIT License - See LICENSE file for details
 
+---
+
 ## 🤝 Contributing
 
 Contributions welcome! Please open an issue or submit a pull request.
+
+---
 
 ## 🙏 Credits
 

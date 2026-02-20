@@ -505,6 +505,7 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
     try {
       const brain = ensureBrain(character);
 
+      // Save the full chat history as recent response chunks
       const newChunks: CharacterMemoryChunk[] = responseChunks.map((content) => ({
         id: generateId(),
         createdAt: Date.now(),
@@ -526,8 +527,24 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
         });
       }
 
+      // Also create an immediate session summary for shorter conversations
+      // This ensures even small chats get committed to memory
+      if (responseChunks.length > 0 && responseChunks.length < 25) {
+        const sessionSummary = await summarizeResponsesToMemory(
+          character.name,
+          responseChunks
+        );
+        memoryBank.push({
+          id: generateId(),
+          createdAt: Date.now(),
+          content: `[Session: ${activeNode.title}] ${sessionSummary}`,
+          sourceCount: responseChunks.length
+        });
+      }
+
+      // Always regenerate the overview memory when compiling to keep it current
       let overviewMemory = brain.overviewMemory || '';
-      if (memoryBank.length >= 25) {
+      if (memoryBank.length >= 3) {
         overviewMemory = await summarizeMemoryBankOverview(
           character.name,
           memoryBank.map((m) => m.content)
@@ -545,6 +562,9 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
       saveCharacter(updatedCharacter);
       setCharacter(updatedCharacter);
 
+      // Reinitialize roleplay engine with updated memory
+      roleplayEngine.initializeEngine(updatedCharacter);
+
       const compiledNode: ChatNode = {
         ...activeNode,
         isClosed: true,
@@ -555,7 +575,7 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
       setActiveNode(compiledNode);
       setNodes(getNodesForCharacter(characterId));
 
-      alert('Conversation compiled into memory and archived.');
+      alert(`Conversation compiled into ${character.name}'s memory and archived. ${memoryBank.length} memory summaries stored. Future conversations will remember this session.`);
     } catch (error) {
       console.error('Failed to compile memory:', error);
       alert(`Error: ${error instanceof Error ? error.message : 'Failed to compile memory.'}`);

@@ -206,8 +206,9 @@ export const sendMessageToCharacter = async (
         model: providerConfig.model || XAI_MODEL,
         stream: false,
         temperature: 1.05, // Higher for more creative, less repetitive output
-        max_tokens: 3200, // Encourage longer, more detailed responses
-        top_p: 0.98
+        max_tokens: 6000, // Enforce long, detailed third-person responses (min ~800 words)
+        top_p: 0.98,
+        min_tokens: 800 // Request minimum output length
       })
     });
 
@@ -275,8 +276,9 @@ export const sendMessageWithCustomPrompt = async (
         model: providerConfig.model || XAI_MODEL,
         stream: false,
         temperature: settings.temperature || 0.85,
-        max_tokens: settings.maxTokens || 2000,
-        top_p: 0.95
+        max_tokens: settings.maxTokens || 6000,
+        top_p: 0.95,
+        min_tokens: 600
       })
     });
 
