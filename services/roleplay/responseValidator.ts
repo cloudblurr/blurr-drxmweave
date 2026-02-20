@@ -27,6 +27,7 @@ export const DEFAULT_VALIDATION_CONFIG: ValidationConfig = {
     'breaks_character',
     'summarizes_instead',
     'wrong_perspective',
+    'too_short',
     'repetitive_content',
     'missing_consequences',
   ],
@@ -71,10 +72,14 @@ const SUMMARIZATION_PATTERNS = [
 
 const FIRST_PERSON_PATTERNS = [
   /^I\s/m,                            // Starts with "I "
+  /\bI('m| am)\b/i,
   /\bI think\b/i,
   /\bI believe\b/i,
   /\bI feel\b/i,
   /\bIn my opinion\b/i,
+  /\bmy\b/i,
+  /\bme\b/i,
+  /\bmine\b/i,
 ];
 
 // ============================================
@@ -125,6 +130,11 @@ export class ResponseValidator {
 
     if (this.config.enabledChecks.includes('wrong_perspective')) {
       const issue = this.checkWrongPerspective(response);
+      if (issue) issues.push(issue);
+    }
+
+    if (this.config.enabledChecks.includes('too_short')) {
+      const issue = this.checkTooShort(response);
       if (issue) issues.push(issue);
     }
 
@@ -300,8 +310,8 @@ export class ResponseValidator {
         if (pattern.test(line) && !this.isWithinDialogue(line, pattern)) {
           return {
             type: 'wrong_perspective',
-            severity: 'warning',
-            description: 'Response may use first-person perspective outside dialogue',
+            severity: 'critical',
+            description: 'Response uses first-person perspective outside dialogue',
             location: line.substring(0, 50),
             suggestion: 'Use third-person limited perspective in narration',
           };
@@ -309,6 +319,20 @@ export class ResponseValidator {
       }
     }
     
+    return null;
+  }
+
+  private checkTooShort(response: string): ValidationIssue | null {
+    const minWords = 800;
+    const wordCount = response.trim().split(/\s+/).filter(Boolean).length;
+    if (wordCount < minWords) {
+      return {
+        type: 'too_short',
+        severity: 'critical',
+        description: `Response too short (${wordCount}/${minWords} words)`,
+        suggestion: 'Expand with more narrative beats, detail, and consequences; target 1000–1500 words',
+      };
+    }
     return null;
   }
 
@@ -478,6 +502,10 @@ export function generateRegenerationGuidance(
       case 'wrong_perspective':
         focusAreas.push('Use third-person limited perspective');
         avoidPatterns.push('first-person narration outside dialogue');
+        break;
+      case 'too_short':
+        focusAreas.push('Expand substantially (minimum 800 words; target 1000–1500)');
+        avoidPatterns.push('short or compressed responses');
         break;
       case 'repetitive_content':
         focusAreas.push('Vary vocabulary and phrasing');

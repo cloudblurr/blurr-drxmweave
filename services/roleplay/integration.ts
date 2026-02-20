@@ -20,6 +20,7 @@ import {
 const getProviderConfig = () => {
   const settings = getSettings();
   const provider = settings.provider || 'xai';
+  const requestedModel = settings.defaultModel || '';
   
   if (provider === 'openrouter') {
     const apiKey = settings.openrouterApiKey || '';
@@ -27,7 +28,7 @@ const getProviderConfig = () => {
       provider,
       apiKey,
       apiUrl: 'https://openrouter.ai/api/v1/chat/completions',
-      model: settings.defaultModel,
+      model: requestedModel.includes('/') ? requestedModel : 'meta-llama/llama-3.3-70b-instruct',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
@@ -42,7 +43,7 @@ const getProviderConfig = () => {
     provider,
     apiKey,
     apiUrl: 'https://api.x.ai/v1/chat/completions',
-    model: settings.defaultModel || 'grok-3-latest',
+    model: requestedModel && !requestedModel.includes('/') ? requestedModel : 'grok-3-latest',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`
@@ -154,7 +155,8 @@ export async function sendEnhancedMessage(
   let response = '';
   let turnResult: TurnResult | null = null;
   let regenerationCount = 0;
-  const maxRetries = options.maxRetries ?? 2;
+  const autoRegenerate = options.autoRegenerate ?? true;
+  const maxRetries = options.maxRetries ?? 3;
 
   // Generation loop with potential regeneration
   while (regenerationCount <= maxRetries) {
@@ -209,7 +211,7 @@ export async function sendEnhancedMessage(
       turnResult = engine.processResponse(response, context);
 
       // Check if regeneration is needed
-      if (turnResult.validation.valid || !options.autoRegenerate) {
+      if (turnResult.validation.valid || !autoRegenerate) {
         break;
       }
 

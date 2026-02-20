@@ -23,13 +23,14 @@ interface XAIResponse {
 const getProviderConfig = () => {
   const settings = getSettings();
   const provider = settings.provider || 'xai';
+  const requestedModel = settings.defaultModel || '';
   if (provider === 'openrouter') {
     const apiKey = OPENROUTER_API_KEY || settings.openrouterApiKey || '';
     return {
       provider,
       apiKey,
       apiUrl: OPENROUTER_API_URL,
-      model: settings.defaultModel,
+      model: requestedModel.includes('/') ? requestedModel : 'meta-llama/llama-3.3-70b-instruct',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
@@ -44,7 +45,7 @@ const getProviderConfig = () => {
     provider,
     apiKey,
     apiUrl: XAI_API_URL,
-    model: settings.defaultModel || XAI_MODEL,
+    model: requestedModel && !requestedModel.includes('/') ? requestedModel : XAI_MODEL,
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`

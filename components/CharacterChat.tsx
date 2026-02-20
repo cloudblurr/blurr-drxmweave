@@ -211,19 +211,25 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
       // Prepare the turn (parses user message for actions, updates scene state)
       roleplayEngine.prepareMessage(userMessage.content);
 
-      // Send message with the enhanced roleplay engine prompt
-      const response = await sendMessageWithCustomPrompt(
-        enhancedSystemPrompt,
-        updatedMessages,
-        userMessage.content
-      );
+      // Generate response with validation + regeneration retries
+      const maxRetries = 3;
+      let response = '';
+      let turnResult: any = null;
 
-      // Process the response through the roleplay engine
-      // This validates the response, resolves actions, and updates scene state
-      const turnResult = roleplayEngine.processResponse(response, userMessage.content);
-      
-      // Log validation issues for debugging (can be removed in production)
-      if (!turnResult.validation.valid) {
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        const guidance = attempt > 0 ? roleplayEngine.getRegenerationGuidance() : null;
+        const systemPromptForAttempt = guidance
+          ? `${enhancedSystemPrompt}\n\n${guidance}`
+          : enhancedSystemPrompt;
+
+        response = await sendMessageWithCustomPrompt(
+          systemPromptForAttempt,
+          updatedMessages,
+          userMessage.content
+        );
+
+        turnResult = roleplayEngine.processResponse(response, userMessage.content);
+        if (turnResult.validation.valid) break;
         console.warn('Response validation issues:', turnResult.validation.issues);
       }
 
@@ -346,18 +352,25 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
       
       // Prepare the turn (this re-parses the user message for actions)
       roleplayEngine.prepareMessage(previousUserMessage.content);
-      
-      // Generate new response with enhanced prompt
-      const response = await sendMessageWithCustomPrompt(
-        enhancedSystemPrompt,
-        historyMessages,
-        previousUserMessage.content
-      );
-      
-      // Process response through roleplay engine
-      const turnResult = roleplayEngine.processResponse(response, previousUserMessage.content);
-      
-      if (!turnResult.validation.valid) {
+
+      const maxRetries = 3;
+      let response = '';
+      let turnResult: any = null;
+
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        const guidance = attempt > 0 ? roleplayEngine.getRegenerationGuidance() : null;
+        const systemPromptForAttempt = guidance
+          ? `${enhancedSystemPrompt}\n\n${guidance}`
+          : enhancedSystemPrompt;
+
+        response = await sendMessageWithCustomPrompt(
+          systemPromptForAttempt,
+          historyMessages,
+          previousUserMessage.content
+        );
+
+        turnResult = roleplayEngine.processResponse(response, previousUserMessage.content);
+        if (turnResult.validation.valid) break;
         console.warn('Regenerated response validation issues:', turnResult.validation.issues);
       }
       
@@ -415,20 +428,27 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
       
       // Prepare the turn
       roleplayEngine.prepareMessage(previousUserMessage.content);
-      
-      // Generate response using the selected model
-      const response = await sendMessageWithModel(
-        selectedRegenerateModel.id,
-        selectedRegenerateModel.provider,
-        enhancedSystemPrompt,
-        historyMessages,
-        previousUserMessage.content
-      );
-      
-      // Process response through roleplay engine
-      const turnResult = roleplayEngine.processResponse(response, previousUserMessage.content);
-      
-      if (!turnResult.validation.valid) {
+
+      const maxRetries = 3;
+      let response = '';
+      let turnResult: any = null;
+
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        const guidance = attempt > 0 ? roleplayEngine.getRegenerationGuidance() : null;
+        const systemPromptForAttempt = guidance
+          ? `${enhancedSystemPrompt}\n\n${guidance}`
+          : enhancedSystemPrompt;
+
+        response = await sendMessageWithModel(
+          selectedRegenerateModel.id,
+          selectedRegenerateModel.provider,
+          systemPromptForAttempt,
+          historyMessages,
+          previousUserMessage.content
+        );
+
+        turnResult = roleplayEngine.processResponse(response, previousUserMessage.content);
+        if (turnResult.validation.valid) break;
         console.warn('Regenerated response validation issues:', turnResult.validation.issues);
       }
       
