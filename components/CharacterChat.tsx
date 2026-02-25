@@ -1162,7 +1162,7 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
 
       {/* Oracle Viewer */}
       {viewingItem && (
-        <OracleViewer item={viewingItem} onClose={() => setViewingItem(null)} />
+        <OracleViewer items={galleryItems} initialIndex={galleryItems.findIndex(i => i.id === viewingItem.id)} onClose={() => setViewingItem(null)} />
       )}
 
       {/* Regenerate with Model Selection Modal */}

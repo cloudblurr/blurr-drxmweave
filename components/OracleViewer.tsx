@@ -1,14 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import type Plyr from 'plyr';
-import { Minimize2, Maximize2, X, Move, RotateCcw } from 'lucide-react';
+import { Minimize2, Maximize2, X, Move, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { GalleryItem } from '../types';
 
 interface OracleViewerProps {
-  item: GalleryItem;
+  items: GalleryItem[];
+  initialIndex?: number;
   onClose: () => void;
 }
 
-export const OracleViewer: React.FC<OracleViewerProps> = ({ item, onClose }) => {
+export const OracleViewer: React.FC<OracleViewerProps> = ({ items, initialIndex = 0, onClose }) => {
+  const [currentIndex, setCurrentIndex] = useState(Math.max(0, Math.min(initialIndex, items.length - 1)));
+  const item = items[currentIndex] ?? items[0];
+
   const [isMinimized, setIsMinimized] = useState(false);
   const [position, setPosition] = useState({ x: 100, y: 100 });
   const [size, setSize] = useState({ width: 640, height: 480 });
@@ -22,7 +26,22 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ item, onClose }) => 
   const mediaRef = useRef<HTMLVideoElement | HTMLImageElement>(null);
   const plyrRef = useRef<Plyr | null>(null);
 
+  const goToPrev = () => setCurrentIndex(i => (i - 1 + items.length) % items.length);
+  const goToNext = () => setCurrentIndex(i => (i + 1) % items.length);
+
+  // Handle keyboard navigation
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (items.length <= 1) return;
+      if (e.key === 'ArrowLeft') goToPrev();
+      if (e.key === 'ArrowRight') goToNext();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [items.length]);
+
+  useEffect(() => {
+    if (!item) return;
     if (item.type === 'embed') {
       setMediaUrl('');
       return;
@@ -31,8 +50,10 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ item, onClose }) => 
       const url = URL.createObjectURL(item.blob);
       setMediaUrl(url);
       return () => URL.revokeObjectURL(url);
+    } else {
+      setMediaUrl('');
     }
-  }, [item.type, item.blob]);
+  }, [item?.id, item?.type, item?.blob]);
 
   useEffect(() => {
     let cancelled = false;
@@ -44,7 +65,7 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ item, onClose }) => 
     }
 
     // Initialize new player for video (dynamic import to avoid SSR "document" error)
-    if (item.type === 'video' && mediaRef.current && mediaUrl) {
+    if (item?.type === 'video' && mediaRef.current && mediaUrl) {
       import('plyr').then((mod) => {
         if (cancelled || !mediaRef.current) return;
         // Inject CSS once
@@ -80,7 +101,7 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ item, onClose }) => 
         plyrRef.current = null;
       }
     };
-  }, [item.type, mediaUrl, item.id, item.name]);
+  }, [item?.type, mediaUrl, item?.id, item?.name]);
 
   const handleDragStart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -148,13 +169,36 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ item, onClose }) => 
         className="oracle-drag-handle holo-header px-4 py-2 flex items-center justify-between cursor-move select-none"
         onMouseDown={handleDragStart}
       >
-        <div className="flex items-center gap-2">
-          <Move className="w-4 h-4 text-holo-cyan" />
-          <span className="text-sm font-semibold text-holo-cyan truncate max-w-[200px]">
-            {item.name}
+        <div className="flex items-center gap-2 min-w-0">
+          <Move className="w-4 h-4 text-holo-cyan flex-shrink-0" />
+          {items.length > 1 && (
+            <button
+              onMouseDown={e => e.stopPropagation()}
+              onClick={goToPrev}
+              className="p-1 hover:bg-holo-cyan/10 rounded-lg transition-colors flex-shrink-0"
+              title="Previous"
+            >
+              <ChevronLeft className="w-4 h-4 text-holo-cyan" />
+            </button>
+          )}
+          <span className="text-sm font-semibold text-holo-cyan truncate max-w-[160px]">
+            {item?.name}
           </span>
+          {items.length > 1 && (
+            <>
+              <span className="text-xs text-slate-500 flex-shrink-0">{currentIndex + 1}/{items.length}</span>
+              <button
+                onMouseDown={e => e.stopPropagation()}
+                onClick={goToNext}
+                className="p-1 hover:bg-holo-cyan/10 rounded-lg transition-colors flex-shrink-0"
+                title="Next"
+              >
+                <ChevronRight className="w-4 h-4 text-holo-cyan" />
+              </button>
+            </>
+          )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={handleResetPosition}
             className="p-1 hover:bg-holo-cyan/10 rounded-lg transition-colors"

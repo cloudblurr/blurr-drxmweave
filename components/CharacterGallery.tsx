@@ -779,7 +779,7 @@ const CharacterModal: React.FC<CharacterModalProps> = ({ character, onClose, onS
       </div>
 
       {viewingItem && (
-        <OracleViewer item={viewingItem} onClose={() => setViewingItem(null)} />
+        <OracleViewer items={media} initialIndex={media.findIndex(i => i.id === viewingItem.id)} onClose={() => setViewingItem(null)} />
       )}
     </div>
   );
