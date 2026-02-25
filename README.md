@@ -87,12 +87,29 @@ Keys can also be set in the in-app **Settings** panel.
 | `grok-3-mini` | Compact and efficient |
 | `grok-2-latest` | Grok 2 with strong roleplay |
 
+### OpenRouter — Claude (Beta/Uncensored)
+
+| Model | Description |
+|-------|-------------|
+| Claude Opus 4 Beta | Most powerful Claude — extended content policy (uncensored) |
+| Claude Sonnet 4 Beta | Sonnet 4 via extended content policy — uncensored routing |
+| Claude 3.5 Sonnet Beta | 3.5 Sonnet — uncensored extended routing |
+| Claude 3.5 Haiku Beta | Fast Claude — uncensored extended routing |
+| Claude 3 Opus | Classic flagship — deep narrative, creative fiction |
+| Claude 3 Haiku | Fast & affordable Claude for rapid responses |
+
+### OpenRouter — Claude (Standard)
+
+| Model | Description |
+|-------|-------------|
+| Claude Opus 4 | Most capable Claude model |
+| Claude Sonnet 4 | Latest Claude — strong narrative |
+| Claude 3.5 Sonnet | High-quality creative writing |
+
 ### OpenRouter — Premium
 
 | Model | Description |
 |-------|-------------|
-| Claude Sonnet 4 | Latest Claude — strong narrative |
-| Claude 3.5 Sonnet | High-quality creative writing |
 | Gemini 2.5 Flash | Massive 1M context window |
 | Llama 3.3 70B / 3.1 405B | Open-source creative powerhouses |
 | Mistral Large | Nuanced European model |

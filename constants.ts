@@ -92,9 +92,17 @@ export const NSFW_ROLEPLAY_MODELS: any[] = [
   { id: 'nousresearch/hermes-3-llama-3.1-405b', name: 'Hermes 3 405B', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Hermes 3 ultra-large for deep roleplay narrative' },
   { id: 'nousresearch/hermes-3-llama-3.1-70b', name: 'Hermes 3 70B', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Hermes 3 70B fine-tuned for creative scenarios' },
 
-  // ── Anthropic (NSFW-capable with jailbreak prompts) ────────────
-  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet (NSFW)', provider: 'openrouter', contextLength: 200000, isNsfw: true, description: 'Claude 3.5 Sonnet — excellent prose quality, NSFW-capable via system prompt' },
+  // ── Anthropic Claude — Beta/Extended (reduced content filtering via OpenRouter) ──
+  { id: 'anthropic/claude-opus-4:beta', name: 'Claude Opus 4 Beta [UNCENSORED]', provider: 'openrouter', contextLength: 200000, isNsfw: true, description: 'Claude Opus 4 routed via extended content policy — top-tier uncensored creative writing' },
+  { id: 'anthropic/claude-sonnet-4:beta', name: 'Claude Sonnet 4 Beta [UNCENSORED]', provider: 'openrouter', contextLength: 200000, isNsfw: true, description: 'Claude Sonnet 4 via extended content policy — excellent prose with reduced restrictions' },
+  { id: 'anthropic/claude-3.5-sonnet:beta', name: 'Claude 3.5 Sonnet Beta [UNCENSORED]', provider: 'openrouter', contextLength: 200000, isNsfw: true, description: 'Claude 3.5 Sonnet via extended content policy — highly creative, uncensored routing' },
+  { id: 'anthropic/claude-3.5-haiku:beta', name: 'Claude 3.5 Haiku Beta [UNCENSORED]', provider: 'openrouter', contextLength: 200000, isNsfw: true, description: 'Claude 3.5 Haiku via extended content policy — fast uncensored responses' },
+  { id: 'anthropic/claude-3-opus', name: 'Claude 3 Opus', provider: 'openrouter', contextLength: 200000, isNsfw: true, description: 'Claude 3 Opus — classic flagship, excellent for deep narrative and creative fiction' },
+  { id: 'anthropic/claude-3-haiku', name: 'Claude 3 Haiku', provider: 'openrouter', contextLength: 200000, isNsfw: true, description: 'Claude 3 Haiku — fast and affordable Claude for rapid roleplay responses' },
+  // ── Anthropic (standard, NSFW-capable with system prompt) ─────────────────────────
+  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', provider: 'openrouter', contextLength: 200000, isNsfw: true, description: 'Claude 3.5 Sonnet — excellent prose quality, NSFW-capable via system prompt' },
   { id: 'anthropic/claude-sonnet-4', name: 'Claude Sonnet 4', provider: 'openrouter', contextLength: 200000, isNsfw: true, description: 'Latest Claude Sonnet 4 with strong narrative capabilities' },
+  { id: 'anthropic/claude-opus-4', name: 'Claude Opus 4', provider: 'openrouter', contextLength: 200000, isNsfw: true, description: 'Claude Opus 4 — most powerful Claude model for complex creative scenarios' },
 
   // ── Premium Large Models ───────────────────────────────────────
   { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash', provider: 'openrouter', contextLength: 1000000, isNsfw: true, description: 'Latest Gemini with 1M context window' },
@@ -257,9 +265,17 @@ export const OPENROUTER_MODEL_OPTIONS = [
   { id: 'nousresearch/hermes-4-70b', name: 'Hermes 4 70B' },
   { id: 'nousresearch/hermes-3-llama-3.1-405b', name: 'Hermes 3 405B' },
   { id: 'nousresearch/hermes-3-llama-3.1-70b', name: 'Hermes 3 70B' },
-  // Anthropic
-  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet (NSFW)' },
+  // Anthropic Claude — Beta/Extended (uncensored routing)
+  { id: 'anthropic/claude-opus-4:beta', name: 'Claude Opus 4 Beta [UNCENSORED]' },
+  { id: 'anthropic/claude-sonnet-4:beta', name: 'Claude Sonnet 4 Beta [UNCENSORED]' },
+  { id: 'anthropic/claude-3.5-sonnet:beta', name: 'Claude 3.5 Sonnet Beta [UNCENSORED]' },
+  { id: 'anthropic/claude-3.5-haiku:beta', name: 'Claude 3.5 Haiku Beta [UNCENSORED]' },
+  { id: 'anthropic/claude-3-opus', name: 'Claude 3 Opus' },
+  { id: 'anthropic/claude-3-haiku', name: 'Claude 3 Haiku' },
+  // Anthropic Claude — Standard
+  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet' },
   { id: 'anthropic/claude-sonnet-4', name: 'Claude Sonnet 4' },
+  { id: 'anthropic/claude-opus-4', name: 'Claude Opus 4' },
   // Premium Large Models
   { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
   { id: 'google/gemini-2.5-pro', name: 'Gemini 2.5 Pro' },
