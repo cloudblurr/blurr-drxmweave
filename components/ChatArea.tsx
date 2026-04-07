@@ -404,13 +404,13 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
             key={msg.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className={`flex w-full ${msg.role === Role.User ? 'justify-end' : 'justify-start'}`}
           >
-            <div className={`flex w-full max-w-4xl gap-4 ${msg.role === Role.User ? 'flex-row-reverse' : 'flex-row'}`}>
+            <div className={`flex w-full max-w-6xl gap-4 ${msg.role === Role.User ? 'flex-row-reverse' : 'flex-row'}`}>
               <div className={`w-8 h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold border shadow-sm ${msg.role === Role.User ? 'bg-zinc-800 border-zinc-700 text-white' : 'bg-white border-white text-black'}`}>
                 {msg.role === Role.User ? 'You' : getModeIcon(activeMode.iconName, 14, "text-black")}
               </div>
               <div className={`flex flex-col gap-1 min-w-0 flex-1 ${msg.role === Role.User ? 'items-end' : 'items-start'}`}>
                 <div className="text-[11px] font-medium text-zinc-500 px-1 uppercase tracking-wider mb-1">{msg.role === Role.User ? 'You' : activeMode.name}</div>
-                <div className={`w-full min-w-0 ${msg.role === Role.User ? 'bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-2xl rounded-tr-sm px-6 py-4 shadow-sm max-w-2xl' : 'bg-transparent text-zinc-300 pl-0 pt-0'}`}>
+                <div className={`w-full min-w-0 ${msg.role === Role.User ? 'bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-2xl rounded-tr-sm px-7 py-5 shadow-sm max-w-[94%] md:max-w-[88%] xl:max-w-5xl' : 'bg-transparent text-zinc-300 pl-0 pt-0'}`}>
                   {msg.role === Role.Assistant ? (
                     <div className="prose prose-invert prose-zinc max-w-none wrap-anywhere">
                       <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
@@ -427,9 +427,9 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                           h2: ({children}) => <h2 className="text-xl font-bold text-white mb-5 mt-10 flex items-center gap-2.5 first:mt-0 tracking-tight"><span className="w-1.5 h-7 bg-linear-to-b from-white to-zinc-400 rounded-full shadow-sm"></span>{children}</h2>,
                           h3: ({children}) => <h3 className="text-lg font-semibold text-zinc-100 mb-4 mt-8 first:mt-0 tracking-tight">{children}</h3>,
                           h4: ({children}) => <h4 className="text-base font-semibold text-zinc-200 mb-3 mt-6 first:mt-0">{children}</h4>,
-                          p: ({children}) => <p className="leading-[1.85] mb-6 text-zinc-200 text-[15.5px] last:mb-0 font-normal tracking-normal wrap-anywhere">{children}</p>,
-                          ul: ({children}) => <ul className="list-disc list-outside ml-5 mb-6 space-y-2.5 text-zinc-200 marker:text-zinc-500 text-[15px]">{children}</ul>,
-                          ol: ({children}) => <ol className="list-decimal list-outside ml-5 mb-6 space-y-2.5 text-zinc-200 marker:text-zinc-500 text-[15px]">{children}</ol>,
+                          p: ({children}) => <p className="leading-[1.95] mb-6 text-zinc-200 text-[16px] last:mb-0 font-normal tracking-normal wrap-anywhere">{children}</p>,
+                          ul: ({children}) => <ul className="list-disc list-outside ml-5 mb-6 space-y-2.5 text-zinc-200 marker:text-zinc-500 text-[15.5px]">{children}</ul>,
+                          ol: ({children}) => <ol className="list-decimal list-outside ml-5 mb-6 space-y-2.5 text-zinc-200 marker:text-zinc-500 text-[15.5px]">{children}</ol>,
                           li: ({children}) => <li className="pl-2 leading-[1.8]">{children}</li>,
                           blockquote: ({children}) => <blockquote className="border-l-4 border-zinc-600/70 pl-5 py-3 my-6 italic text-zinc-300 bg-zinc-900/50 rounded-r-lg text-[15px]">{children}</blockquote>,
                           a: ({href, children}) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline decoration-blue-400/40 hover:decoration-blue-300/60 underline-offset-2 transition-colors inline-flex items-center gap-1 font-medium">{children}<ExternalLink size={12} strokeWidth={2.5} className="opacity-70" /></a>,

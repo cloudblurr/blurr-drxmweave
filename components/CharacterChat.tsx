@@ -808,9 +808,9 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                 {message.role === Role.Assistant && character.avatar && (
                   <img src={character.avatar} alt={character.name} className="w-8 h-8 rounded-full object-cover shrink-0 ring-1 ring-holo-cyan/20" />
                 )}
-                <div className="flex flex-col gap-2 w-full max-w-[85%] md:max-w-[76%] xl:max-w-3xl min-w-0">
+                <div className="flex flex-col gap-2 w-full max-w-[94%] md:max-w-[88%] xl:max-w-5xl min-w-0">
                   <div
-                    className={`rounded-xl p-4 ${
+                    className={`rounded-xl p-5 ${
                       message.role === Role.User
                         ? 'holo-msg-user'
                         : 'holo-msg-assistant'
@@ -848,9 +848,9 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                           h2: ({children}) => <h2 className="text-lg font-bold text-white mb-4 mt-8 flex items-center gap-2 first:mt-0 tracking-tight"><span className="w-1 h-6 bg-linear-to-b from-cyan-400 to-cyan-600 rounded-full"></span>{children}</h2>,
                           h3: ({children}) => <h3 className="text-base font-semibold text-slate-100 mb-3 mt-6 first:mt-0 tracking-tight">{children}</h3>,
                           h4: ({children}) => <h4 className="text-sm font-semibold text-slate-200 mb-2.5 mt-5 first:mt-0">{children}</h4>,
-                          p: ({children}) => <p className="leading-[1.8] mb-5 text-slate-200 text-[15px] last:mb-0 font-normal tracking-normal wrap-anywhere">{children}</p>,
-                          ul: ({children}) => <ul className="list-disc list-outside ml-4 mb-5 space-y-2 text-slate-200 marker:text-slate-500 text-[14.5px]">{children}</ul>,
-                          ol: ({children}) => <ol className="list-decimal list-outside ml-4 mb-5 space-y-2 text-slate-200 marker:text-slate-500 text-[14.5px]">{children}</ol>,
+                          p: ({children}) => <p className="leading-[1.92] mb-5 text-slate-200 text-[16px] last:mb-0 font-normal tracking-normal wrap-anywhere">{children}</p>,
+                          ul: ({children}) => <ul className="list-disc list-outside ml-4 mb-5 space-y-2 text-slate-200 marker:text-slate-500 text-[15.5px]">{children}</ul>,
+                          ol: ({children}) => <ol className="list-decimal list-outside ml-4 mb-5 space-y-2 text-slate-200 marker:text-slate-500 text-[15.5px]">{children}</ol>,
                           li: ({children}) => <li className="pl-2 leading-[1.75]">{children}</li>,
                           blockquote: ({children}) => <blockquote className="border-l-4 border-cyan-600/60 pl-4 py-2.5 my-5 italic text-slate-300 bg-slate-900/50 rounded-r-lg text-[14.5px] wrap-anywhere">{children}</blockquote>,
                           a: ({href, children}) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-400/40 hover:decoration-cyan-300/60 underline-offset-2 transition-colors font-medium wrap-anywhere break-all">{children}</a>,
