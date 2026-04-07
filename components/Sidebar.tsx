@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Plus, MessageSquare, Settings, User, LogOut, Pencil, Trash2, Check, X } from 'lucide-react';
 import { ChatSession } from '../types';
 import { motion } from 'framer-motion';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 
 interface SidebarProps {
   sessions: ChatSession[];
@@ -83,13 +85,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* New Chat Button */}
       <div className="p-4">
-        <button 
+        <Button
           onClick={onNewChat}
-          className="w-full flex items-center gap-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 px-4 py-3 rounded-xl transition-all font-medium text-sm shadow-sm"
+          variant="secondary"
+          className="w-full flex items-center justify-start gap-2 px-4 py-3 text-sm shadow-sm"
         >
           <Plus size={18} />
           New Conversation
-        </button>
+        </Button>
       </div>
 
       {/* History List */}
@@ -113,15 +116,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     
                     {isEditing ? (
                         <div className="flex-1 flex items-center gap-1 min-w-0 z-10" onClick={e => e.stopPropagation()}>
-                            <input 
+                            <Input
                                 autoFocus
-                                className="w-full bg-zinc-950/50 border border-indigo-500/50 rounded px-2 py-0.5 text-xs text-white focus:outline-none focus:border-indigo-500"
+                                className="w-full bg-zinc-950/50 border border-indigo-500/50 rounded px-2 py-0.5 text-xs text-white focus:outline-none focus:border-indigo-500 h-7"
                                 value={editTitle}
                                 onChange={e => setEditTitle(e.target.value)}
                                 onKeyDown={handleKeyDown}
                             />
-                            <button onClick={handleSaveEdit} className="p-1 text-green-400 hover:bg-zinc-800 rounded"><Check size={12} /></button>
-                            <button onClick={handleCancelEdit} className="p-1 text-red-400 hover:bg-zinc-800 rounded"><X size={12} /></button>
+                            <Button onClick={handleSaveEdit} variant="ghost" size="sm" className="h-6 w-6 p-0 text-green-400 hover:bg-zinc-800 rounded"><Check size={12} /></Button>
+                            <Button onClick={handleCancelEdit} variant="ghost" size="sm" className="h-6 w-6 p-0 text-red-400 hover:bg-zinc-800 rounded"><X size={12} /></Button>
                         </div>
                     ) : (
                         <>
@@ -129,20 +132,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             
                             {/* Hover Actions */}
                             <div className={`absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 transition-opacity ${isActive ? 'opacity-0 group-hover:opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                                <button 
-                                    onClick={(e) => handleStartEdit(session, e)} 
-                                    className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-700/80 rounded-md transition-colors"
+                                <Button
+                                    onClick={(e) => handleStartEdit(session, e)}
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 w-7 p-0 text-zinc-500 hover:text-white hover:bg-zinc-700/80 rounded-md transition-colors"
                                     title="Rename"
                                 >
                                     <Pencil size={12} />
-                                </button>
-                                <button 
-                                    onClick={(e) => handleDelete(session.id, e)} 
-                                    className="p-1.5 text-zinc-500 hover:text-red-400 hover:bg-zinc-700/80 rounded-md transition-colors"
+                                </Button>
+                                <Button
+                                    onClick={(e) => handleDelete(session.id, e)}
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 w-7 p-0 text-zinc-500 hover:text-red-400 hover:bg-zinc-700/80 rounded-md transition-colors"
                                     title="Delete"
                                 >
                                     <Trash2 size={12} />
-                                </button>
+                                </Button>
                             </div>
                         </>
                     )}
@@ -154,18 +161,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* User / Settings Footer */}
       <div className="p-4 border-t border-zinc-800 bg-zinc-950">
         <div className="space-y-1">
-          <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors text-sm">
+          <Button variant="ghost" className="w-full justify-start gap-3 px-3 py-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors text-sm">
             <Settings size={16} />
             <span>Settings</span>
-          </button>
-          <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors text-sm">
+          </Button>
+          <Button variant="ghost" className="w-full justify-start gap-3 px-3 py-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors text-sm">
             <User size={16} />
             <span>Profile</span>
-          </button>
-           <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-950/20 transition-colors text-sm">
+          </Button>
+           <Button variant="ghost" className="w-full justify-start gap-3 px-3 py-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-950/20 transition-colors text-sm">
             <LogOut size={16} />
             <span>Sign Out</span>
-          </button>
+          </Button>
         </div>
       </div>
     </motion.aside>

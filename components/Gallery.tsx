@@ -3,6 +3,8 @@ import { Upload, Image as ImageIcon, Video, Trash2, Tag } from 'lucide-react';
 import { GalleryItem } from '../types';
 import { saveGalleryItem, getAllGalleryItems, deleteGalleryItem, updateGalleryItem } from '../services/galleryDB';
 import { getCharacters } from '../services/storage';
+import { Button } from './ui/button';
+import { Card } from './ui/card';
 
 export const Gallery: React.FC = () => {
   const [items, setItems] = useState<GalleryItem[]>([]);
@@ -68,7 +70,7 @@ export const Gallery: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="bg-gray-800/90 backdrop-blur border-b border-gray-700 p-4">
+      <div className="glass-haze border-b border-sky-200/15 p-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -86,7 +88,7 @@ export const Gallery: React.FC = () => {
               disabled={isUploading}
               className="hidden"
             />
-            <div className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg transition-all flex items-center gap-2">
+            <div className="holo-btn holo-btn-primary px-4 py-2 text-white rounded-lg transition-all flex items-center gap-2">
               <Upload className="w-4 h-4" />
               {isUploading ? 'Uploading...' : 'Upload Media'}
             </div>
@@ -98,7 +100,7 @@ export const Gallery: React.FC = () => {
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value as any)}
-            className="px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+            className="holo-select px-3 py-2 text-white text-sm"
           >
             <option value="all">All Types</option>
             <option value="image">Images</option>
@@ -108,7 +110,7 @@ export const Gallery: React.FC = () => {
           <select
             value={filterCharacter}
             onChange={(e) => setFilterCharacter(e.target.value)}
-            className="px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+            className="holo-select px-3 py-2 text-white text-sm"
           >
             <option value="all">All Characters</option>
             <option value="unassigned">Unassigned</option>
@@ -184,7 +186,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, onDelete, onAssignChara
   }, [item.thumbnail, item.blob, item.type]);
 
   return (
-    <div className="bg-gray-800/50 border border-gray-700 rounded-lg overflow-hidden group hover:border-purple-500 transition-all">
+    <Card className="holo-card border border-sky-200/15 rounded-lg overflow-hidden group hover:border-sky-300/40 transition-all p-0">
       {/* Thumbnail */}
       <div className="aspect-square bg-gray-900 relative overflow-hidden">
         {item.type === 'video' ? (
@@ -223,12 +225,13 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, onDelete, onAssignChara
           </div>
         )}
         <div className="absolute top-2 right-2">
-          <button
+          <Button
             onClick={() => onDelete(item.id)}
-            className="p-2 bg-red-600/80 hover:bg-red-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+            size="sm"
+            className="h-8 w-8 p-0 bg-red-600/80 hover:bg-red-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all"
           >
             <Trash2 className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
         <div className="absolute bottom-2 left-2">
           <span className="px-2 py-1 bg-black/70 text-white text-xs rounded flex items-center gap-1">
@@ -246,7 +249,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, onDelete, onAssignChara
         <select
           value={item.characterId || 'unassigned'}
           onChange={(e) => onAssignCharacter(item, e.target.value === 'unassigned' ? undefined : e.target.value)}
-          className="mt-2 w-full px-2 py-1 bg-gray-900 border border-gray-700 rounded text-white text-xs focus:outline-none focus:border-purple-500"
+          className="mt-2 w-full holo-select px-2 py-1 text-white text-xs"
         >
           <option value="unassigned">Unassigned</option>
           {characters.map(char => (
@@ -254,6 +257,6 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, onDelete, onAssignChara
           ))}
         </select>
       </div>
-    </div>
+    </Card>
   );
 };

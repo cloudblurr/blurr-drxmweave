@@ -1,6 +1,5 @@
 @layer theme, base, components, utilities;
 @import "tailwindcss";
-@import "@heroui/styles";
 
 /* ═══════════════════════════════════════════
    HOLOGRAPHIC SCI-FI DESIGN SYSTEM
@@ -42,7 +41,7 @@ body {
 
 body {
   margin: 0;
-  font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  font-family: "Space Grotesk", "Manrope", "Segoe UI", sans-serif;
   background: #020810;
   color: hsl(var(--foreground));
   -webkit-font-smoothing: antialiased;
@@ -58,13 +57,43 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: 0;
-  background: 
-    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(0, 229, 255, 0.08), transparent 50%),
-    radial-gradient(ellipse 60% 40% at 80% 30%, rgba(213, 0, 249, 0.06), transparent 50%),
-    radial-gradient(ellipse 50% 50% at 50% 80%, rgba(41, 121, 255, 0.05), transparent 40%),
-    radial-gradient(circle at 60% 50%, rgba(0, 230, 118, 0.03), transparent 40%);
+  background:
+    radial-gradient(ellipse 80% 55% at 18% 18%, rgba(56, 189, 248, 0.12), transparent 52%),
+    radial-gradient(ellipse 75% 40% at 84% 24%, rgba(45, 212, 191, 0.1), transparent 52%),
+    radial-gradient(ellipse 55% 45% at 50% 78%, rgba(14, 165, 233, 0.08), transparent 45%),
+    radial-gradient(circle at 70% 60%, rgba(251, 191, 36, 0.05), transparent 38%);
   pointer-events: none;
   animation: nebulaDrift 30s ease-in-out infinite alternate;
+}
+
+.glass-haze {
+  background: linear-gradient(
+    145deg,
+    rgba(18, 32, 56, 0.68) 0%,
+    rgba(8, 18, 34, 0.84) 45%,
+    rgba(12, 26, 45, 0.72) 100%
+  );
+  border: 1px solid rgba(125, 211, 252, 0.2);
+  backdrop-filter: blur(24px) saturate(1.25);
+  -webkit-backdrop-filter: blur(24px) saturate(1.25);
+  box-shadow:
+    0 14px 45px rgba(2, 8, 20, 0.55),
+    0 0 60px rgba(56, 189, 248, 0.12),
+    inset 0 1px 0 rgba(186, 230, 253, 0.22);
+}
+
+.glass-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-glow::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle at 15% 15%, rgba(125, 211, 252, 0.22), transparent 38%);
 }
 
 @keyframes nebulaDrift {
@@ -190,19 +219,14 @@ code, pre {
 
 /* Holo-card: the main floating card unit */
 .holo-card {
-  background: linear-gradient(
-    160deg,
-    rgba(0, 229, 255, 0.06) 0%,
-    rgba(2, 8, 16, 0.92) 20%,
-    rgba(2, 8, 16, 0.95) 100%
-  );
-  border: 1px solid rgba(0, 229, 255, 0.12);
+  background: linear-gradient(160deg, rgba(56, 189, 248, 0.09) 0%, rgba(8, 18, 34, 0.9) 20%, rgba(8, 18, 34, 0.94) 100%);
+  border: 1px solid rgba(125, 211, 252, 0.2);
   border-radius: 20px;
-  backdrop-filter: blur(24px) saturate(1.3);
+  backdrop-filter: blur(26px) saturate(1.3);
   box-shadow: 
     0 4px 24px rgba(0, 0, 0, 0.4),
-    0 0 20px rgba(0, 229, 255, 0.05),
-    inset 0 1px 0 rgba(0, 229, 255, 0.08);
+    0 0 28px rgba(56, 189, 248, 0.08),
+    inset 0 1px 0 rgba(186, 230, 253, 0.22);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -216,36 +240,25 @@ code, pre {
 
 /* Header bar */
 .holo-header {
-  background: linear-gradient(
-    90deg,
-    rgba(0, 229, 255, 0.06) 0%,
-    rgba(2, 8, 16, 0.9) 30%,
-    rgba(2, 8, 16, 0.9) 70%,
-    rgba(213, 0, 249, 0.04) 100%
-  );
-  border: 1px solid rgba(0, 229, 255, 0.12);
+  background: linear-gradient(95deg, rgba(56, 189, 248, 0.08) 0%, rgba(8, 18, 34, 0.88) 38%, rgba(8, 18, 34, 0.9) 64%, rgba(45, 212, 191, 0.08) 100%);
+  border: 1px solid rgba(125, 211, 252, 0.22);
   border-radius: 20px;
   backdrop-filter: blur(30px) saturate(1.5);
   box-shadow: 
     0 4px 30px rgba(0, 0, 0, 0.5),
-    0 0 40px rgba(0, 229, 255, 0.06);
+    0 0 40px rgba(56, 189, 248, 0.08);
 }
 
 /* Bottom navigation dock */
 .holo-dock {
-  background: linear-gradient(
-    180deg,
-    rgba(0, 229, 255, 0.04) 0%,
-    rgba(2, 8, 16, 0.92) 20%,
-    rgba(2, 8, 16, 0.95) 100%
-  );
-  border: 1px solid rgba(0, 229, 255, 0.12);
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.08) 0%, rgba(8, 18, 34, 0.9) 22%, rgba(8, 18, 34, 0.95) 100%);
+  border: 1px solid rgba(125, 211, 252, 0.2);
   border-radius: 24px;
   backdrop-filter: blur(30px) saturate(1.5);
   box-shadow: 
     0 -4px 30px rgba(0, 0, 0, 0.5),
-    0 0 40px rgba(0, 229, 255, 0.06),
-    inset 0 1px 0 rgba(0, 229, 255, 0.08);
+    0 0 40px rgba(56, 189, 248, 0.08),
+    inset 0 1px 0 rgba(186, 230, 253, 0.2);
 }
 
 /* Navigation button */
@@ -287,18 +300,18 @@ code, pre {
    ═══════════════════════════════════════════ */
 
 .holo-input {
-  background: rgba(0, 229, 255, 0.03);
-  border: 1px solid rgba(0, 229, 255, 0.12);
+  background: rgba(8, 18, 34, 0.6);
+  border: 1px solid rgba(125, 211, 252, 0.2);
   border-radius: 12px;
   color: hsl(var(--foreground));
   transition: all 0.2s ease;
 }
 
 .holo-input:focus {
-  border-color: rgba(0, 229, 255, 0.4);
+  border-color: rgba(125, 211, 252, 0.55);
   box-shadow: 
-    0 0 20px rgba(0, 229, 255, 0.1),
-    inset 0 0 10px rgba(0, 229, 255, 0.03);
+    0 0 24px rgba(56, 189, 248, 0.15),
+    inset 0 0 10px rgba(125, 211, 252, 0.08);
   outline: none;
 }
 
@@ -345,14 +358,14 @@ code, pre {
    ═══════════════════════════════════════════ */
 
 .holo-btn {
-  background: linear-gradient(135deg, rgba(0, 229, 255, 0.15), rgba(41, 121, 255, 0.1));
-  border: 1px solid rgba(0, 229, 255, 0.25);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(20, 184, 166, 0.14));
+  border: 1px solid rgba(125, 211, 252, 0.3);
   border-radius: 12px;
-  color: var(--holo-cyan);
+  color: #dff8ff;
   font-weight: 600;
   letter-spacing: 0.02em;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
   position: relative;
   overflow: hidden;
 }
@@ -373,10 +386,10 @@ code, pre {
 }
 
 .holo-btn:hover {
-  border-color: rgba(0, 229, 255, 0.45);
+  border-color: rgba(125, 211, 252, 0.6);
   box-shadow: 
-    0 0 20px rgba(0, 229, 255, 0.15),
-    inset 0 0 20px rgba(0, 229, 255, 0.05);
+    0 0 20px rgba(56, 189, 248, 0.2),
+    inset 0 0 22px rgba(125, 211, 252, 0.06);
   transform: translateY(-1px);
 }
 
@@ -385,9 +398,9 @@ code, pre {
 }
 
 .holo-btn-primary {
-  background: linear-gradient(135deg, rgba(0, 229, 255, 0.25), rgba(41, 121, 255, 0.2));
-  border-color: rgba(0, 229, 255, 0.4);
-  box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.28), rgba(20, 184, 166, 0.24));
+  border-color: rgba(125, 211, 252, 0.48);
+  box-shadow: 0 0 24px rgba(56, 189, 248, 0.2);
 }
 
 .holo-btn-danger {
@@ -403,14 +416,14 @@ code, pre {
 }
 
 .holo-btn-ghost {
-  background: transparent;
-  border: 1px solid rgba(0, 229, 255, 0.08);
-  color: rgba(0, 229, 255, 0.7);
+  background: rgba(8, 18, 34, 0.35);
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  color: rgba(186, 230, 253, 0.9);
 }
 
 .holo-btn-ghost:hover {
-  background: rgba(0, 229, 255, 0.06);
-  border-color: rgba(0, 229, 255, 0.2);
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(125, 211, 252, 0.3);
 }
 
 /* ═══════════════════════════════════════════
@@ -447,15 +460,15 @@ code, pre {
 .holo-modal {
   background: linear-gradient(
     160deg,
-    rgba(0, 229, 255, 0.05) 0%,
-    rgba(4, 12, 24, 0.95) 15%,
-    rgba(4, 12, 24, 0.97) 100%
+    rgba(56, 189, 248, 0.08) 0%,
+    rgba(4, 12, 24, 0.9) 15%,
+    rgba(4, 12, 24, 0.95) 100%
   );
-  border: 1px solid rgba(0, 229, 255, 0.2);
+  border: 1px solid rgba(125, 211, 252, 0.24);
   border-radius: 20px;
   backdrop-filter: blur(30px) saturate(1.5);
   box-shadow: 
-    0 0 60px rgba(0, 229, 255, 0.1),
+    0 0 60px rgba(56, 189, 248, 0.14),
     0 25px 50px rgba(0, 0, 0, 0.5);
 }
 
@@ -464,11 +477,11 @@ code, pre {
    ═══════════════════════════════════════════ */
 
 .holo-text {
-  background: linear-gradient(135deg, var(--holo-cyan), var(--holo-blue), var(--holo-purple));
+  background: linear-gradient(135deg, #7dd3fc, #67e8f9, #fef08a);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 12px rgba(0, 229, 255, 0.3));
+  filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.28));
 }
 
 .holo-text-glow {
@@ -655,12 +668,33 @@ code, pre {
    LEGACY COMPATIBILITY (neo-* classes)
    ═══════════════════════════════════════════ */
 
-.neo-surface { @extend .holo-panel; }
+.neo-surface {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.05) 0%, rgba(8, 18, 34, 0.86) 30%, rgba(8, 18, 34, 0.9) 70%, rgba(45, 212, 191, 0.05) 100%);
+  border: 1px solid rgba(125, 211, 252, 0.2);
+  border-radius: 16px;
+  backdrop-filter: blur(20px) saturate(1.35);
+  box-shadow: 0 0 28px rgba(56, 189, 248, 0.1), inset 0 1px 0 rgba(186, 230, 253, 0.16);
+}
 .neo-card { border-radius: 20px; backdrop-filter: blur(24px); }
 .neo-gloss { position: relative; overflow: hidden; }
-.neo-dock { @extend .holo-dock; }
-.neo-button { @extend .holo-btn; }
-.neo-input { @extend .holo-input; }
+.neo-dock {
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.08) 0%, rgba(8, 18, 34, 0.9) 22%, rgba(8, 18, 34, 0.95) 100%);
+  border: 1px solid rgba(125, 211, 252, 0.2);
+  border-radius: 24px;
+  backdrop-filter: blur(30px) saturate(1.5);
+}
+.neo-button {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(20, 184, 166, 0.14));
+  border: 1px solid rgba(125, 211, 252, 0.3);
+  border-radius: 12px;
+  color: #dff8ff;
+}
+.neo-input {
+  background: rgba(8, 18, 34, 0.6);
+  border: 1px solid rgba(125, 211, 252, 0.2);
+  border-radius: 12px;
+  color: hsl(var(--foreground));
+}
 
 /* Remove legacy neo-gloss pseudo-element since holo-panel handles it */
 .neo-gloss::after {

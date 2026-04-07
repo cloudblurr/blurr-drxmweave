@@ -4,6 +4,9 @@ import { Character, ViewType, GalleryItem, Lorebook } from '../types';
 import { getCharacters, saveCharacter, deleteCharacter, generateId, exportCharacter, importCharacter, getLorebooks, exportCharacterHTML, getNodesForCharacter } from '../services/storage';
 import { getGalleryItemsByCharacter, saveGalleryItem, deleteGalleryItem, updateGalleryItem } from '../services/galleryDB';
 import { OracleViewer } from './OracleViewer';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Textarea } from './ui/textarea';
 
 interface CharacterGalleryProps {
   onNavigate: (view: ViewType, id?: string) => void;
@@ -211,27 +214,27 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ onNavigate }
             <p className="holo-label mt-1">{characters.length} crew members registered</p>
           </div>
           <div className="flex gap-2">
-            <button
+            <Button
               onClick={handleImportCharacter}
               className="holo-btn-ghost holo-btn px-4 py-2 rounded-xl text-sm flex items-center gap-2"
             >
               <Upload className="w-4 h-4" />
               Import
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => setShowCreateModal(true)}
               className="holo-btn holo-btn-primary px-4 py-2 rounded-xl text-sm flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
               Create
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Search */}
         <div className="relative animate-fadeInUp delay-100">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-holo-cyan/40" />
-          <input
+          <Input
             type="text"
             placeholder="Search crew manifest..."
             value={searchQuery}
@@ -285,40 +288,45 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ onNavigate }
 
                   {/* Actions */}
                   <div className="flex gap-1.5">
-                    <button
+                    <Button
                       onClick={() => onNavigate(ViewType.CharacterDetail, character.id)}
                       className="flex-1 holo-btn px-3 py-2 rounded-lg text-xs flex items-center justify-center gap-1.5"
                     >
                       <MessageSquare className="w-3.5 h-3.5" />
                       Chat
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => setEditingCharacter(character)}
+                      variant="ghost"
+                      size="sm"
                       className="holo-btn-ghost holo-btn px-2.5 py-2 rounded-lg"
                     >
                       <Edit className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                     <div className="relative">
-                      <button
+                      <Button
                         onClick={(e) => {
                           e.stopPropagation();
                           setExportMenuOpen(exportMenuOpen === character.id ? null : character.id);
                         }}
+                        variant="ghost"
+                        size="sm"
                         className="holo-btn-ghost holo-btn px-2.5 py-2 rounded-lg flex items-center gap-0.5"
                       >
                         <Download className="w-3.5 h-3.5" />
                         <ChevronDown className="w-3 h-3" />
-                      </button>
+                      </Button>
                       {exportMenuOpen === character.id && (
                         <div 
                           className="absolute right-0 mt-1 w-52 holo-modal z-50 overflow-hidden"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <button
+                          <Button
                             onClick={() => {
                               handleExportCharacter(character);
                               setExportMenuOpen(null);
                             }}
+                            variant="ghost"
                             className="w-full px-4 py-3 text-left hover:bg-holo-cyan/5 text-slate-300 flex items-center gap-3 transition-colors border-b border-holo-cyan/10"
                           >
                             <Download className="w-4 h-4 text-holo-cyan/60" />
@@ -326,12 +334,13 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ onNavigate }
                               <div className="text-xs font-medium text-holo-cyan">Export JSON</div>
                               <div className="text-[10px] text-slate-600">Raw character data</div>
                             </div>
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             onClick={() => {
                               handleExportHTML(character);
                               setExportMenuOpen(null);
                             }}
+                            variant="ghost"
                             className="w-full px-4 py-3 text-left hover:bg-holo-cyan/5 text-slate-300 flex items-center gap-3 transition-colors border-b border-holo-cyan/10"
                           >
                             <FileText className="w-4 h-4 text-holo-blue/60" />
@@ -339,12 +348,13 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ onNavigate }
                               <div className="text-xs font-medium text-holo-cyan">Export HTML</div>
                               <div className="text-[10px] text-slate-600">Interactive profile</div>
                             </div>
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             onClick={() => {
                               handleShareHTML(character);
                               setExportMenuOpen(null);
                             }}
+                            variant="ghost"
                             className="w-full px-4 py-3 text-left hover:bg-holo-cyan/5 text-slate-300 flex items-center gap-3 transition-colors"
                           >
                             <Share2 className="w-4 h-4 text-holo-purple/60" />
@@ -352,16 +362,18 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ onNavigate }
                               <div className="text-xs font-medium text-holo-cyan">Share Profile</div>
                               <div className="text-[10px] text-slate-600">Open & copy link</div>
                             </div>
-                          </button>
+                          </Button>
                         </div>
                       )}
                     </div>
-                    <button
+                    <Button
                       onClick={() => handleDeleteCharacter(character.id)}
+                      variant="ghost"
+                      size="sm"
                       className="holo-btn-danger px-2.5 py-2 rounded-lg"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -539,13 +551,17 @@ const CharacterModal: React.FC<CharacterModalProps> = ({ character, onClose, onS
           <h2 className="text-xl font-bold holo-text-glow">
             {character ? 'Edit Crew Member' : 'Commission Crew Member'}
           </h2>
-          <button onClick={onClose} className="text-slate-500 hover:text-holo-cyan transition-colors">✕</button>
+          <Button
+            type="button"
+            onClick={onClose}
+            variant="ghost"
+            className="text-slate-500 hover:text-holo-cyan transition-colors h-8 w-8 p-0">✕</Button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-holo-cyan/50 mb-2">Name *</label>
-            <input
+            <Input
               type="text"
               required
               value={formData.name}
@@ -558,7 +574,7 @@ const CharacterModal: React.FC<CharacterModalProps> = ({ character, onClose, onS
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-holo-cyan/50 mb-2">Avatar URL</label>
             <div className="flex flex-col gap-3">
-              <input
+              <Input
                 type="url"
                 value={formData.avatar}
                 onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
@@ -584,13 +600,15 @@ const CharacterModal: React.FC<CharacterModalProps> = ({ character, onClose, onS
                     alt="Avatar preview"
                     className="w-16 h-16 rounded-xl object-cover border border-holo-cyan/20"
                   />
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setFormData({ ...formData, avatar: '' })}
+                    variant="ghost"
+                    size="sm"
                     className="holo-btn-ghost holo-btn px-3 py-2 rounded-lg text-xs"
                   >
                     Clear
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
@@ -598,7 +616,7 @@ const CharacterModal: React.FC<CharacterModalProps> = ({ character, onClose, onS
 
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-holo-cyan/50 mb-2">Description</label>
-            <textarea
+            <Textarea
               rows={3}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -609,7 +627,7 @@ const CharacterModal: React.FC<CharacterModalProps> = ({ character, onClose, onS
 
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-holo-cyan/50 mb-2">Personality</label>
-            <textarea
+            <Textarea
               rows={3}
               value={formData.personality}
               onChange={(e) => setFormData({ ...formData, personality: e.target.value })}
@@ -620,7 +638,7 @@ const CharacterModal: React.FC<CharacterModalProps> = ({ character, onClose, onS
 
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-holo-cyan/50 mb-2">Scenario</label>
-            <textarea
+            <Textarea
               rows={3}
               value={formData.scenario}
               onChange={(e) => setFormData({ ...formData, scenario: e.target.value })}
@@ -631,7 +649,7 @@ const CharacterModal: React.FC<CharacterModalProps> = ({ character, onClose, onS
 
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-holo-cyan/50 mb-2">First Message</label>
-            <textarea
+            <Textarea
               rows={3}
               value={formData.first_mes}
               onChange={(e) => setFormData({ ...formData, first_mes: e.target.value })}
@@ -643,7 +661,7 @@ const CharacterModal: React.FC<CharacterModalProps> = ({ character, onClose, onS
 
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-holo-cyan/50 mb-2">Example Messages</label>
-            <textarea
+            <Textarea
               rows={4}
               value={formData.mes_example}
               onChange={(e) => setFormData({ ...formData, mes_example: e.target.value })}
@@ -734,14 +752,14 @@ const CharacterModal: React.FC<CharacterModalProps> = ({ character, onClose, onS
           <div className="border-t border-holo-cyan/10 pt-4 space-y-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-holo-cyan/50">Add Embedded Code</label>
             <p className="text-xs text-slate-600">Paste iframe/embed HTML or a media URL to save as reusable embed.</p>
-            <input
+            <Input
               type="text"
               value={embedName}
               onChange={(e) => setEmbedName(e.target.value)}
               placeholder="Title for this embed"
               className="w-full px-3 py-2.5 holo-input text-sm"
             />
-            <textarea
+            <Textarea
               rows={3}
               value={embedCode}
               onChange={(e) => setEmbedCode(e.target.value)}
@@ -749,31 +767,32 @@ const CharacterModal: React.FC<CharacterModalProps> = ({ character, onClose, onS
               className="w-full px-3 py-2.5 holo-textarea text-sm"
             />
             <div className="flex justify-end">
-              <button
+              <Button
                 type="button"
                 onClick={handleAddEmbed}
                 disabled={!character?.id || isUploading || !embedName.trim() || !embedCode.trim()}
                 className="holo-btn holo-btn-primary px-4 py-2 rounded-lg text-sm"
               >
                 Save Embed
-              </button>
+              </Button>
             </div>
           </div>
 
           <div className="flex gap-3 pt-4">
-            <button
+            <Button
               type="submit"
               className="flex-1 holo-btn holo-btn-primary px-6 py-3 rounded-lg font-semibold text-sm"
             >
               {character ? 'Save Changes' : 'Create Character'}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={onClose}
+              variant="ghost"
               className="holo-btn holo-btn-ghost px-6 py-3 rounded-lg font-semibold text-sm"
             >
               Cancel
-            </button>
+            </Button>
           </div>
         </form>
       </div>
@@ -859,19 +878,21 @@ const CharacterMediaThumb: React.FC<CharacterMediaThumbProps> = ({ item, onDelet
         ) : (
           <div className="w-full h-full flex items-center justify-center text-slate-600 text-sm">No preview</div>
         )}
-        <button
+        <Button
           type="button"
           onClick={(event) => {
             event.stopPropagation();
             onDelete(item.id);
           }}
+          variant="ghost"
+          size="sm"
           className="absolute top-2 right-2 p-1 bg-red-500/60 backdrop-blur-sm hover:bg-red-500 text-white rounded-lg shadow-lg shadow-red-500/20"
           title="Delete"
         >
           <Trash2 className="w-4 h-4" />
-        </button>
+        </Button>
       </div>
-      <input
+      <Input
         value={name}
         onChange={(e) => setName(e.target.value)}
         onBlur={() => name.trim() && onRename(item.id, name.trim())}

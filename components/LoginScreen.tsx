@@ -3,6 +3,9 @@
 import React, { useState } from 'react';
 import { signInWithGoogle, signInWithEmail, signUpWithEmail } from '../services/authService';
 import { Mail, Lock, User, LogIn } from 'lucide-react';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Card } from './ui/card';
 import logoUrl from '../muselogo.jpg';
 
 interface LoginScreenProps {
@@ -84,10 +87,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onSuccess }) => {
         </div>
 
         {/* Card */}
-        <div className="holo-modal p-6 animate-fadeInUp delay-100">
+        <Card className="holo-modal p-6 animate-fadeInUp delay-100">
 
           {/* Google button */}
-          <button
+          <Button
             onClick={handleGoogle}
             disabled={loading}
             className="w-full holo-btn holo-btn-primary flex items-center justify-center gap-3 px-5 py-3 rounded-xl mb-6 text-sm font-semibold disabled:opacity-50"
@@ -99,7 +102,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onSuccess }) => {
               <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
             Continue with Google
-          </button>
+          </Button>
 
           {/* Divider */}
           <div className="relative mb-6">
@@ -118,7 +121,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onSuccess }) => {
             {mode === 'signup' && (
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-holo-cyan/40" />
-                <input
+                <Input
                   type="text"
                   placeholder="Display name"
                   value={displayName}
@@ -129,7 +132,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onSuccess }) => {
             )}
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-holo-cyan/40" />
-              <input
+              <Input
                 type="email"
                 required
                 placeholder="Email address"
@@ -140,7 +143,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onSuccess }) => {
             </div>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-holo-cyan/40" />
-              <input
+              <Input
                 type="password"
                 required
                 placeholder="Password"
@@ -155,14 +158,14 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onSuccess }) => {
               <p className="text-sm px-1" style={{ color: '#ff4081' }}>{error}</p>
             )}
 
-            <button
+            <Button
               type="submit"
               disabled={loading}
               className="w-full holo-btn holo-btn-primary flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold disabled:opacity-50"
             >
               <LogIn className="w-5 h-5" />
               {mode === 'signup' ? 'Create Account' : 'Sign In'}
-            </button>
+            </Button>
           </form>
 
           {/* Toggle mode */}
@@ -174,7 +177,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onSuccess }) => {
               {mode === 'signin' ? 'Sign Up' : 'Sign In'}
             </button>
           </p>
-        </div>
+        </Card>
       </div>
     </div>
   );

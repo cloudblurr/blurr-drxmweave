@@ -1,6 +1,5 @@
 @layer theme, base, components, utilities;
 @import "tailwindcss";
-@import "@heroui/styles";
 
 /* ═══════════════════════════════════════════════
    OODA MUSE ENGINE — Holographic Vite Entry

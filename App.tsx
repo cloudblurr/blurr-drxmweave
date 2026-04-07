@@ -14,7 +14,7 @@ import { getThemePreset } from './themePresets';
 import { useAuth } from './components/AuthContext';
 import LoginScreen from './components/LoginScreen';
 import { signOut } from './services/authService';
-import { Button } from '@heroui/react';
+import { Button } from './components/ui/button';
 import logoUrl from './muselogo.jpg';
 
 const App: React.FC = () => {
@@ -205,7 +205,7 @@ const App: React.FC = () => {
 
             <Button
               variant="ghost"
-              onPress={() => signOut()}
+              onClick={() => signOut()}
               className="holo-btn-ghost text-sm"
             >
               <LogOut className="w-4 h-4" />
@@ -241,7 +241,7 @@ const App: React.FC = () => {
 
               <Button
                 variant="ghost"
-                onPress={() => signOut()}
+                onClick={() => signOut()}
                 className="holo-btn-ghost text-sm"
               >
                 <LogOut className="w-4 h-4" />
