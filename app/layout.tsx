@@ -2,8 +2,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Ooda Muse Engine",
-  description: "Vibrant creative workspace with OodaVerse community uploads."
+  title: "Blurr Drxmweave",
+  description: "Cosmic colorwave creative workspace with BlurrVerse community uploads."
 };
 
 export default function RootLayout({

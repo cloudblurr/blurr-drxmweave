@@ -4,7 +4,7 @@ import { getCharacters, getNodes } from '../services/storage';
 import { ViewType } from '../types';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import logoUrl from '../muselogo.jpg';
+import logoUrl from '../assets/blurrdrxmweave.png';
 
 interface DashboardProps {
   onNavigate: (view: ViewType, id?: string) => void;
@@ -50,10 +50,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       onClick: () => onNavigate(ViewType.LoreWorld)
     },
     {
-      title: 'Explore Oodaverse',
+      title: 'Explore BlurrVerse',
       description: 'Browse community-shared public characters.',
       icon: <Orbit className="w-4 h-4" />,
-      onClick: () => window.location.assign('/oodaverse')
+      onClick: () => window.location.assign('/blurrverse')
     },
     {
       title: 'Configure Settings',
@@ -76,10 +76,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                   Workspace Overview
                 </div>
                 <div className="flex items-center gap-3">
-                  <img src={logoSrc} alt="Ooda Muse Engine logo" className="h-11 w-11 rounded-xl border border-slate-700/70" />
+                  <img src={logoSrc} alt="Blurr Drxmweave logo" className="h-16 w-16 rounded-2xl border border-slate-700/70 object-cover" />
                   <div>
                     <h1 className="text-2xl font-semibold text-slate-100 md:text-3xl">Command Center</h1>
-                    <p className="text-sm text-slate-400">Operate characters, lore systems, and community publishing.</p>
+                    <p className="text-sm text-slate-300">Operate characters, lore systems, and BlurrVerse publishing.</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
@@ -87,8 +87,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                     Create Character
                     <ArrowRight className="h-4 w-4" />
                   </Button>
-                  <Button onClick={() => window.location.assign('/oodaverse')} variant="outline">
-                    Open Oodaverse
+                  <Button onClick={() => window.location.assign('/blurrverse')} variant="outline">
+                    Open BlurrVerse
                   </Button>
                 </div>
               </div>
@@ -171,7 +171,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               <Globe className="w-14 h-14 mx-auto mb-4 text-sky-300" />
               <h2 className="text-2xl font-semibold mb-2 text-slate-100">Welcome to your workspace</h2>
               <p className="text-slate-400 mb-6 max-w-xl mx-auto">
-                Create your first character profile to begin chatting, worldbuilding, and publishing to Oodaverse.
+                Create your first character profile to begin chatting, worldbuilding, and publishing to BlurrVerse.
               </p>
               <Button onClick={() => onNavigate(ViewType.Characters)}>
                 Create First Character

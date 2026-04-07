@@ -16,10 +16,11 @@ html, body, #root {
 
 body {
   font-family: "Space Grotesk", "Segoe UI", sans-serif;
-  background-color: #070b14;
+  background-color: #040206;
   background-image:
-    radial-gradient(circle at 10% 0%, rgba(14, 165, 233, 0.16), transparent 34%),
-    radial-gradient(circle at 92% 100%, rgba(16, 185, 129, 0.12), transparent 38%);
+    radial-gradient(circle at 12% 0%, rgba(63, 125, 255, 0.22), transparent 34%),
+    radial-gradient(circle at 88% 94%, rgba(255, 123, 47, 0.18), transparent 40%),
+    radial-gradient(circle at 48% 60%, rgba(126, 58, 242, 0.14), transparent 42%);
   color: #e0f0ff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

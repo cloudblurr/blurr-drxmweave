@@ -10,7 +10,7 @@ import { Label } from "../../components/ui/label";
 import { Textarea } from "../../components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
 
-interface OodaVerseEntry {
+interface BlurrVerseEntry {
   id: string;
   name: string;
   description?: string;
@@ -21,7 +21,8 @@ interface OodaVerseEntry {
   createdAt: number;
 }
 
-const STORAGE_KEY = "oodaverse-entries";
+const STORAGE_KEY = "blurrverse-entries";
+const LEGACY_STORAGE_KEY = "oodaverse-entries";
 
 const safeParse = (value: string): unknown => {
   try {
@@ -31,8 +32,8 @@ const safeParse = (value: string): unknown => {
   }
 };
 
-export default function OodaVersePage() {
-  const [entries, setEntries] = React.useState<OodaVerseEntry[]>([]);
+export default function BlurrVersePage() {
+  const [entries, setEntries] = React.useState<BlurrVerseEntry[]>([]);
   const [jsonText, setJsonText] = React.useState("");
   const [jsonFileName, setJsonFileName] = React.useState<string | null>(null);
   const [imagePreview, setImagePreview] = React.useState<string | null>(null);
@@ -50,18 +51,21 @@ export default function OodaVersePage() {
   }, [jsonText]);
 
   React.useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
+    const stored = window.localStorage.getItem(STORAGE_KEY) ?? window.localStorage.getItem(LEGACY_STORAGE_KEY);
     if (stored) {
       const parsed = safeParse(stored);
       if (Array.isArray(parsed)) {
-        setEntries(parsed as OodaVerseEntry[]);
+        const migrated = parsed as BlurrVerseEntry[];
+        setEntries(migrated);
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
       }
     }
   }, []);
 
-  const persistEntries = React.useCallback((next: OodaVerseEntry[]) => {
+  const persistEntries = React.useCallback((next: BlurrVerseEntry[]) => {
     setEntries(next);
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    window.localStorage.removeItem(LEGACY_STORAGE_KEY);
   }, []);
 
   const availableTags = React.useMemo(() => {
@@ -134,7 +138,7 @@ export default function OodaVersePage() {
       ? typedParsed.tags.filter((tag): tag is string => typeof tag === "string").slice(0, 6)
       : [];
 
-    const nextEntry: OodaVerseEntry = {
+    const nextEntry: BlurrVerseEntry = {
       id: crypto.randomUUID(),
       name,
       description,
@@ -147,7 +151,7 @@ export default function OodaVersePage() {
 
     const nextEntries = [nextEntry, ...entries];
     persistEntries(nextEntries);
-    setStatus("Submitted to OodaVerse (local-only). Ready for the next upload.");
+    setStatus("Published to BlurrVerse (local-only). Ready for the next upload.");
     setJsonText("");
     setJsonFileName(null);
     setImagePreview(null);
@@ -166,13 +170,13 @@ export default function OodaVersePage() {
           <div className="relative space-y-4">
             <div className="inline-flex items-center gap-2 rounded-full border border-sky-300/25 bg-slate-900/70 px-4 py-1.5 text-xs text-slate-200">
               <Sparkles className="h-3.5 w-3.5 text-sky-300" />
-              Oodaverse Public Repository
+              BlurrVerse Public Repository
             </div>
             <h1 className="text-3xl md:text-5xl font-semibold text-slate-100">
               Discover and publish public characters
             </h1>
             <p className="text-slate-300 max-w-3xl">
-              Oodaverse is now a browsing-first repository. Find community characters by tags,
+              BlurrVerse is now a browsing-first repository. Find community characters by tags,
               inspect payloads, and share your own character JSONs.
             </p>
             <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">

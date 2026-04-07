@@ -11,9 +11,45 @@ export type ThemePreset = {
   };
 };
 
-export const DEFAULT_THEME_ID = 'default-dark';
+export const DEFAULT_THEME_ID = 'cosmic-wave';
 
 export const THEME_PRESETS: ThemePreset[] = [
+  {
+    id: 'cosmic-wave',
+    name: 'Cosmic Wave',
+    colors: {
+      bg: 'linear-gradient(130deg, #040206 0%, #1b0831 32%, #2b1048 50%, #0b2e73 72%, #ff6a2a 100%)',
+      surface: '#14081f',
+      primary: '#ff7b2f',
+      accent: '#3f7dff',
+      text: '#f7ecff',
+      textSecondary: '#c9b8da'
+    }
+  },
+  {
+    id: 'event-horizon',
+    name: 'Event Horizon',
+    colors: {
+      bg: 'linear-gradient(145deg, #020203 0%, #11001f 30%, #2a0d3f 55%, #1d3d8b 78%, #ff8a36 100%)',
+      surface: '#130718',
+      primary: '#ff9448',
+      accent: '#4b8dff',
+      text: '#f5e9ff',
+      textSecondary: '#bda7cf'
+    }
+  },
+  {
+    id: 'nebula-drift',
+    name: 'Nebula Drift',
+    colors: {
+      bg: 'linear-gradient(120deg, #030305 0%, #100220 25%, #1e0635 48%, #173875 72%, #ff6f1f 100%)',
+      surface: '#170a22',
+      primary: '#f67a2d',
+      accent: '#5ea2ff',
+      text: '#f7edff',
+      textSecondary: '#cbb9db'
+    }
+  },
   {
     id: 'default-dark',
     name: 'Default Dark',

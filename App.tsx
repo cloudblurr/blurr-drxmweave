@@ -9,14 +9,14 @@ import { LoreWorld } from './components/LoreWorld';
 import { Settings } from './components/Settings';
 import { SharedProfile } from './components/SharedProfile';
 import { ViewType } from './types';
-import { getSettings } from './services/storage';
-import { getThemePreset } from './themePresets';
+import { getSettings, saveSettings } from './services/storage';
+import { getThemePreset, THEME_PRESETS } from './themePresets';
 import { useAuth } from './components/AuthContext';
 import LoginScreen from './components/LoginScreen';
 import { signOut } from './services/authService';
 import { Button } from './components/ui/button';
 import { Card } from './components/ui/card';
-import logoUrl from './muselogo.jpg';
+import logoUrl from './assets/blurrdrxmweave.png';
 
 const App: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
@@ -27,6 +27,7 @@ const App: React.FC = () => {
   const [sharedProfileCharacterId, setSharedProfileCharacterId] = useState<string | null>(null);
   const [themePreset, setThemePreset] = useState(() => getThemePreset(getSettings().theme));
   const [showSplash, setShowSplash] = useState(true);
+  const [currentThemeId, setCurrentThemeId] = useState(() => getSettings().theme || 'cosmic-wave');
 
   // Next.js image imports can be StaticImageData; Vite typically returns a string URL.
   const logoSrc: string = ((logoUrl as unknown as { src?: string })?.src ?? (logoUrl as unknown as string)) || '';
@@ -59,7 +60,9 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const updateTheme = () => {
-      setThemePreset(getThemePreset(getSettings().theme));
+      const latestSettings = getSettings();
+      setThemePreset(getThemePreset(latestSettings.theme));
+      setCurrentThemeId(latestSettings.theme || 'cosmic-wave');
     };
     updateTheme();
     window.addEventListener('settings-updated', updateTheme);
@@ -85,6 +88,12 @@ const App: React.FC = () => {
     if (view === ViewType.Dashboard) {
       window.history.pushState({}, '', '/');
     }
+  };
+
+  const handleThemeChange = (themeId: string) => {
+    const latest = getSettings();
+    saveSettings({ ...latest, theme: themeId });
+    setCurrentThemeId(themeId);
   };
 
   const renderView = () => {
@@ -155,11 +164,11 @@ const App: React.FC = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_45%),radial-gradient(circle_at_bottom,rgba(245,158,11,0.15),transparent_40%)]" />
         <Card className="relative z-10 w-[92%] max-w-lg p-8 text-center space-y-5">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-900/70 border border-slate-700/70">
-            <img src={logoSrc} alt="Ooda Muse Engine logo" className="w-12 h-12 rounded-xl" />
+            <img src={logoSrc} alt="Blurr Drxmweave logo" className="w-16 h-16 rounded-xl object-cover" />
           </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-semibold text-slate-100">Ooda Muse Engine</h1>
-            <p className="mt-2 text-sm text-slate-400">Bootstrapping your creative workspace...</p>
+            <h1 className="text-3xl md:text-4xl font-semibold text-slate-100">Blurr Drxmweave</h1>
+            <p className="mt-2 text-sm text-slate-300">Syncing the cosmic colorwave workspace...</p>
           </div>
           <div className="mx-auto h-1.5 w-36 overflow-hidden rounded-full bg-slate-800">
             <div className="h-full w-1/2 rounded-full bg-sky-400 animate-pulse" />
@@ -178,13 +187,13 @@ const App: React.FC = () => {
               <div>
                 <img
                   src={logoSrc}
-                  alt="Ooda Muse Engine logo"
-                  className="w-9 h-9 rounded-xl border border-slate-700/70"
+                  alt="Blurr Drxmweave logo"
+                  className="w-14 h-14 rounded-2xl border border-slate-700/70 object-cover"
                 />
               </div>
               <div className="leading-tight hidden sm:block">
-                <div className="text-sm font-semibold tracking-wide text-slate-100">Ooda Muse Engine</div>
-                <div className="text-xs text-slate-400">Creative Operations Hub</div>
+                <div className="text-base font-semibold tracking-wide text-slate-100">Blurr Drxmweave</div>
+                <div className="text-xs text-slate-300">Cosmic Colorwave Command Hub</div>
               </div>
             </div>
 
@@ -192,8 +201,18 @@ const App: React.FC = () => {
               <NavButton icon={<Home className="w-4 h-4" />} active={currentView === ViewType.Dashboard} onClick={() => handleNavigate(ViewType.Dashboard)} label="Home" />
               <NavButton icon={<Users className="w-4 h-4" />} active={currentView === ViewType.Characters || currentView === ViewType.CharacterDetail} onClick={() => handleNavigate(ViewType.Characters)} label="Characters" />
               <NavButton icon={<BookOpen className="w-4 h-4" />} active={currentView === ViewType.LoreWorld} onClick={() => handleNavigate(ViewType.LoreWorld)} label="Lore" />
-              <NavButton icon={<Compass className="w-4 h-4" />} active={false} href="/oodaverse" label="Oodaverse" />
+              <NavButton icon={<Compass className="w-4 h-4" />} active={false} href="/blurrverse" label="BlurrVerse" />
               <NavButton icon={<SettingsIcon className="w-4 h-4" />} active={currentView === ViewType.Settings} onClick={() => handleNavigate(ViewType.Settings)} label="Settings" />
+              <select
+                value={currentThemeId}
+                onChange={(event: React.ChangeEvent<HTMLSelectElement>) => handleThemeChange(event.target.value)}
+                className="neo-input h-9 min-w-47.5 rounded-xl px-3 py-1.5 text-xs"
+                aria-label="Theme Switcher"
+              >
+                {THEME_PRESETS.map((theme) => (
+                  <option key={theme.id} value={theme.id}>{theme.name}</option>
+                ))}
+              </select>
               <Button variant="outline" onClick={() => signOut()} className="text-xs">
                 <LogOut className="w-4 h-4" />
                 Sign Out

@@ -6,7 +6,7 @@ import { Mail, Lock, User, LogIn } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
-import logoUrl from '../muselogo.jpg';
+import logoUrl from '../assets/blurrdrxmweave.png';
 
 interface LoginScreenProps {
   onSuccess?: () => void;
@@ -78,12 +78,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onSuccess }) => {
         <div className="text-center mb-8 animate-fadeInUp">
           <div className="flex items-center justify-center mb-4">
             <div className="relative">
-              <img src={logoSrc} alt="Ooda Muse Engine logo" className="w-18 h-18 rounded-2xl shadow-glow" />
+              <img src={logoSrc} alt="Blurr Drxmweave logo" className="w-28 h-28 rounded-2xl shadow-glow object-cover" />
               <div className="absolute inset-0 rounded-2xl animate-holo-pulse" style={{ boxShadow: '0 0 30px rgba(0,229,255,0.25)' }} />
             </div>
           </div>
-          <h1 className="text-4xl font-bold holo-text tracking-wide mb-2">Ooda Muse Engine</h1>
-          <p className="holo-label">Enter the Soul Portal</p>
+          <h1 className="text-4xl font-bold holo-text tracking-wide mb-2">Blurr Drxmweave</h1>
+          <p className="holo-label">Enter BlurrVerse</p>
         </div>
 
         {/* Card */}

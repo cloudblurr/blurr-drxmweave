@@ -314,7 +314,8 @@ export const Settings: React.FC<SettingsProps> = ({ onNavigate }) => {
           <h2 className="text-sm font-bold holo-text-glow mb-3">About</h2>
           <div className="text-xs text-slate-500 space-y-1.5">
             <p><strong className="text-holo-cyan/80">Version:</strong> 1.0.0</p>
-            <p><strong className="text-holo-cyan/80">Engine:</strong> Ooda Muse Engine</p>
+            <p><strong className="text-holo-cyan/80">Engine:</strong> Blurr Drxmweave</p>
+            <p><strong className="text-holo-cyan/80">Community Hub:</strong> BlurrVerse</p>
             <p><strong className="text-holo-cyan/80">Powered by:</strong> xAI and OpenRouter</p>
             <p><strong className="text-holo-cyan/80">Supported Formats:</strong> ChubAI, SillyTavern JSON</p>
           </div>

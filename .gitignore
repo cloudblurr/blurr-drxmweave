@@ -28,3 +28,8 @@ out
 *.sw?
 .vercel
 .env*.local
+
+# Local secrets and private exports
+googleauth.json
+database-secrets.json
+ooda-muse-engine-clone/
