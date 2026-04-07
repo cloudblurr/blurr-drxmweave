@@ -2,6 +2,7 @@ import { Character, ChatNode, LoreEntry, Lorebook, AppSettings } from '../types'
 import { DEFAULT_THEME_ID } from '../themePresets';
 import * as bunnyClient from './bunnyClient';
 import { getCurrentUser } from './authService';
+import { normalizeNodeMessages } from '../lib/messageFormatting';
 
 // ---------------------------------------------------------------------------
 // BunnyDB write-through helper
@@ -57,6 +58,35 @@ const STORAGE_KEYS = {
   SETTINGS: 'rp_settings',
 };
 
+const MESSAGE_FORMAT_MIGRATION_KEY = 'rp_msg_format_migration_v1';
+let messageFormatMigrationRan = false;
+
+function migrateNodeMessageFormatting(nodes: ChatNode[]): ChatNode[] {
+  if (typeof window === 'undefined') return nodes;
+  if (messageFormatMigrationRan || localStorage.getItem(MESSAGE_FORMAT_MIGRATION_KEY)) {
+    messageFormatMigrationRan = true;
+    return nodes;
+  }
+
+  let changed = false;
+  const migrated = nodes.map((node) => {
+    const normalized = normalizeNodeMessages(node);
+    if (normalized !== node) changed = true;
+    return normalized;
+  });
+
+  if (changed) {
+    localStorage.setItem(STORAGE_KEYS.NODES, JSON.stringify(migrated));
+    if (isAuthenticated()) {
+      migrated.forEach((node) => bunnyClient.saveNode(node).catch(console.warn));
+    }
+  }
+
+  localStorage.setItem(MESSAGE_FORMAT_MIGRATION_KEY, '1');
+  messageFormatMigrationRan = true;
+  return migrated;
+}
+
 // Helper function
 export const generateId = () => Date.now().toString() + Math.random().toString(36).substr(2, 9);
 
@@ -97,7 +127,8 @@ export function deleteCharacter(id: string): void {
 export function getNodes(): ChatNode[] {
   if (typeof window === 'undefined') return [];
   const data = localStorage.getItem(STORAGE_KEYS.NODES);
-  return data ? JSON.parse(data) : [];
+  const nodes = data ? JSON.parse(data) : [];
+  return migrateNodeMessageFormatting(nodes);
 }
 
 export function getNode(id: string): ChatNode | undefined {

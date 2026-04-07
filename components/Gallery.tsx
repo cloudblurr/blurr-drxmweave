@@ -5,6 +5,7 @@ import { saveGalleryItem, getAllGalleryItems, deleteGalleryItem, updateGalleryIt
 import { getCharacters } from '../services/storage';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
+import { Select } from './ui/select';
 
 export const Gallery: React.FC = () => {
   const [items, setItems] = useState<GalleryItem[]>([]);
@@ -74,7 +75,7 @@ export const Gallery: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-              <ImageIcon className="w-6 h-6 text-purple-400" />
+              <ImageIcon className="w-6 h-6 text-amber-300" />
               Gallery
             </h2>
             <p className="text-sm text-gray-400 mt-1">{filteredItems.length} items</p>
@@ -97,27 +98,27 @@ export const Gallery: React.FC = () => {
 
         {/* Filters */}
         <div className="flex gap-3 mt-4">
-          <select
+          <Select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value as any)}
-            className="holo-select px-3 py-2 text-white text-sm"
+            className="holo-select h-10 w-48 px-3 py-2 text-white text-sm"
           >
             <option value="all">All Types</option>
             <option value="image">Images</option>
             <option value="video">Videos</option>
             <option value="embed">Embeds</option>
-          </select>
-          <select
+          </Select>
+          <Select
             value={filterCharacter}
             onChange={(e) => setFilterCharacter(e.target.value)}
-            className="holo-select px-3 py-2 text-white text-sm"
+            className="holo-select h-10 w-52 px-3 py-2 text-white text-sm"
           >
             <option value="all">All Characters</option>
             <option value="unassigned">Unassigned</option>
             {characters.map(char => (
               <option key={char.id} value={char.id}>{char.name}</option>
             ))}
-          </select>
+          </Select>
         </div>
       </div>
 
@@ -246,16 +247,16 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, onDelete, onAssignChara
         <p className="text-sm text-white truncate" title={item.name}>
           {item.name}
         </p>
-        <select
+        <Select
           value={item.characterId || 'unassigned'}
           onChange={(e) => onAssignCharacter(item, e.target.value === 'unassigned' ? undefined : e.target.value)}
-          className="mt-2 w-full holo-select px-2 py-1 text-white text-xs"
+          className="mt-2 h-8 w-full holo-select px-2 py-1 text-white text-xs"
         >
           <option value="unassigned">Unassigned</option>
           {characters.map(char => (
             <option key={char.id} value={char.id}>{char.name}</option>
           ))}
-        </select>
+        </Select>
       </div>
     </Card>
   );

@@ -67,6 +67,7 @@ export const NSFW_ROLEPLAY_MODELS: any[] = [
 
   // ── xAI via OpenRouter (includes Grok 4) ───────────────────────
   { id: 'x-ai/grok-4.1-fast', name: 'Grok 4.1 Fast Reasoning', provider: 'openrouter', contextLength: 2000000, isNsfw: true, description: 'Latest Grok 4.1 with 2M context — fastest top-tier reasoning' },
+  { id: 'x-ai/grok-4.20', name: 'Grok 4.20', provider: 'openrouter', contextLength: 2000000, isNsfw: true, description: 'Grok 4.20 variant for advanced reasoning and long-context generation' },
   { id: 'x-ai/grok-4-fast', name: 'Grok 4 Fast', provider: 'openrouter', contextLength: 2000000, isNsfw: true, description: 'Grok 4 fast variant with 2M context window' },
   { id: 'x-ai/grok-4', name: 'Grok 4', provider: 'openrouter', contextLength: 256000, isNsfw: true, description: 'Full Grok 4 with deep reasoning and 256K context' },
   { id: 'x-ai/grok-3', name: 'Grok 3 (OpenRouter)', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Grok 3 routed via OpenRouter' },
@@ -244,6 +245,7 @@ export const XAI_MODEL_OPTIONS = [
 export const OPENROUTER_MODEL_OPTIONS = [
   // xAI via OpenRouter
   { id: 'x-ai/grok-4.1-fast', name: 'Grok 4.1 Fast Reasoning' },
+  { id: 'x-ai/grok-4.20', name: 'Grok 4.20' },
   { id: 'x-ai/grok-4-fast', name: 'Grok 4 Fast' },
   { id: 'x-ai/grok-4', name: 'Grok 4' },
   { id: 'x-ai/grok-3', name: 'Grok 3 (OpenRouter)' },

@@ -700,3 +700,151 @@ code, pre {
 .neo-gloss::after {
   content: none;
 }
+
+/* Soul Portal theme overrides */
+:root {
+  --soul-void: #030406;
+  --soul-night: #071225;
+  --soul-abyss: #0b1e3b;
+  --soul-gold: #d3ac58;
+  --soul-gold-soft: #f2d188;
+  --soul-blue: #3b82f6;
+  --soul-blue-soft: #7db4ff;
+}
+
+body {
+  font-family: "Sora", "Space Grotesk", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at 15% 14%, rgba(59, 130, 246, 0.26), transparent 45%),
+    radial-gradient(circle at 82% 22%, rgba(211, 172, 88, 0.2), transparent 50%),
+    radial-gradient(circle at 52% 78%, rgba(26, 64, 132, 0.22), transparent 54%),
+    linear-gradient(165deg, var(--soul-void) 0%, #050d1a 40%, #09152b 100%);
+  color: #f8f4e8;
+}
+
+body::before {
+  background:
+    radial-gradient(ellipse 72% 56% at 14% 20%, rgba(59, 130, 246, 0.22), transparent 52%),
+    radial-gradient(ellipse 70% 42% at 82% 18%, rgba(211, 172, 88, 0.18), transparent 56%),
+    radial-gradient(ellipse 56% 54% at 54% 78%, rgba(59, 130, 246, 0.12), transparent 48%);
+  animation: soulDrift 24s ease-in-out infinite alternate;
+}
+
+body::after {
+  background: radial-gradient(circle at center, rgba(211, 172, 88, 0.015), rgba(0, 0, 0, 0));
+  opacity: 1;
+}
+
+@keyframes soulDrift {
+  0% { transform: scale(1) translateY(0px); }
+  100% { transform: scale(1.02) translateY(-12px); }
+}
+
+.holo-panel,
+.holo-card,
+.glass-haze,
+.holo-header,
+.holo-dock,
+.holo-modal,
+.neo-surface,
+.neo-dock,
+.neo-card {
+  background: linear-gradient(145deg, rgba(7, 18, 37, 0.82) 0%, rgba(4, 10, 22, 0.9) 44%, rgba(9, 22, 45, 0.8) 100%);
+  border-color: rgba(211, 172, 88, 0.28);
+  box-shadow:
+    0 12px 38px rgba(2, 4, 10, 0.65),
+    0 0 36px rgba(59, 130, 246, 0.14),
+    inset 0 1px 0 rgba(242, 209, 136, 0.24);
+}
+
+.holo-btn,
+.neo-button {
+  background: linear-gradient(135deg, rgba(211, 172, 88, 0.24), rgba(59, 130, 246, 0.22));
+  border-color: rgba(242, 209, 136, 0.5);
+  color: #fff8e8;
+  text-shadow: 0 0 14px rgba(211, 172, 88, 0.36);
+}
+
+.holo-btn:hover,
+.neo-button:hover {
+  border-color: rgba(242, 209, 136, 0.8);
+  box-shadow: 0 0 26px rgba(59, 130, 246, 0.24), inset 0 0 24px rgba(211, 172, 88, 0.12);
+}
+
+.holo-btn-primary {
+  background: linear-gradient(130deg, rgba(242, 209, 136, 0.32), rgba(59, 130, 246, 0.28));
+  border-color: rgba(242, 209, 136, 0.76);
+}
+
+.holo-btn-ghost {
+  background: rgba(7, 18, 37, 0.5);
+  border-color: rgba(211, 172, 88, 0.3);
+  color: rgba(248, 237, 213, 0.9);
+}
+
+.holo-input,
+.holo-textarea,
+.holo-select,
+.neo-input {
+  background: rgba(4, 10, 22, 0.84);
+  border-color: rgba(211, 172, 88, 0.3);
+  color: #f7f3e4;
+}
+
+.holo-input:focus,
+.holo-textarea:focus,
+.holo-select:focus,
+.neo-input:focus {
+  border-color: rgba(242, 209, 136, 0.75);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.26), 0 0 24px rgba(242, 209, 136, 0.22);
+}
+
+.holo-text,
+.holo-text-glow {
+  background: linear-gradient(118deg, #f2d188 0%, #f7e6b8 30%, #7db4ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 14px rgba(211, 172, 88, 0.35));
+}
+
+.holo-label {
+  color: rgba(242, 209, 136, 0.62);
+}
+
+.holo-nav-active {
+  color: var(--soul-gold-soft) !important;
+  text-shadow: 0 0 16px rgba(211, 172, 88, 0.46);
+}
+
+.soul-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.soul-particles span {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(242, 209, 136, 0.95), rgba(59, 130, 246, 0.2));
+  box-shadow: 0 0 14px rgba(242, 209, 136, 0.55), 0 0 22px rgba(59, 130, 246, 0.35);
+  animation: soulRise linear infinite;
+}
+
+@keyframes soulRise {
+  0% {
+    transform: translateY(0) scale(0.7);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-110vh) scale(1.2);
+    opacity: 0;
+  }
+}

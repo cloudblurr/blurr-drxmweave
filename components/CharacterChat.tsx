@@ -9,6 +9,7 @@ import { NSFW_ROLEPLAY_MODELS } from '../constants';
 import { OracleViewer } from './OracleViewer';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { normalizeMessageContent } from '../lib/messageFormatting';
 
 interface CharacterChatProps {
   characterId: string;
@@ -797,15 +798,17 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
-            {activeNode?.messages.map((message, index) => (
+            {activeNode?.messages.map((message, index) => {
+              const displayContent = normalizeMessageContent(message.content);
+              return (
               <div
                 key={message.id}
                 className={`flex gap-3 group ${message.role === Role.User ? 'justify-end' : 'justify-start'}`}
               >
                 {message.role === Role.Assistant && character.avatar && (
-                  <img src={character.avatar} alt={character.name} className="w-8 h-8 rounded-full object-cover flex-shrink-0 ring-1 ring-holo-cyan/20" />
+                  <img src={character.avatar} alt={character.name} className="w-8 h-8 rounded-full object-cover shrink-0 ring-1 ring-holo-cyan/20" />
                 )}
-                <div className="flex flex-col gap-2 max-w-[70%]">
+                <div className="flex flex-col gap-2 max-w-[70%] min-w-0">
                   <div
                     className={`rounded-xl p-4 ${
                       message.role === Role.User
@@ -839,13 +842,13 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                     ) : (
                       <ReactMarkdown 
                         remarkPlugins={[remarkGfm]} 
-                        className="prose prose-invert prose-sm max-w-none"
+                        className="prose prose-invert prose-sm max-w-none wrap-anywhere"
                         components={{
                           h1: ({children}) => <h1 className="text-xl font-bold text-white mb-5 mt-8 pb-2.5 border-b-2 border-slate-700/50 first:mt-0 tracking-tight">{children}</h1>,
-                          h2: ({children}) => <h2 className="text-lg font-bold text-white mb-4 mt-8 flex items-center gap-2 first:mt-0 tracking-tight"><span className="w-1 h-6 bg-gradient-to-b from-cyan-400 to-cyan-600 rounded-full"></span>{children}</h2>,
+                          h2: ({children}) => <h2 className="text-lg font-bold text-white mb-4 mt-8 flex items-center gap-2 first:mt-0 tracking-tight"><span className="w-1 h-6 bg-linear-to-b from-cyan-400 to-cyan-600 rounded-full"></span>{children}</h2>,
                           h3: ({children}) => <h3 className="text-base font-semibold text-slate-100 mb-3 mt-6 first:mt-0 tracking-tight">{children}</h3>,
                           h4: ({children}) => <h4 className="text-sm font-semibold text-slate-200 mb-2.5 mt-5 first:mt-0">{children}</h4>,
-                          p: ({children}) => <p className="leading-[1.8] mb-5 text-slate-200 text-[15px] last:mb-0 font-normal tracking-normal">{children}</p>,
+                          p: ({children}) => <p className="leading-[1.8] mb-5 text-slate-200 text-[15px] last:mb-0 font-normal tracking-normal wrap-anywhere">{children}</p>,
                           ul: ({children}) => <ul className="list-disc list-outside ml-4 mb-5 space-y-2 text-slate-200 marker:text-slate-500 text-[14.5px]">{children}</ul>,
                           ol: ({children}) => <ol className="list-decimal list-outside ml-4 mb-5 space-y-2 text-slate-200 marker:text-slate-500 text-[14.5px]">{children}</ol>,
                           li: ({children}) => <li className="pl-2 leading-[1.75]">{children}</li>,
@@ -857,7 +860,7 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                           code: ({inline, children}: any) => inline ? <code className="bg-slate-800/90 text-cyan-300 px-2 py-0.5 rounded text-[0.9em] font-mono border border-slate-700/60 tracking-tight font-medium">{children}</code> : <code>{children}</code>
                         }}
                       >
-                        {message.content}
+                        {displayContent}
                       </ReactMarkdown>
                     )}
                   </div>
@@ -866,7 +869,7 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                   {editingMessageId !== message.id && (
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
-                        onClick={() => handleCopyMessage(message.content)}
+                        onClick={() => handleCopyMessage(displayContent)}
                         className="p-1 hover:bg-holo-cyan/10 rounded text-slate-600 hover:text-holo-cyan transition-colors"
                         title="Copy message"
                       >
@@ -912,7 +915,8 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
             {isLoading && (
               <div className="flex gap-3">
                 {character.avatar && (
@@ -1001,7 +1005,7 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
       {/* Gallery Sidebar */}
       {showGallery && (
         <div className="fixed right-0 top-0 bottom-0 w-80 holo-sidebar z-40 flex flex-col">
-          <div className="p-4 border-b border-holo-cyan/10 flex-shrink-0">
+          <div className="p-4 border-b border-holo-cyan/10 shrink-0">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold holo-text-glow flex items-center gap-2">
                 <ImageIcon className="w-4 h-4 text-holo-cyan" />
@@ -1126,7 +1130,7 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                       >
                         <div className="flex items-start justify-between mb-2">
                           <h5 className="font-medium text-holo-cyan text-sm flex-1">{entry.name}</h5>
-                          <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                          <div className="flex items-center gap-1 shrink-0 ml-2">
                             <span className="holo-badge text-[10px]">
                               {entry.category}
                             </span>

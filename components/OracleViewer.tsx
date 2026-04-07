@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import type Plyr from 'plyr';
-import { Minimize2, Maximize2, X, Move, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { X, ChevronLeft, ChevronRight, Image as ImageIcon, Video, Code2, Move, GripVertical } from 'lucide-react';
 import { GalleryItem } from '../types';
+import { Button } from './ui/button';
 
 interface OracleViewerProps {
   items: GalleryItem[];
@@ -9,292 +9,320 @@ interface OracleViewerProps {
   onClose: () => void;
 }
 
+/* ─── Filmstrip Thumbnail ─── */
+const FilmThumb: React.FC<{
+  item: GalleryItem;
+  active: boolean;
+  onClick: () => void;
+}> = ({ item, active, onClick }) => {
+  const [url, setUrl] = useState('');
+
+  useEffect(() => {
+    if (item.thumbnail) { setUrl(item.thumbnail); return; }
+    if (item.blob && (item.type === 'image' || item.type === 'video')) {
+      const u = URL.createObjectURL(item.blob);
+      setUrl(u);
+      return () => URL.revokeObjectURL(u);
+    }
+  }, [item.thumbnail, item.blob, item.type]);
+
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        relative shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition-all duration-200
+        ${active
+          ? 'border-amber-300 shadow-[0_0_10px_rgba(211,172,88,0.45)] scale-110'
+          : 'border-transparent opacity-50 hover:opacity-85 hover:border-blue-400/30'}
+      `}
+    >
+      {url ? (
+        item.type === 'video' ? (
+          <video src={url} muted preload="metadata" className="w-full h-full object-cover" />
+        ) : (
+          <img src={url} alt={item.name} className="w-full h-full object-cover" />
+        )
+      ) : (
+        <div className="w-full h-full bg-slate-900 flex items-center justify-center">
+          {item.type === 'video' ? <Video className="w-3 h-3 text-slate-600" /> :
+           item.type === 'embed' ? <Code2 className="w-3 h-3 text-slate-600" /> :
+           <ImageIcon className="w-3 h-3 text-slate-600" />}
+        </div>
+      )}
+      {item.type === 'video' && (
+        <div className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 bg-blue-500 rounded-full flex items-center justify-center">
+          <div className="w-0 h-0 border-l-[3px] border-l-white border-y-[2px] border-y-transparent ml-px" />
+        </div>
+      )}
+    </button>
+  );
+};
+
+/* ─── Clamp helper (keep window inside viewport) ─── */
+function clampPosition(x: number, y: number, w: number, h: number) {
+  const vw = typeof window !== 'undefined' ? window.innerWidth : 1200;
+  const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
+  return {
+    x: Math.max(0, Math.min(vw - Math.min(w, 120), x)),
+    y: Math.max(0, Math.min(vh - 48, y)),
+  };
+}
+
+/* ─── Main Floating Viewer ─── */
 export const OracleViewer: React.FC<OracleViewerProps> = ({ items, initialIndex = 0, onClose }) => {
   const [currentIndex, setCurrentIndex] = useState(Math.max(0, Math.min(initialIndex, items.length - 1)));
   const item = items[currentIndex] ?? items[0];
+  const [mediaUrl, setMediaUrl] = useState('');
 
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [position, setPosition] = useState({ x: 100, y: 100 });
-  const [size, setSize] = useState({ width: 640, height: 480 });
+  // Window position & sizing
+  const [pos, setPos] = useState(() => {
+    const vw = typeof window !== 'undefined' ? window.innerWidth : 1200;
+    return { x: Math.max(16, vw - 560), y: 60 };
+  });
+  const [size, setSize] = useState({ w: 520, h: 360 });
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [resizeStart, setResizeStart] = useState({ width: 0, height: 0, mouseX: 0, mouseY: 0 });
-  const [mediaUrl, setMediaUrl] = useState<string>('');
-  
-  const containerRef = useRef<HTMLDivElement>(null);
-  const mediaRef = useRef<HTMLVideoElement | HTMLImageElement>(null);
-  const plyrRef = useRef<Plyr | null>(null);
+  const dragStart = useRef({ mx: 0, my: 0, px: 0, py: 0 });
+  const resizeStart = useRef({ mx: 0, my: 0, w: 0, h: 0 });
 
-  const goToPrev = () => setCurrentIndex(i => (i - 1 + items.length) % items.length);
-  const goToNext = () => setCurrentIndex(i => (i + 1) % items.length);
+  // Typing fade: listen for any focus on input/textarea globally
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Handle keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (items.length <= 1) return;
-      if (e.key === 'ArrowLeft') goToPrev();
-      if (e.key === 'ArrowRight') goToNext();
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const filmstripRef = useRef<HTMLDivElement>(null);
+
+  const goTo = useCallback((idx: number) => {
+    setCurrentIndex(((idx % items.length) + items.length) % items.length);
   }, [items.length]);
 
+  /* ── Typing detection: when user focuses an input/textarea anywhere, fade the chrome ── */
   useEffect(() => {
-    if (!item) return;
-    if (item.type === 'embed') {
-      setMediaUrl('');
-      return;
-    }
-    if (item.blob) {
-      const url = URL.createObjectURL(item.blob);
-      setMediaUrl(url);
-      return () => URL.revokeObjectURL(url);
-    } else {
-      setMediaUrl('');
-    }
-  }, [item?.id, item?.type, item?.blob]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    // Clean up existing player first
-    if (plyrRef.current) {
-      plyrRef.current.destroy();
-      plyrRef.current = null;
-    }
-
-    // Initialize new player for video (dynamic import to avoid SSR "document" error)
-    if (item?.type === 'video' && mediaRef.current && mediaUrl) {
-      import('plyr').then((mod) => {
-        if (cancelled || !mediaRef.current) return;
-        // Inject CSS once
-        if (!document.querySelector('link[data-plyr-css]')) {
-          const link = document.createElement('link');
-          link.rel = 'stylesheet';
-          link.href = 'https://cdn.plyr.io/3.7.8/plyr.css';
-          link.setAttribute('data-plyr-css', '');
-          document.head.appendChild(link);
-        }
-        const PlyrClass = mod.default || mod;
-        plyrRef.current = new PlyrClass(mediaRef.current as HTMLVideoElement, {
-          controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'],
-          settings: ['speed', 'loop'],
-          speed: { selected: 1, options: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] },
-          loop: { active: true },
-          ratio: '16:9',
-          tooltips: { controls: true, seek: true },
-          autoplay: false,
-          resetOnEnd: true
-        });
-
-        plyrRef.current.on('ready', () => {
-          console.log('Plyr player ready for:', item.name);
-        });
-      }).catch(err => console.warn('Failed to load Plyr:', err));
-    }
-
-    return () => {
-      cancelled = true;
-      if (plyrRef.current) {
-        plyrRef.current.destroy();
-        plyrRef.current = null;
+    const onFocusIn = (e: FocusEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement)?.contentEditable === 'true') {
+        setIsTyping(true);
+        if (typingTimer.current) clearTimeout(typingTimer.current);
       }
     };
-  }, [item?.type, mediaUrl, item?.id, item?.name]);
+    const onFocusOut = (e: FocusEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement)?.contentEditable === 'true') {
+        if (typingTimer.current) clearTimeout(typingTimer.current);
+        typingTimer.current = setTimeout(() => setIsTyping(false), 600);
+      }
+    };
+    document.addEventListener('focusin', onFocusIn, true);
+    document.addEventListener('focusout', onFocusOut, true);
+    return () => {
+      document.removeEventListener('focusin', onFocusIn, true);
+      document.removeEventListener('focusout', onFocusOut, true);
+      if (typingTimer.current) clearTimeout(typingTimer.current);
+    };
+  }, []);
 
-  const handleDragStart = (e: React.MouseEvent) => {
+  /* ── Keyboard nav ── */
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { onClose(); return; }
+      // Only navigate if focus is NOT on an input
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (items.length <= 1) return;
+      if (e.key === 'ArrowLeft') goTo(currentIndex - 1);
+      if (e.key === 'ArrowRight') goTo(currentIndex + 1);
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [items.length, currentIndex, goTo, onClose]);
+
+  /* ── Blob URL lifecycle ── */
+  useEffect(() => {
+    if (!item || item.type === 'embed') { setMediaUrl(''); return; }
+    if (item.blob) {
+      const u = URL.createObjectURL(item.blob);
+      setMediaUrl(u);
+      return () => URL.revokeObjectURL(u);
+    }
+    setMediaUrl('');
+  }, [item?.id, item?.type, item?.blob]);
+
+  /* ── Native HTML5 video controls (no Plyr — fixes the runtime .call() error) ── */
+  useEffect(() => {
+    if (item?.type === 'video' && videoRef.current && mediaUrl) {
+      const v = videoRef.current;
+      v.load();
+      v.play().catch(() => {});
+    }
+  }, [item?.type, mediaUrl, item?.id]);
+
+  /* ── Auto-scroll filmstrip ── */
+  useEffect(() => {
+    if (!filmstripRef.current) return;
+    const active = filmstripRef.current.children[currentIndex] as HTMLElement | undefined;
+    active?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }, [currentIndex]);
+
+  /* ── Drag handling ── */
+  const onDragStart = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsDragging(true);
-    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+    dragStart.current = { mx: e.clientX, my: e.clientY, px: pos.x, py: pos.y };
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (isDragging) {
-      // Add boundary constraints to prevent dragging offscreen
-      const newX = e.clientX - dragStart.x;
-      const newY = e.clientY - dragStart.y;
-      const maxX = window.innerWidth - 100; // Leave at least 100px visible
-      const maxY = window.innerHeight - 50; // Leave at least 50px visible
-      
-      setPosition({
-        x: Math.max(-size.width + 100, Math.min(maxX, newX)),
-        y: Math.max(0, Math.min(maxY, newY))
-      });
-    }
-    if (isResizing) {
-      const deltaX = e.clientX - resizeStart.mouseX;
-      const deltaY = e.clientY - resizeStart.mouseY;
-      const newWidth = Math.max(320, resizeStart.width + deltaX);
-      const newHeight = Math.max(240, resizeStart.height + deltaY);
-      setSize({ width: newWidth, height: newHeight });
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-    setIsResizing(false);
-  };
-
-  const handleResetPosition = () => {
-    setPosition({ x: 100, y: 100 });
-    setSize({ width: 640, height: 480 });
+  /* ── Resize handling ── */
+  const onResizeStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizing(true);
+    resizeStart.current = { mx: e.clientX, my: e.clientY, w: size.w, h: size.h };
   };
 
   useEffect(() => {
-    if (isDragging || isResizing) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, isResizing]);
+    if (!isDragging && !isResizing) return;
+    const onMove = (e: MouseEvent) => {
+      if (isDragging) {
+        const nx = dragStart.current.px + (e.clientX - dragStart.current.mx);
+        const ny = dragStart.current.py + (e.clientY - dragStart.current.my);
+        const c = clampPosition(nx, ny, size.w, size.h);
+        setPos(c);
+      }
+      if (isResizing) {
+        const nw = Math.max(280, resizeStart.current.w + (e.clientX - resizeStart.current.mx));
+        const nh = Math.max(200, resizeStart.current.h + (e.clientY - resizeStart.current.my));
+        setSize({ w: nw, h: nh });
+      }
+    };
+    const onUp = () => { setIsDragging(false); setIsResizing(false); };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    return () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+  }, [isDragging, isResizing, size.w, size.h]);
+
+  /* chrome opacity state */
+  const chromeOpacity = isTyping ? 'opacity-20' : 'opacity-100';
+  const borderStyle = isTyping
+    ? 'border-transparent shadow-none'
+    : 'border-amber-300/30 shadow-[0_0_30px_rgba(211,172,88,0.12),0_8px_32px_rgba(0,0,0,0.55)]';
 
   return (
     <div
-      ref={containerRef}
-      className="fixed bg-black/95 backdrop-blur-xl border-2 border-holo-cyan/40 rounded-xl shadow-2xl shadow-holo-cyan/20 overflow-hidden"
-      style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        width: isMinimized ? '300px' : `${size.width}px`,
-        height: isMinimized ? 'auto' : `${size.height}px`,
-        zIndex: 9999
-      }}
+      className={`fixed z-[9999] rounded-2xl overflow-hidden transition-all duration-500 ease-out ${borderStyle} border-2`}
+      style={{ left: pos.x, top: pos.y, width: size.w, height: size.h }}
     >
-      {/* Header */}
-      <div 
-        className="oracle-drag-handle holo-header px-4 py-2 flex items-center justify-between cursor-move select-none"
-        onMouseDown={handleDragStart}
+      {/* ── Drag header ── */}
+      <div
+        className={`flex items-center justify-between px-3 py-1.5 cursor-move select-none transition-all duration-500
+          bg-gradient-to-r from-black/80 via-slate-950/70 to-black/80 backdrop-blur-xl
+          border-b border-amber-200/15 ${chromeOpacity}`}
+        onMouseDown={onDragStart}
       >
-        <div className="flex items-center gap-2 min-w-0">
-          <Move className="w-4 h-4 text-holo-cyan flex-shrink-0" />
+        <div className="flex items-center gap-1.5 min-w-0">
+          <Move className="w-3.5 h-3.5 text-amber-300/60 shrink-0" />
           {items.length > 1 && (
             <button
               onMouseDown={e => e.stopPropagation()}
-              onClick={goToPrev}
-              className="p-1 hover:bg-holo-cyan/10 rounded-lg transition-colors flex-shrink-0"
-              title="Previous"
+              onClick={() => goTo(currentIndex - 1)}
+              className="p-0.5 hover:bg-amber-200/10 rounded transition-colors"
             >
-              <ChevronLeft className="w-4 h-4 text-holo-cyan" />
+              <ChevronLeft className="w-3.5 h-3.5 text-amber-200" />
             </button>
           )}
-          <span className="text-sm font-semibold text-holo-cyan truncate max-w-[160px]">
+          <span className="text-xs font-medium text-amber-100/90 truncate max-w-[140px]">
             {item?.name}
           </span>
           {items.length > 1 && (
             <>
-              <span className="text-xs text-slate-500 flex-shrink-0">{currentIndex + 1}/{items.length}</span>
+              <span className="text-[10px] text-slate-500">{currentIndex + 1}/{items.length}</span>
               <button
                 onMouseDown={e => e.stopPropagation()}
-                onClick={goToNext}
-                className="p-1 hover:bg-holo-cyan/10 rounded-lg transition-colors flex-shrink-0"
-                title="Next"
+                onClick={() => goTo(currentIndex + 1)}
+                className="p-0.5 hover:bg-amber-200/10 rounded transition-colors"
               >
-                <ChevronRight className="w-4 h-4 text-holo-cyan" />
+                <ChevronRight className="w-3.5 h-3.5 text-amber-200" />
               </button>
             </>
           )}
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <button
-            onClick={handleResetPosition}
-            className="p-1 hover:bg-holo-cyan/10 rounded-lg transition-colors"
-            title="Reset Position"
-          >
-            <RotateCcw className="w-4 h-4 text-holo-cyan" />
-          </button>
-          <button
-            onClick={() => setIsMinimized(!isMinimized)}
-            className="p-1 hover:bg-holo-cyan/10 rounded-lg transition-colors"
-            title={isMinimized ? 'Maximize' : 'Minimize'}
-          >
-            {isMinimized ? (
-              <Maximize2 className="w-4 h-4 text-slate-500" />
-            ) : (
-              <Minimize2 className="w-4 h-4 text-slate-500" />
-            )}
-          </button>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-red-600 rounded-lg transition-colors"
-            title="Close"
-          >
-            <X className="w-4 h-4 text-slate-500 hover:text-white" />
-          </button>
-        </div>
+        <button
+          onMouseDown={e => e.stopPropagation()}
+          onClick={onClose}
+          className="p-1 hover:bg-red-500/20 rounded-lg transition-colors"
+        >
+          <X className="w-3.5 h-3.5 text-slate-400 hover:text-red-400" />
+        </button>
       </div>
 
-      {/* Media Content */}
-      {!isMinimized && (
-        <div className="relative w-full h-full bg-black" style={{ height: 'calc(100% - 42px)' }}>
-          {item.type === 'video' ? (
-            mediaUrl ? (
-              <video
-                ref={mediaRef as React.RefObject<HTMLVideoElement>}
-                src={mediaUrl}
-                className="w-full h-full"
-                playsInline
-                loop
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">
-                Loading video…
-              </div>
-            )
-          ) : item.type === 'embed' ? (
-            <div className="w-full h-full bg-black flex items-center justify-center">
-              {item.embedCode ? (
-                <div
-                  className="w-full h-full"
-                  dangerouslySetInnerHTML={{ __html: item.embedCode }}
-                />
-              ) : item.embedUrl ? (
-                <iframe src={item.embedUrl} className="w-full h-full" allowFullScreen />
-              ) : (
-                <div className="text-slate-400 text-sm">No embed content</div>
-              )}
-            </div>
+      {/* ── Media stage ── */}
+      <div className="relative w-full bg-black" style={{ height: 'calc(100% - 32px)' }}>
+        {item.type === 'video' ? (
+          mediaUrl ? (
+            <video
+              key={`v-${item.id}`}
+              ref={videoRef}
+              src={mediaUrl}
+              className="w-full h-full object-contain"
+              playsInline
+              loop
+              controls
+              autoPlay
+              controlsList="nodownload"
+              style={{ background: '#000' }}
+            />
           ) : (
-            mediaUrl ? (
-              <img
-                ref={mediaRef as React.RefObject<HTMLImageElement>}
-                src={mediaUrl}
-                alt={item.name}
-                className="w-full h-full object-contain"
-              />
+            <div className="w-full h-full flex items-center justify-center text-slate-500 text-sm">Loading video…</div>
+          )
+        ) : item.type === 'embed' ? (
+          <div className="w-full h-full bg-black flex items-center justify-center">
+            {item.embedCode ? (
+              <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: item.embedCode }} />
+            ) : item.embedUrl ? (
+              <iframe src={item.embedUrl} className="w-full h-full" allowFullScreen />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">
-                Loading…
-              </div>
-            )
-          )}
-
-          {/* Resize Handle */}
-          <div
-            className="absolute bottom-0 right-0 w-8 h-8 cursor-nwse-resize hover:opacity-100 opacity-50 transition-opacity z-10 flex items-center justify-center"
-            onMouseDown={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              setIsResizing(true);
-              setResizeStart({
-                width: size.width,
-                height: size.height,
-                mouseX: e.clientX,
-                mouseY: e.clientY
-              });
-            }}
-          >
-            <svg className="w-5 h-5 text-cyan-400 drop-shadow-lg" viewBox="0 0 16 16">
-              <path d="M16 0 L16 16 L0 16 Z" fill="currentColor" opacity="0.3" />
-              <line x1="10" y1="6" x2="10" y2="10" stroke="white" strokeWidth="2" />
-              <line x1="6" y1="10" x2="10" y2="10" stroke="white" strokeWidth="2" />
-            </svg>
+              <div className="text-slate-500 text-sm">No embed content</div>
+            )}
           </div>
+        ) : mediaUrl ? (
+          <img
+            src={mediaUrl}
+            alt={item.name}
+            className="w-full h-full object-contain select-none"
+            draggable={false}
+            style={{ background: '#000' }}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-slate-500 text-sm">Loading…</div>
+        )}
+
+        {/* ── Filmstrip overlay (bottom of media area) ── */}
+        {items.length > 1 && (
+          <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent
+            px-2 py-1.5 transition-all duration-500 ${chromeOpacity}`}>
+            <div
+              ref={filmstripRef}
+              className="flex gap-1.5 overflow-x-auto scrollbar-thin scrollbar-thumb-amber-700/30 justify-center"
+            >
+              {items.map((it, idx) => (
+                <FilmThumb
+                  key={it.id}
+                  item={it}
+                  active={idx === currentIndex}
+                  onClick={() => goTo(idx)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Resize handle ── */}
+        <div
+          className={`absolute bottom-0 right-0 w-6 h-6 cursor-nwse-resize flex items-end justify-end
+            pr-0.5 pb-0.5 transition-opacity duration-500 ${isTyping ? 'opacity-0' : 'opacity-40 hover:opacity-80'}`}
+          onMouseDown={onResizeStart}
+        >
+          <GripVertical className="w-3.5 h-3.5 text-amber-300 rotate-[-45deg]" />
         </div>
-      )}
+      </div>
     </div>
   );
 };

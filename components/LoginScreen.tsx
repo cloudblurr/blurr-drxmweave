@@ -65,7 +65,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onSuccess }) => {
 
   return (
     <div className="flex items-center justify-center min-h-screen p-4 relative"
-      style={{ background: '#020810' }}>
+      style={{ background: '#030406' }}>
       {/* Grid background */}
       <div className="absolute inset-0 opacity-8"
         style={{
@@ -83,7 +83,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onSuccess }) => {
             </div>
           </div>
           <h1 className="text-4xl font-bold holo-text tracking-wide mb-2">Ooda Muse Engine</h1>
-          <p className="holo-label">Authenticate to access ship systems</p>
+          <p className="holo-label">Enter the Soul Portal</p>
         </div>
 
         {/* Card */}
@@ -120,7 +120,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onSuccess }) => {
           <form onSubmit={handleEmailSubmit} className="space-y-4">
             {mode === 'signup' && (
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-holo-cyan/40" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-200/40" />
                 <Input
                   type="text"
                   placeholder="Display name"
@@ -131,7 +131,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onSuccess }) => {
               </div>
             )}
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-holo-cyan/40" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-200/40" />
               <Input
                 type="email"
                 required
@@ -142,7 +142,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onSuccess }) => {
               />
             </div>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-holo-cyan/40" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-200/40" />
               <Input
                 type="password"
                 required
@@ -173,7 +173,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onSuccess }) => {
             {mode === 'signin' ? "Don't have an account? " : 'Already have an account? '}
             <button
               onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(''); }}
-              className="text-holo-cyan hover:text-white font-semibold transition-colors">
+              className="text-amber-200 hover:text-blue-200 font-semibold transition-colors">
               {mode === 'signin' ? 'Sign Up' : 'Sign In'}
             </button>
           </p>

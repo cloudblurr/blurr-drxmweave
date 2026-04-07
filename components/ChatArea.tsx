@@ -8,6 +8,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { sendMessageToKoda } from '../services/xaiService';
 import { getModeIcon } from './ModeSelector';
+import { normalizeMessageContent } from '../lib/messageFormatting';
 
 interface ChatAreaProps {
   chatId: string;
@@ -36,7 +37,7 @@ const Toast = ({ message, onClose }: { message: string, onClose: () => void }) =
       animate={{ opacity: 1, y: 0, x: '-50%' }}
       exit={{ opacity: 0, y: 20, x: '-50%' }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className="fixed bottom-24 left-1/2 z-[200] px-4 py-2 bg-zinc-900 border border-zinc-800 text-white text-sm font-medium rounded-full shadow-2xl flex items-center gap-2 pointer-events-none"
+      className="fixed bottom-24 left-1/2 z-200 px-4 py-2 bg-zinc-900 border border-zinc-800 text-white text-sm font-medium rounded-full shadow-2xl flex items-center gap-2 pointer-events-none"
     >
       <div className="w-5 h-5 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center border border-green-500/20">
         <Check size={12} strokeWidth={3} />
@@ -396,7 +397,9 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-8 scrollbar-thin scrollbar-thumb-zinc-800">
-        {messages.map((msg) => (
+        {messages.map((msg) => {
+          const displayContent = normalizeMessageContent(msg.content);
+          return (
           <motion.div 
             key={msg.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className={`flex w-full ${msg.role === Role.User ? 'justify-end' : 'justify-start'}`}
@@ -407,9 +410,9 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
               </div>
               <div className={`flex flex-col gap-1 min-w-0 flex-1 ${msg.role === Role.User ? 'items-end' : 'items-start'}`}>
                 <div className="text-[11px] font-medium text-zinc-500 px-1 uppercase tracking-wider mb-1">{msg.role === Role.User ? 'You' : activeMode.name}</div>
-                <div className={`w-full ${msg.role === Role.User ? 'bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-2xl rounded-tr-sm px-6 py-4 shadow-sm max-w-2xl' : 'bg-transparent text-zinc-300 pl-0 pt-0'}`}>
+                <div className={`w-full min-w-0 ${msg.role === Role.User ? 'bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-2xl rounded-tr-sm px-6 py-4 shadow-sm max-w-2xl' : 'bg-transparent text-zinc-300 pl-0 pt-0'}`}>
                   {msg.role === Role.Assistant ? (
-                    <div className="prose prose-invert prose-zinc max-w-none">
+                    <div className="prose prose-invert prose-zinc max-w-none wrap-anywhere">
                       <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
                           code({node, inline, className, children, ...props}: any) {
                             const match = /language-(\w+)/.exec(className || '');
@@ -421,10 +424,10 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                           tr: ({children}) => <tr className="border-b border-zinc-800/50 last:border-0 hover:bg-zinc-900/30 transition-colors">{children}</tr>,
                           td: ({children}) => <td className="px-4 py-3 text-zinc-300">{children}</td>,
                           h1: ({children}) => <h1 className="text-2xl font-bold text-white mb-6 mt-10 pb-3 border-b-2 border-zinc-700/50 first:mt-0 tracking-tight">{children}</h1>,
-                          h2: ({children}) => <h2 className="text-xl font-bold text-white mb-5 mt-10 flex items-center gap-2.5 first:mt-0 tracking-tight"><span className="w-1.5 h-7 bg-gradient-to-b from-white to-zinc-400 rounded-full shadow-sm"></span>{children}</h2>,
+                          h2: ({children}) => <h2 className="text-xl font-bold text-white mb-5 mt-10 flex items-center gap-2.5 first:mt-0 tracking-tight"><span className="w-1.5 h-7 bg-linear-to-b from-white to-zinc-400 rounded-full shadow-sm"></span>{children}</h2>,
                           h3: ({children}) => <h3 className="text-lg font-semibold text-zinc-100 mb-4 mt-8 first:mt-0 tracking-tight">{children}</h3>,
                           h4: ({children}) => <h4 className="text-base font-semibold text-zinc-200 mb-3 mt-6 first:mt-0">{children}</h4>,
-                          p: ({children}) => <p className="leading-[1.85] mb-6 text-zinc-200 text-[15.5px] last:mb-0 font-normal tracking-normal">{children}</p>,
+                          p: ({children}) => <p className="leading-[1.85] mb-6 text-zinc-200 text-[15.5px] last:mb-0 font-normal tracking-normal wrap-anywhere">{children}</p>,
                           ul: ({children}) => <ul className="list-disc list-outside ml-5 mb-6 space-y-2.5 text-zinc-200 marker:text-zinc-500 text-[15px]">{children}</ul>,
                           ol: ({children}) => <ol className="list-decimal list-outside ml-5 mb-6 space-y-2.5 text-zinc-200 marker:text-zinc-500 text-[15px]">{children}</ol>,
                           li: ({children}) => <li className="pl-2 leading-[1.8]">{children}</li>,
@@ -434,14 +437,15 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                           strong: ({children}) => <strong className="font-semibold text-white">{children}</strong>,
                           em: ({children}) => <em className="italic text-zinc-100">{children}</em>
                         }}
-                      >{msg.content}</ReactMarkdown>
+                      >{displayContent}</ReactMarkdown>
                     </div>
-                  ) : <div className="whitespace-pre-wrap break-words text-[15px] leading-relaxed">{msg.content}</div>}
+                  ) : <div className="whitespace-pre-wrap wrap-anywhere text-[15px] leading-relaxed">{displayContent}</div>}
                 </div>
               </div>
             </div>
           </motion.div>
-        ))}
+          );
+        })}
         {isLoading && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start w-full">
              <div className="flex w-full max-w-4xl gap-4">
@@ -462,10 +466,10 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
           <div className="absolute -top-[1.6rem] left-1/2 -translate-x-1/2 lg:hidden z-0">
              <button onClick={onOpenMobileMenu} className="h-7 px-8 bg-zinc-900 border-t border-x border-zinc-800 rounded-t-xl flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-800 transition-all shadow-lg active:scale-95 group-hover:border-zinc-700"><GripHorizontal size={16} /></button>
           </div>
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute inset-0 bg-linear-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <div className={`relative bg-zinc-900/80 border hover:border-zinc-700 focus-within:border-zinc-600 rounded-xl p-2 flex items-end gap-2 shadow-2xl transition-all duration-300 backdrop-blur-md z-10 ${originalPrompt !== null ? 'border-indigo-500/50 shadow-indigo-500/10' : 'border-zinc-800'}`}>
             <button className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors shrink-0 mb-0.5"><Paperclip size={18} /></button>
-            <textarea ref={textareaRef} value={inputValue} onChange={handleInputChange} onKeyDown={handleKeyDown} placeholder={`Ask ${activeMode.name} anything...`} rows={1} className="flex-1 bg-transparent text-sm text-white placeholder-zinc-500 resize-none py-2 focus:outline-none max-h-[40vh] min-h-[24px] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 whitespace-pre-wrap font-sans" />
+            <textarea ref={textareaRef} value={inputValue} onChange={handleInputChange} onKeyDown={handleKeyDown} placeholder={`Ask ${activeMode.name} anything...`} rows={1} className="flex-1 bg-transparent text-sm text-white placeholder-zinc-500 resize-none py-2 focus:outline-none max-h-[40vh] min-h-6 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 whitespace-pre-wrap font-sans" />
             <div className="flex items-center gap-1 shrink-0 mb-0.5">
               <button onClick={handleEnhancePrompt} disabled={!inputValue.trim() && !originalPrompt} className={`p-1.5 rounded-lg transition-all duration-300 relative group overflow-hidden ${originalPrompt !== null ? 'text-indigo-300 bg-indigo-500/10 ring-1 ring-indigo-500/30' : 'text-zinc-500 hover:text-yellow-300 hover:bg-zinc-800'}`} title={originalPrompt !== null ? "Revert to Original" : "Enhance Prompt"}>
                 {isEnhancing ? <Loader2 size={18} className="animate-spin" /> : <><Sparkles size={18} className={originalPrompt !== null ? "fill-indigo-400/20" : ""} />{originalPrompt === null && <span className="absolute inset-0 rounded-lg ring-2 ring-yellow-400/50 opacity-0 group-hover:animate-pulse"></span>}</>}

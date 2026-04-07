@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Home, Users, BookOpen, Settings as SettingsIcon, Sparkles, LogOut } from 'lucide-react';
+import { Home, Users, BookOpen, Settings as SettingsIcon, Sparkles, LogOut, Compass } from 'lucide-react';
 import { Dashboard } from './components/Dashboard';
 import { CharacterGallery } from './components/CharacterGallery';
 import { CharacterChat } from './components/CharacterChat';
@@ -15,6 +15,7 @@ import { useAuth } from './components/AuthContext';
 import LoginScreen from './components/LoginScreen';
 import { signOut } from './services/authService';
 import { Button } from './components/ui/button';
+import { Card } from './components/ui/card';
 import logoUrl from './muselogo.jpg';
 
 const App: React.FC = () => {
@@ -68,7 +69,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       setShowSplash(false);
-    }, 3000);
+    }, 1800);
     return () => window.clearTimeout(timer);
   }, []);
 
@@ -134,7 +135,7 @@ const App: React.FC = () => {
   if (authLoading) {
     return (
       <div className="flex items-center justify-center h-screen"
-        style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' }}>
+        style={{ background: 'linear-gradient(135deg, #0b1220 0%, #111827 100%)' }}>
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-400"></div>
       </div>
     );
@@ -151,155 +152,65 @@ const App: React.FC = () => {
         className="flex flex-col h-screen overflow-hidden items-center justify-center text-center relative"
         style={appStyle}
       >
-        {/* Animated grid background */}
-        <div className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: `linear-gradient(rgba(0,229,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,0.15) 1px, transparent 1px)`,
-            backgroundSize: '60px 60px',
-            animation: 'holoDataStream 20s linear infinite'
-          }}
-        />
-        <div className="flex flex-col items-center gap-6 px-6 animate-fadeInScale relative z-10">
-          <div className="relative">
-            <img src={logoSrc} alt="Ooda Muse Engine logo" className="w-28 h-28 rounded-2xl shadow-glow" />
-            <div className="absolute inset-0 rounded-2xl animate-holo-pulse" style={{ boxShadow: '0 0 40px rgba(0,229,255,0.3)' }} />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_45%),radial-gradient(circle_at_bottom,rgba(245,158,11,0.15),transparent_40%)]" />
+        <Card className="relative z-10 w-[92%] max-w-lg p-8 text-center space-y-5">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-900/70 border border-slate-700/70">
+            <img src={logoSrc} alt="Ooda Muse Engine logo" className="w-12 h-12 rounded-xl" />
           </div>
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold holo-text tracking-wide">
-              Ooda Muse Engine
-            </h1>
-            <p className="holo-label mt-3">Initializing navigation systems…</p>
+            <h1 className="text-3xl md:text-4xl font-semibold text-slate-100">Ooda Muse Engine</h1>
+            <p className="mt-2 text-sm text-slate-400">Bootstrapping your creative workspace...</p>
           </div>
-          <div className="flex gap-1 mt-4">
-            <div className="w-2 h-2 rounded-full bg-holo-cyan animate-bounce" />
-            <div className="w-2 h-2 rounded-full bg-holo-cyan animate-bounce" style={{ animationDelay: '0.15s' }} />
-            <div className="w-2 h-2 rounded-full bg-holo-cyan animate-bounce" style={{ animationDelay: '0.3s' }} />
+          <div className="mx-auto h-1.5 w-36 overflow-hidden rounded-full bg-slate-800">
+            <div className="h-full w-1/2 rounded-full bg-sky-400 animate-pulse" />
           </div>
-        </div>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden relative" style={appStyle}>
-      {/* Floating Header Bar */}
-      {currentView !== ViewType.SharedProfile && currentView !== ViewType.Chat && (
-        <div className="fixed top-3 left-1/2 -translate-x-1/2 z-50 w-[min(1000px,calc(100%-1.5rem))]">
-          <div className="holo-header px-5 py-3 flex items-center justify-between animate-fadeInUp">
+    <div className="flex h-screen flex-col overflow-hidden" style={appStyle}>
+      {currentView !== ViewType.SharedProfile && (
+        <header className="relative z-20 border-b border-slate-800/80 bg-slate-950/65 backdrop-blur px-4 py-3 md:px-6">
+          <div className="mx-auto max-w-7xl flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="relative">
+              <div>
                 <img
                   src={logoSrc}
                   alt="Ooda Muse Engine logo"
-                  className="w-8 h-8 rounded-xl"
+                  className="w-9 h-9 rounded-xl border border-slate-700/70"
                 />
-                <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-holo-green border border-black/50" />
               </div>
-              <div className="leading-tight">
-                <div className="text-sm font-semibold tracking-wide holo-text-glow">Ooda Muse Engine</div>
-                <div className="holo-label">
-                  {currentView}
-                </div>
+              <div className="leading-tight hidden sm:block">
+                <div className="text-sm font-semibold tracking-wide text-slate-100">Ooda Muse Engine</div>
+                <div className="text-xs text-slate-400">Creative Operations Hub</div>
               </div>
             </div>
 
-            <Button
-              variant="ghost"
-              onClick={() => signOut()}
-              className="holo-btn-ghost text-sm"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Auto-hide Header (Chat) */}
-      {currentView === ViewType.Chat && (
-        <div className="fixed top-0 left-0 right-0 z-50 group">
-          {/* Hover zone */}
-          <div className="h-3 w-full" />
-
-          {/* Sliding header */}
-          <div className="mx-auto w-[min(1000px,calc(100%-1.5rem))] transform-gpu -translate-y-24 group-hover:translate-y-3 transition-transform duration-200 ease-out">
-            <div className="holo-header px-5 py-3 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <img
-                    src={logoSrc}
-                    alt="Ooda Muse Engine logo"
-                    className="w-8 h-8 rounded-xl"
-                  />
-                  <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-holo-green border border-black/50" />
-                </div>
-                <div className="leading-tight">
-                  <div className="text-sm font-semibold tracking-wide holo-text-glow">Ooda Muse Engine</div>
-                  <div className="holo-label">Comm Channel</div>
-                </div>
-              </div>
-
-              <Button
-                variant="ghost"
-                onClick={() => signOut()}
-                className="holo-btn-ghost text-sm"
-              >
+            <div className="flex items-center gap-2 overflow-x-auto">
+              <NavButton icon={<Home className="w-4 h-4" />} active={currentView === ViewType.Dashboard} onClick={() => handleNavigate(ViewType.Dashboard)} label="Home" />
+              <NavButton icon={<Users className="w-4 h-4" />} active={currentView === ViewType.Characters || currentView === ViewType.CharacterDetail} onClick={() => handleNavigate(ViewType.Characters)} label="Characters" />
+              <NavButton icon={<BookOpen className="w-4 h-4" />} active={currentView === ViewType.LoreWorld} onClick={() => handleNavigate(ViewType.LoreWorld)} label="Lore" />
+              <NavButton icon={<Compass className="w-4 h-4" />} active={false} href="/oodaverse" label="Oodaverse" />
+              <NavButton icon={<SettingsIcon className="w-4 h-4" />} active={currentView === ViewType.Settings} onClick={() => handleNavigate(ViewType.Settings)} label="Settings" />
+              <Button variant="outline" onClick={() => signOut()} className="text-xs">
                 <LogOut className="w-4 h-4" />
                 Sign Out
               </Button>
             </div>
           </div>
-        </div>
+        </header>
       )}
 
-      {/* Main Content */}
       <div
         className={
-          `flex-1 flex flex-col overflow-hidden relative z-10 ` +
-          (currentView !== ViewType.SharedProfile ? 'pb-24' : '') +
-          (currentView !== ViewType.SharedProfile && currentView !== ViewType.Chat ? ' pt-16' : '')
+          `flex-1 flex flex-col overflow-hidden ` +
+          (currentView !== ViewType.SharedProfile ? 'p-4 md:p-6' : '')
         }
       >
         {renderView()}
       </div>
-
-      {/* Bottom Navigation Dock */}
-      {currentView !== ViewType.SharedProfile && (
-      <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-50 w-[min(700px,calc(100%-1.5rem))]">
-        <div className="holo-dock px-4 py-2 flex items-center justify-around animate-fadeInUp" style={{ animationDelay: '0.15s' }}>
-          <NavButton
-            icon={<Home className="w-5 h-5" />}
-            active={currentView === ViewType.Dashboard}
-            onClick={() => handleNavigate(ViewType.Dashboard)}
-            label="Dashboard"
-          />
-          <NavButton
-            icon={<Users className="w-5 h-5" />}
-            active={currentView === ViewType.Characters || currentView === ViewType.CharacterDetail}
-            onClick={() => handleNavigate(ViewType.Characters)}
-            label="Characters"
-          />
-          <NavButton
-            icon={<BookOpen className="w-5 h-5" />}
-            active={currentView === ViewType.LoreWorld}
-            onClick={() => handleNavigate(ViewType.LoreWorld)}
-            label="LoreWorld"
-          />
-          <NavButton
-            icon={<Sparkles className="w-5 h-5" />}
-            active={false}
-            href="/oodaverse"
-            label="OodaVerse"
-          />
-          <NavButton
-            icon={<SettingsIcon className="w-5 h-5" />}
-            active={currentView === ViewType.Settings}
-            onClick={() => handleNavigate(ViewType.Settings)}
-            label="Settings"
-          />
-        </div>
-      </div>
-      )}
     </div>
   );
 };
@@ -322,18 +233,18 @@ const NavButton: React.FC<NavButtonProps> = ({ icon, active, onClick, href, labe
   };
 
   return (
-    <button
+    <Button
       onClick={handlePress}
+      variant={active ? "secondary" : "ghost"}
+      size="sm"
       className={
-        `holo-nav-btn flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl ` +
-        (active ? 'holo-nav-active' : 'text-slate-400 hover:text-holo-cyan')
+        `min-w-fit flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs ` +
+        (active ? 'text-slate-100' : 'text-slate-300 hover:text-white')
       }
     >
-      <div className={`holo-nav-icon transition-all ${active ? '' : ''}`}>
-        {icon}
-      </div>
-      <span className="text-[10px] font-bold uppercase tracking-[0.15em]">{label}</span>
-    </button>
+      {icon}
+      <span className="font-medium">{label}</span>
+    </Button>
   );
 };
 
