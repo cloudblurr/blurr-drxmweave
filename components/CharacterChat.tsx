@@ -797,7 +797,7 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-4">
             {activeNode?.messages.map((message, index) => {
               const displayContent = normalizeMessageContent(message.content);
               return (
@@ -808,13 +808,13 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                 {message.role === Role.Assistant && character.avatar && (
                   <img src={character.avatar} alt={character.name} className="w-8 h-8 rounded-full object-cover shrink-0 ring-1 ring-holo-cyan/20" />
                 )}
-                <div className="flex flex-col gap-2 max-w-[70%] min-w-0">
+                <div className="flex flex-col gap-2 w-full max-w-[85%] md:max-w-[76%] xl:max-w-3xl min-w-0">
                   <div
                     className={`rounded-xl p-4 ${
                       message.role === Role.User
                         ? 'holo-msg-user'
                         : 'holo-msg-assistant'
-                    }`}
+                    } overflow-hidden`}
                   >
                     {editingMessageId === message.id ? (
                       <div className="space-y-2">
@@ -852,12 +852,16 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                           ul: ({children}) => <ul className="list-disc list-outside ml-4 mb-5 space-y-2 text-slate-200 marker:text-slate-500 text-[14.5px]">{children}</ul>,
                           ol: ({children}) => <ol className="list-decimal list-outside ml-4 mb-5 space-y-2 text-slate-200 marker:text-slate-500 text-[14.5px]">{children}</ol>,
                           li: ({children}) => <li className="pl-2 leading-[1.75]">{children}</li>,
-                          blockquote: ({children}) => <blockquote className="border-l-4 border-cyan-600/60 pl-4 py-2.5 my-5 italic text-slate-300 bg-slate-900/50 rounded-r-lg text-[14.5px]">{children}</blockquote>,
-                          a: ({href, children}) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-400/40 hover:decoration-cyan-300/60 underline-offset-2 transition-colors font-medium">{children}</a>,
+                          blockquote: ({children}) => <blockquote className="border-l-4 border-cyan-600/60 pl-4 py-2.5 my-5 italic text-slate-300 bg-slate-900/50 rounded-r-lg text-[14.5px] wrap-anywhere">{children}</blockquote>,
+                          a: ({href, children}) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-400/40 hover:decoration-cyan-300/60 underline-offset-2 transition-colors font-medium wrap-anywhere break-all">{children}</a>,
+                          table: ({children}) => <div className="my-4 max-w-full overflow-x-auto rounded-lg border border-slate-700/60"><table className="w-full text-left text-sm">{children}</table></div>,
+                          pre: ({children}) => <pre className="my-4 max-w-full overflow-x-auto rounded-lg border border-slate-700/60 bg-slate-950/70 p-3 text-xs leading-relaxed whitespace-pre-wrap wrap-anywhere">{children}</pre>,
                           hr: () => <hr className="border-slate-700 my-8" />,
                           strong: ({children}) => <strong className="font-semibold text-white">{children}</strong>,
                           em: ({children}) => <em className="italic text-slate-100">{children}</em>,
-                          code: ({inline, children}: any) => inline ? <code className="bg-slate-800/90 text-cyan-300 px-2 py-0.5 rounded text-[0.9em] font-mono border border-slate-700/60 tracking-tight font-medium">{children}</code> : <code>{children}</code>
+                          code: ({inline, children}: any) => inline
+                            ? <code className="bg-slate-800/90 text-cyan-300 px-2 py-0.5 rounded text-[0.9em] font-mono border border-slate-700/60 tracking-tight font-medium wrap-anywhere break-all">{children}</code>
+                            : <code className="font-mono whitespace-pre-wrap wrap-anywhere break-all text-cyan-200">{children}</code>
                         }}
                       >
                         {displayContent}
@@ -922,7 +926,7 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                 {character.avatar && (
                   <img src={character.avatar} alt={character.name} className="w-8 h-8 rounded-full object-cover ring-1 ring-holo-cyan/20" />
                 )}
-                <div className="holo-msg-assistant rounded-xl p-4">
+                <div className="holo-msg-assistant rounded-xl p-4 max-w-[85%] md:max-w-[76%] xl:max-w-3xl overflow-hidden">
                   <div className="flex gap-2">
                     <div className="w-2 h-2 bg-holo-cyan rounded-full animate-bounce"></div>
                     <div className="w-2 h-2 bg-holo-cyan rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
