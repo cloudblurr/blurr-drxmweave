@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { X, ChevronLeft, ChevronRight, Image as ImageIcon, Video, Code2, Move, GripVertical, Pause, Play, Minimize2, Maximize2, Scan } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Image as ImageIcon, Video, Code2, Move, GripVertical, Pause, Play, Minimize2, Maximize2, Scan, Loader2 } from 'lucide-react';
 import { GalleryItem } from '../types';
 
 interface OracleViewerProps {
@@ -37,7 +37,7 @@ const FilmThumb: React.FC<{
     >
       {url ? (
         item.type === 'video' ? (
-          <video src={url} muted preload="metadata" className="w-full h-full object-cover" />
+          <video src={url} muted preload="none" className="w-full h-full object-cover" />
         ) : (
           <img src={url} alt={item.name} className="w-full h-full object-cover" />
         )
@@ -105,6 +105,7 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ items, initialIndex 
   });
   const [size, setSize] = useState({ w: 520, h: 360 });
   const [isPlaying, setIsPlaying] = useState(true);
+  const [isBuffering, setIsBuffering] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -180,6 +181,7 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ items, initialIndex 
     if (item?.type === 'video' && videoRef.current && mediaUrl) {
       const v = videoRef.current;
       v.load();
+      setIsBuffering(true);
       v.play().catch(() => {});
       v.playbackRate = playbackRate;
     }
@@ -377,27 +379,44 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ items, initialIndex 
       <div className="relative w-full bg-black" style={{ height: `calc(100% - ${HEADER_HEIGHT + CONTROL_BAR_HEIGHT}px)` }}>
         {item.type === 'video' ? (
           mediaUrl ? (
-            <video
-              key={`v-${item.id}`}
-              ref={videoRef}
-              src={mediaUrl}
-              className="w-full h-full object-contain"
-              onLoadedMetadata={(event) => {
-                setNaturalSize({
-                  w: event.currentTarget.videoWidth || 16,
-                  h: event.currentTarget.videoHeight || 9,
-                });
-                setIsPlaying(!event.currentTarget.paused);
-              }}
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
-              playsInline
-              loop
-              controls
-              autoPlay
-              controlsList="nodownload"
-              style={{ background: '#000' }}
-            />
+            <>
+              <video
+                key={`v-${item.id}`}
+                ref={videoRef}
+                src={mediaUrl}
+                className="w-full h-full object-contain"
+                onLoadedMetadata={(event) => {
+                  setNaturalSize({
+                    w: event.currentTarget.videoWidth || 16,
+                    h: event.currentTarget.videoHeight || 9,
+                  });
+                  setIsPlaying(!event.currentTarget.paused);
+                  setIsBuffering(false);
+                }}
+                onPlay={() => {
+                  setIsPlaying(true);
+                  setIsBuffering(false);
+                }}
+                onPause={() => setIsPlaying(false)}
+                onWaiting={() => setIsBuffering(true)}
+                onCanPlay={() => setIsBuffering(false)}
+                playsInline
+                loop
+                controls
+                preload="auto"
+                autoPlay
+                controlsList="nodownload"
+                style={{ background: '#000' }}
+              />
+              {isBuffering && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/35 pointer-events-none">
+                  <div className="flex items-center gap-2 rounded-lg bg-black/70 px-3 py-2 text-xs text-slate-200">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Buffering...
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-slate-500 text-sm">Loading video…</div>
           )
