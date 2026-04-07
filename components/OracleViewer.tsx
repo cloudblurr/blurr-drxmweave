@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { X, ChevronLeft, ChevronRight, Image as ImageIcon, Video, Code2, Move, GripVertical } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Image as ImageIcon, Video, Code2, Move, GripVertical, Pause, Play, Minimize2, Maximize2, Scan } from 'lucide-react';
 import { GalleryItem } from '../types';
-import { Button } from './ui/button';
 
 interface OracleViewerProps {
   items: GalleryItem[];
@@ -51,7 +50,7 @@ const FilmThumb: React.FC<{
       )}
       {item.type === 'video' && (
         <div className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 bg-blue-500 rounded-full flex items-center justify-center">
-          <div className="w-0 h-0 border-l-[3px] border-l-white border-y-[2px] border-y-transparent ml-px" />
+          <div className="w-0 h-0 border-l-[3px] border-l-white border-y-2 border-y-transparent ml-px" />
         </div>
       )}
     </button>
@@ -68,6 +67,31 @@ function clampPosition(x: number, y: number, w: number, h: number) {
   };
 }
 
+const HEADER_HEIGHT = 32;
+const CONTROL_BAR_HEIGHT = 44;
+const FILMSTRIP_HEIGHT = 56;
+
+function getFittedViewerSize(mediaW: number, mediaH: number, hasFilmstrip: boolean) {
+  const vw = typeof window !== 'undefined' ? window.innerWidth : 1280;
+  const vh = typeof window !== 'undefined' ? window.innerHeight : 900;
+
+  const maxStageW = Math.floor(vw * 0.78);
+  const maxStageH = Math.floor(vh * 0.68);
+
+  const safeMediaW = Math.max(1, mediaW || 16);
+  const safeMediaH = Math.max(1, mediaH || 9);
+  const scale = Math.min(maxStageW / safeMediaW, maxStageH / safeMediaH, 1);
+
+  const stageW = Math.max(280, Math.round(safeMediaW * scale));
+  const stageH = Math.max(180, Math.round(safeMediaH * scale));
+  const chromeH = HEADER_HEIGHT + CONTROL_BAR_HEIGHT + (hasFilmstrip ? FILMSTRIP_HEIGHT : 0);
+
+  return {
+    w: stageW,
+    h: stageH + chromeH,
+  };
+}
+
 /* ─── Main Floating Viewer ─── */
 export const OracleViewer: React.FC<OracleViewerProps> = ({ items, initialIndex = 0, onClose }) => {
   const [currentIndex, setCurrentIndex] = useState(Math.max(0, Math.min(initialIndex, items.length - 1)));
@@ -80,6 +104,9 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ items, initialIndex 
     return { x: Math.max(16, vw - 560), y: 60 };
   });
   const [size, setSize] = useState({ w: 520, h: 360 });
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const dragStart = useRef({ mx: 0, my: 0, px: 0, py: 0 });
@@ -91,6 +118,7 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ items, initialIndex 
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const filmstripRef = useRef<HTMLDivElement>(null);
+  const autoFitBaseRef = useRef<{ w: number; h: number } | null>(null);
 
   const goTo = useCallback((idx: number) => {
     setCurrentIndex(((idx % items.length) + items.length) % items.length);
@@ -153,8 +181,64 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ items, initialIndex 
       const v = videoRef.current;
       v.load();
       v.play().catch(() => {});
+      v.playbackRate = playbackRate;
     }
-  }, [item?.type, mediaUrl, item?.id]);
+  }, [item?.type, mediaUrl, item?.id, playbackRate]);
+
+  useEffect(() => {
+    if (item?.type !== 'video' || !videoRef.current) return;
+    videoRef.current.playbackRate = playbackRate;
+  }, [playbackRate, item?.type]);
+
+  useEffect(() => {
+    setPlaybackRate(1);
+    setNaturalSize(null);
+  }, [item?.id]);
+
+  useEffect(() => {
+    if (!naturalSize) return;
+    const fitted = getFittedViewerSize(naturalSize.w, naturalSize.h, items.length > 1);
+    autoFitBaseRef.current = fitted;
+    setSize(fitted);
+
+    const vw = typeof window !== 'undefined' ? window.innerWidth : 1200;
+    const centered = clampPosition(Math.round((vw - fitted.w) / 2), pos.y, fitted.w, fitted.h);
+    setPos(centered);
+  }, [naturalSize, items.length]);
+
+  const applyScale = (multiplier: number) => {
+    const base = autoFitBaseRef.current ?? size;
+    const next = {
+      w: Math.round(base.w * multiplier),
+      h: Math.round(base.h * multiplier),
+    };
+    const clamped = {
+      w: Math.max(280, Math.min(next.w, Math.floor((window.innerWidth || 1400) * 0.94))),
+      h: Math.max(220, Math.min(next.h, Math.floor((window.innerHeight || 900) * 0.94))),
+    };
+    setSize(clamped);
+    setPos((prev) => clampPosition(prev.x, prev.y, clamped.w, clamped.h));
+  };
+
+  const fitToMedia = () => {
+    if (!naturalSize) return;
+    const fitted = getFittedViewerSize(naturalSize.w, naturalSize.h, items.length > 1);
+    autoFitBaseRef.current = fitted;
+    setSize(fitted);
+    setPos((prev) => clampPosition(prev.x, prev.y, fitted.w, fitted.h));
+  };
+
+  const togglePlayback = () => {
+    if (item?.type !== 'video' || !videoRef.current) return;
+    const video = videoRef.current;
+    if (video.paused) {
+      video.play().catch(() => {});
+      setIsPlaying(true);
+    } else {
+      video.pause();
+      setIsPlaying(false);
+    }
+  };
 
   /* ── Auto-scroll filmstrip ── */
   useEffect(() => {
@@ -207,13 +291,13 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ items, initialIndex 
 
   return (
     <div
-      className={`fixed z-[9999] rounded-2xl overflow-hidden transition-all duration-500 ease-out ${borderStyle} border-2`}
+      className={`fixed z-9999 rounded-2xl overflow-hidden transition-all duration-500 ease-out ${borderStyle} border-2`}
       style={{ left: pos.x, top: pos.y, width: size.w, height: size.h }}
     >
       {/* ── Drag header ── */}
       <div
         className={`flex items-center justify-between px-3 py-1.5 cursor-move select-none transition-all duration-500
-          bg-gradient-to-r from-black/80 via-slate-950/70 to-black/80 backdrop-blur-xl
+          bg-linear-to-r from-black/80 via-slate-950/70 to-black/80 backdrop-blur-xl
           border-b border-amber-200/15 ${chromeOpacity}`}
         onMouseDown={onDragStart}
       >
@@ -228,7 +312,7 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ items, initialIndex 
               <ChevronLeft className="w-3.5 h-3.5 text-amber-200" />
             </button>
           )}
-          <span className="text-xs font-medium text-amber-100/90 truncate max-w-[140px]">
+          <span className="text-xs font-medium text-amber-100/90 truncate max-w-35">
             {item?.name}
           </span>
           {items.length > 1 && (
@@ -253,8 +337,44 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ items, initialIndex 
         </button>
       </div>
 
+      {/* ── Viewer controls ── */}
+      <div className={`flex items-center justify-between gap-2 px-2.5 py-1.5 bg-black/75 border-b border-amber-200/10 ${chromeOpacity}`}>
+        <div className="flex items-center gap-1.5">
+          <button onClick={() => applyScale(0.85)} className="p-1 hover:bg-slate-800/70 rounded" title="Smaller viewer">
+            <Minimize2 className="w-3.5 h-3.5 text-slate-300" />
+          </button>
+          <button onClick={() => applyScale(1.15)} className="p-1 hover:bg-slate-800/70 rounded" title="Larger viewer">
+            <Maximize2 className="w-3.5 h-3.5 text-slate-300" />
+          </button>
+          <button onClick={fitToMedia} className="p-1 hover:bg-slate-800/70 rounded" title="Fit media to viewer">
+            <Scan className="w-3.5 h-3.5 text-slate-300" />
+          </button>
+        </div>
+
+        {item?.type === 'video' && (
+          <div className="flex items-center gap-2">
+            <button onClick={togglePlayback} className="p-1 hover:bg-slate-800/70 rounded" title="Play or pause">
+              {isPlaying ? <Pause className="w-3.5 h-3.5 text-amber-100" /> : <Play className="w-3.5 h-3.5 text-amber-100" />}
+            </button>
+            <label className="text-[10px] text-slate-400">Speed</label>
+            <select
+              value={playbackRate}
+              onChange={(e) => setPlaybackRate(Number(e.target.value))}
+              className="h-7 rounded-md border border-amber-200/20 bg-slate-950 px-2 text-[11px] text-slate-100"
+            >
+              <option value={0.25}>0.25x</option>
+              <option value={0.5}>0.50x</option>
+              <option value={0.75}>0.75x</option>
+              <option value={1}>1.00x</option>
+              <option value={1.25}>1.25x</option>
+              <option value={1.5}>1.50x</option>
+            </select>
+          </div>
+        )}
+      </div>
+
       {/* ── Media stage ── */}
-      <div className="relative w-full bg-black" style={{ height: 'calc(100% - 32px)' }}>
+      <div className="relative w-full bg-black" style={{ height: `calc(100% - ${HEADER_HEIGHT + CONTROL_BAR_HEIGHT}px)` }}>
         {item.type === 'video' ? (
           mediaUrl ? (
             <video
@@ -262,6 +382,15 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ items, initialIndex 
               ref={videoRef}
               src={mediaUrl}
               className="w-full h-full object-contain"
+              onLoadedMetadata={(event) => {
+                setNaturalSize({
+                  w: event.currentTarget.videoWidth || 16,
+                  h: event.currentTarget.videoHeight || 9,
+                });
+                setIsPlaying(!event.currentTarget.paused);
+              }}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
               playsInline
               loop
               controls
@@ -287,6 +416,12 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ items, initialIndex 
             src={mediaUrl}
             alt={item.name}
             className="w-full h-full object-contain select-none"
+            onLoad={(event) => {
+              setNaturalSize({
+                w: event.currentTarget.naturalWidth || 16,
+                h: event.currentTarget.naturalHeight || 9,
+              });
+            }}
             draggable={false}
             style={{ background: '#000' }}
           />
@@ -296,7 +431,7 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ items, initialIndex 
 
         {/* ── Filmstrip overlay (bottom of media area) ── */}
         {items.length > 1 && (
-          <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent
+          <div className={`absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/80 to-transparent
             px-2 py-1.5 transition-all duration-500 ${chromeOpacity}`}>
             <div
               ref={filmstripRef}
@@ -320,7 +455,7 @@ export const OracleViewer: React.FC<OracleViewerProps> = ({ items, initialIndex 
             pr-0.5 pb-0.5 transition-opacity duration-500 ${isTyping ? 'opacity-0' : 'opacity-40 hover:opacity-80'}`}
           onMouseDown={onResizeStart}
         >
-          <GripVertical className="w-3.5 h-3.5 text-amber-300 rotate-[-45deg]" />
+          <GripVertical className="w-3.5 h-3.5 text-amber-300 -rotate-45" />
         </div>
       </div>
     </div>
