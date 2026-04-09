@@ -20,6 +20,47 @@ interface XAIResponse {
   };
 }
 
+// OpenRouter reasoning-capable Grok models
+const OPENROUTER_REASONING_MODELS = [
+  'x-ai/grok-4.20',
+  'x-ai/grok-4.20-multi-agent',
+  'x-ai/grok-4.1-fast',
+  'x-ai/grok-4-fast',
+  'x-ai/grok-code-fast-1',
+];
+
+// Build provider-appropriate request body (handles xAI vs OpenRouter parameter differences)
+const buildRequestBody = (
+  provider: string,
+  model: string,
+  messages: any[],
+  options: { temperature?: number; max_tokens?: number; top_p?: number; min_tokens?: number; stream?: boolean }
+) => {
+  const body: any = {
+    messages,
+    model,
+    stream: options.stream ?? false,
+    temperature: options.temperature,
+    max_tokens: options.max_tokens,
+    top_p: options.top_p,
+  };
+
+  if (provider === 'openrouter') {
+    // Enable reasoning for Grok reasoning models via OpenRouter
+    if (OPENROUTER_REASONING_MODELS.includes(model)) {
+      body.reasoning = { enabled: true };
+    }
+    // Do NOT send min_tokens to OpenRouter — it's xAI-specific and can cause errors
+  } else {
+    // xAI direct API supports min_tokens
+    if (options.min_tokens) {
+      body.min_tokens = options.min_tokens;
+    }
+  }
+
+  return body;
+};
+
 const getProviderConfig = () => {
   const settings = getSettings();
   const provider = settings.provider || 'xai';
@@ -209,15 +250,12 @@ export const sendMessageToCharacter = async (
     const response = await fetch(providerConfig.apiUrl, {
       method: 'POST',
       headers: providerConfig.headers,
-      body: JSON.stringify({
-        messages: apiMessages,
-        model: providerConfig.model || XAI_MODEL,
-        stream: false,
-        temperature: 1.05, // Higher for more creative, less repetitive output
-        max_tokens: 6000, // Enforce long, detailed third-person responses (min ~800 words)
+      body: JSON.stringify(buildRequestBody(providerConfig.provider, providerConfig.model || XAI_MODEL, apiMessages, {
+        temperature: 1.05,
+        max_tokens: 6000,
         top_p: 0.98,
-        min_tokens: 800 // Request minimum output length
-      })
+        min_tokens: 800
+      }))
     });
 
     if (!response.ok) {
@@ -281,15 +319,12 @@ export const sendMessageWithCustomPrompt = async (
     const response = await fetch(providerConfig.apiUrl, {
       method: 'POST',
       headers: providerConfig.headers,
-      body: JSON.stringify({
-        messages: apiMessages,
-        model: providerConfig.model || XAI_MODEL,
-        stream: false,
+      body: JSON.stringify(buildRequestBody(providerConfig.provider, providerConfig.model || XAI_MODEL, apiMessages, {
         temperature: 1.05,
         max_tokens: Math.max(settings.maxTokens || 6000, 6000),
         top_p: 0.98,
         min_tokens: 800
-      })
+      }))
     });
 
     if (!response.ok) {
@@ -374,15 +409,12 @@ You can propose multiple lore cards in a single response. Be creative, ask quest
     const response = await fetch(providerConfig.apiUrl, {
       method: 'POST',
       headers: providerConfig.headers,
-      body: JSON.stringify({
-        messages: apiMessages,
-        model: providerConfig.model || XAI_MODEL,
-        stream: false,
+      body: JSON.stringify(buildRequestBody(providerConfig.provider, providerConfig.model || XAI_MODEL, apiMessages, {
         temperature: 0.85,
         max_tokens: Math.max(settings.maxTokens || 4000, 4000),
         top_p: 0.95,
         min_tokens: 600
-      })
+      }))
     });
 
     if (!response.ok) {
@@ -470,17 +502,14 @@ Rules:
   const response = await fetch(providerConfig.apiUrl, {
     method: 'POST',
     headers: providerConfig.headers,
-    body: JSON.stringify({
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt }
-      ],
-      model: providerConfig.model || XAI_MODEL,
-      stream: false,
+    body: JSON.stringify(buildRequestBody(providerConfig.provider, providerConfig.model || XAI_MODEL, [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ], {
       temperature: 0.4,
       max_tokens: 800,
       top_p: 0.9
-    })
+    }))
   });
 
   if (!response.ok) {
@@ -527,17 +556,14 @@ Rules:
   const response = await fetch(providerConfig.apiUrl, {
     method: 'POST',
     headers: providerConfig.headers,
-    body: JSON.stringify({
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt }
-      ],
-      model: providerConfig.model || XAI_MODEL,
-      stream: false,
+    body: JSON.stringify(buildRequestBody(providerConfig.provider, providerConfig.model || XAI_MODEL, [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ], {
       temperature: 0.4,
       max_tokens: 1200,
       top_p: 0.9
-    })
+    }))
   });
 
   if (!response.ok) {
@@ -605,14 +631,11 @@ export const sendMessageToKoda = async (
     const response = await fetch(providerConfig.apiUrl, {
       method: 'POST',
       headers: providerConfig.headers,
-      body: JSON.stringify({
-        messages: apiMessages,
-        model: providerConfig.model || XAI_MODEL,
-        stream: false,
+      body: JSON.stringify(buildRequestBody(providerConfig.provider, providerConfig.model || XAI_MODEL, apiMessages, {
         temperature: 0.7,
         max_tokens: 4096,
         top_p: 0.95
-      })
+      }))
     });
 
     if (!response.ok) {
@@ -676,12 +699,10 @@ export const analyzeInteractionForMemory = async (
     const response = await fetch(providerConfig.apiUrl, {
       method: 'POST',
       headers: providerConfig.headers,
-      body: JSON.stringify({
-        messages: [{ role: 'user', content: analysisPrompt }],
-        model: providerConfig.model || XAI_MODEL,
-        temperature: 0.3, // Lower temperature for factual extraction
+      body: JSON.stringify(buildRequestBody(providerConfig.provider, providerConfig.model || XAI_MODEL, [{ role: 'user', content: analysisPrompt }], {
+        temperature: 0.3,
         max_tokens: 1000
-      })
+      }))
     });
 
     if (!response.ok) return [];
@@ -749,7 +770,7 @@ export const sendMessageWithModel = async (
   };
   if (!apiConfig.apiKey || apiConfig.apiKey.trim() === '') throw new Error(`${provider === 'openrouter' ? 'OpenRouter' : 'xAI'} API key not configured.`);
   const apiMessages = [{ role: 'system' as const, content: systemPrompt }, ...history.map(msg => ({ role: msg.role as 'user' | 'assistant', content: msg.content })), { role: 'user' as const, content: newUserMessage }];
-  const response = await fetch(apiConfig.apiUrl, { method: 'POST', headers: apiConfig.headers, body: JSON.stringify({ messages: apiMessages, model: modelId, stream: false, temperature: settings.temperature || 0.85, max_tokens: Math.max(settings.maxTokens || 6000, 6000), top_p: 0.95, min_tokens: 800 }) });
+  const response = await fetch(apiConfig.apiUrl, { method: 'POST', headers: apiConfig.headers, body: JSON.stringify(buildRequestBody(provider, modelId, apiMessages, { temperature: settings.temperature || 0.85, max_tokens: Math.max(settings.maxTokens || 6000, 6000), top_p: 0.95, min_tokens: 800 })) });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const data: XAIResponse = await response.json();
   if (data.choices?.[0]?.message?.content) return data.choices[0].message.content.trim();
@@ -763,7 +784,7 @@ export const testMultipleModels = async (models: ModelTestConfig[], systemPrompt
     try {
       const apiConfig = config.provider === 'openrouter' ? { apiKey: OPENROUTER_API_KEY || settings.openrouterApiKey || '', apiUrl: OPENROUTER_API_URL, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENROUTER_API_KEY || settings.openrouterApiKey || ''}`, 'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'http://localhost', 'X-Title': 'Ooda Muse Engine' } } : { apiKey: XAI_API_KEY || settings.apiKey || '', apiUrl: XAI_API_URL, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${XAI_API_KEY || settings.apiKey || ''}` } };
       if (!apiConfig.apiKey) throw new Error('API key not configured');
-      const response = await fetch(apiConfig.apiUrl, { method: 'POST', headers: apiConfig.headers, body: JSON.stringify({ messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: testPrompt }], model: config.modelId, stream: false, temperature: 0.85, max_tokens: 2000 }) });
+      const response = await fetch(apiConfig.apiUrl, { method: 'POST', headers: apiConfig.headers, body: JSON.stringify(buildRequestBody(config.provider, config.modelId, [{ role: 'system', content: systemPrompt }, { role: 'user', content: testPrompt }], { temperature: 0.85, max_tokens: 2000 })) });
       const duration = Date.now() - startTime;
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data: XAIResponse = await response.json();

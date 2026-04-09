@@ -66,10 +66,12 @@ export const NSFW_ROLEPLAY_MODELS: any[] = [
   { id: 'grok-2-latest', name: 'Grok 2 Latest', provider: 'xai', contextLength: 131072, isNsfw: true, description: 'Grok 2 with strong roleplay capabilities' },
 
   // ── xAI via OpenRouter (includes Grok 4) ───────────────────────
-  { id: 'x-ai/grok-4.1-fast', name: 'Grok 4.1 Fast Reasoning', provider: 'openrouter', contextLength: 2000000, isNsfw: true, description: 'Latest Grok 4.1 with 2M context — fastest top-tier reasoning' },
-  { id: 'x-ai/grok-4.20', name: 'Grok 4.20', provider: 'openrouter', contextLength: 2000000, isNsfw: true, description: 'Grok 4.20 variant for advanced reasoning and long-context generation' },
-  { id: 'x-ai/grok-4-fast', name: 'Grok 4 Fast', provider: 'openrouter', contextLength: 2000000, isNsfw: true, description: 'Grok 4 fast variant with 2M context window' },
-  { id: 'x-ai/grok-4', name: 'Grok 4', provider: 'openrouter', contextLength: 256000, isNsfw: true, description: 'Full Grok 4 with deep reasoning and 256K context' },
+  { id: 'x-ai/grok-4.20', name: 'Grok 4.20 (Flagship)', provider: 'openrouter', contextLength: 2000000, isNsfw: true, description: 'xAI newest flagship — lowest hallucination rate, strict prompt adherence, 2M context. Reasoning via parameter.' },
+  { id: 'x-ai/grok-4.20-multi-agent', name: 'Grok 4.20 Multi-Agent', provider: 'openrouter', contextLength: 2000000, isNsfw: true, description: 'Grok 4.20 multi-agent variant — parallel agents for deep research & complex tasks. 2M context.' },
+  { id: 'x-ai/grok-4.1-fast', name: 'Grok 4.1 Fast Reasoning', provider: 'openrouter', contextLength: 2000000, isNsfw: true, description: 'xAI best agentic model — top-tier tool calling & deep research. 2M context. Reasoning via parameter.' },
+  { id: 'x-ai/grok-4-fast', name: 'Grok 4 Fast', provider: 'openrouter', contextLength: 2000000, isNsfw: true, description: 'Grok 4 fast multimodal with SOTA cost-efficiency. 2M context. Reasoning via parameter.' },
+  { id: 'x-ai/grok-code-fast-1', name: 'Grok Code Fast 1', provider: 'openrouter', contextLength: 256000, isNsfw: true, description: 'xAI coding specialist — fast reasoning for agentic coding workflows. 256K context.' },
+  { id: 'x-ai/grok-4', name: 'Grok 4', provider: 'openrouter', contextLength: 256000, isNsfw: true, description: 'Full Grok 4 reasoning model — parallel tool calling, structured outputs, 256K context.' },
   { id: 'x-ai/grok-3', name: 'Grok 3 (OpenRouter)', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Grok 3 routed via OpenRouter' },
   { id: 'x-ai/grok-3-mini', name: 'Grok 3 Mini (OpenRouter)', provider: 'openrouter', contextLength: 131072, isNsfw: true, description: 'Grok 3 Mini routed via OpenRouter' },
 
@@ -244,9 +246,11 @@ export const XAI_MODEL_OPTIONS = [
 
 export const OPENROUTER_MODEL_OPTIONS = [
   // xAI via OpenRouter
+  { id: 'x-ai/grok-4.20', name: 'Grok 4.20 (Flagship)' },
+  { id: 'x-ai/grok-4.20-multi-agent', name: 'Grok 4.20 Multi-Agent' },
   { id: 'x-ai/grok-4.1-fast', name: 'Grok 4.1 Fast Reasoning' },
-  { id: 'x-ai/grok-4.20', name: 'Grok 4.20' },
   { id: 'x-ai/grok-4-fast', name: 'Grok 4 Fast' },
+  { id: 'x-ai/grok-code-fast-1', name: 'Grok Code Fast 1' },
   { id: 'x-ai/grok-4', name: 'Grok 4' },
   { id: 'x-ai/grok-3', name: 'Grok 3 (OpenRouter)' },
   { id: 'x-ai/grok-3-mini', name: 'Grok 3 Mini (OpenRouter)' },
