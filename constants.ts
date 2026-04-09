@@ -7,7 +7,7 @@ export const XAI_API_KEY = "";
 export const XAI_API_URL = "https://api.x.ai/v1/chat/completions";
 
 // Recommended model
-export const XAI_MODEL = "grok-3-latest";  
+export const XAI_MODEL = "grok-4.20-0309-reasoning";  
 
 // OpenRouter configuration
 export const OPENROUTER_API_KEY = import.meta.env?.VITE_OPENROUTER_API_KEY || "";
@@ -59,8 +59,13 @@ export const INITIAL_GREETING = {
 // NSFW Roleplay Models for Model Tester and Character Chats
 // All OpenRouter IDs verified against https://openrouter.ai/api/v1/models (2026-02-20)
 export const NSFW_ROLEPLAY_MODELS: any[] = [
-  // ── xAI Direct Models ──────────────────────────────────────────
-  { id: 'grok-3-latest', name: 'Grok 3 Latest', provider: 'xai', contextLength: 131072, isNsfw: true, description: 'xAI flagship — best creative writing & roleplay' },
+  // ── xAI Direct Models (api.x.ai) ───────────────────────────────
+  { id: 'grok-4.20-0309-reasoning', name: 'Grok 4.20 Reasoning', provider: 'xai', contextLength: 2000000, isNsfw: true, description: 'xAI flagship — lowest hallucination rate, strict prompt adherence, 2M context' },
+  { id: 'grok-4.20-0309-non-reasoning', name: 'Grok 4.20', provider: 'xai', contextLength: 2000000, isNsfw: true, description: 'xAI flagship without reasoning — fast, 2M context' },
+  { id: 'grok-4.20-multi-agent-0309', name: 'Grok 4.20 Multi-Agent', provider: 'xai', contextLength: 2000000, isNsfw: true, description: 'Grok 4.20 multi-agent — parallel agents for deep research, 2M context' },
+  { id: 'grok-4-1-fast-reasoning', name: 'Grok 4.1 Fast Reasoning', provider: 'xai', contextLength: 2000000, isNsfw: true, description: 'xAI best agentic model — top-tier tool calling & deep research, 2M context' },
+  { id: 'grok-4-1-fast-non-reasoning', name: 'Grok 4.1 Fast', provider: 'xai', contextLength: 2000000, isNsfw: true, description: 'Grok 4.1 Fast without reasoning — agentic tool calling, 2M context' },
+  { id: 'grok-3-latest', name: 'Grok 3 Latest', provider: 'xai', contextLength: 131072, isNsfw: true, description: 'xAI Grok 3 — strong creative writing & roleplay' },
   { id: 'grok-3-fast', name: 'Grok 3 Fast', provider: 'xai', contextLength: 131072, isNsfw: true, description: 'Fast Grok 3 variant for quick responses' },
   { id: 'grok-3-mini', name: 'Grok 3 Mini', provider: 'xai', contextLength: 131072, isNsfw: true, description: 'Compact Grok 3 for efficient generation' },
   { id: 'grok-2-latest', name: 'Grok 2 Latest', provider: 'xai', contextLength: 131072, isNsfw: true, description: 'Grok 2 with strong roleplay capabilities' },
@@ -238,6 +243,11 @@ export const AI_MODES: AiMode[] = [
 ];
 
 export const XAI_MODEL_OPTIONS = [
+  { id: 'grok-4.20-0309-reasoning', name: 'Grok 4.20 Reasoning' },
+  { id: 'grok-4.20-0309-non-reasoning', name: 'Grok 4.20' },
+  { id: 'grok-4.20-multi-agent-0309', name: 'Grok 4.20 Multi-Agent' },
+  { id: 'grok-4-1-fast-reasoning', name: 'Grok 4.1 Fast Reasoning' },
+  { id: 'grok-4-1-fast-non-reasoning', name: 'Grok 4.1 Fast' },
   { id: 'grok-3-latest', name: 'Grok 3 Latest' },
   { id: 'grok-3-fast', name: 'Grok 3 Fast' },
   { id: 'grok-3-mini', name: 'Grok 3 Mini' },

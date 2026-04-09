@@ -29,6 +29,10 @@ const OPENROUTER_REASONING_MODELS = [
   'x-ai/grok-code-fast-1',
 ];
 
+// xAI direct reasoning models — do not support stop, presencePenalty, frequencyPenalty, or min_tokens
+const isXaiReasoningModel = (model: string) =>
+  model.includes('-reasoning') || model.includes('multi-agent');
+
 // Build provider-appropriate request body (handles xAI vs OpenRouter parameter differences)
 const buildRequestBody = (
   provider: string,
@@ -52,8 +56,8 @@ const buildRequestBody = (
     }
     // Do NOT send min_tokens to OpenRouter — it's xAI-specific and can cause errors
   } else {
-    // xAI direct API supports min_tokens
-    if (options.min_tokens) {
+    // xAI direct API: reasoning models don't support min_tokens
+    if (options.min_tokens && !isXaiReasoningModel(model)) {
       body.min_tokens = options.min_tokens;
     }
   }
