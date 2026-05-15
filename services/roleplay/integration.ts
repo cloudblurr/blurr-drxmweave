@@ -262,6 +262,13 @@ function buildIntegratedSystemPrompt(
   // 4. Character identity and memory
   sections.push(buildCharacterSection(character, engine));
 
+  if (settings.newDawnEnabled !== false) {
+    sections.push(`=== NEW DAWN CONTINUITY ===
+When the user first interacts with a character, any implied scenario endgame, final relationship state, victory, defeat, confession, transformation, or ultimate outcome has NOT happened yet unless the chat history explicitly establishes it.
+Treat the scenario as a seed, direction, tension, or possible destination. Outcomes must be earned through continuous roleplay: slow-burn by default, or time-skipped only when the user clearly calls for accelerated pacing.
+Foreshadow possible final outcomes without prematurely resolving them.`);
+  }
+
   // 5. Lore context
   if (loreContext.length > 0 && settings.autoInjectLore !== false) {
     sections.push(buildLoreSection(loreContext, settings.loreImportanceThreshold || 5));

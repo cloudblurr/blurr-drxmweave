@@ -94,6 +94,7 @@ export interface AppSettings {
   globalSystemPrompt?: string;
   loreImportanceThreshold?: number;
   autoInjectLore?: boolean;
+  newDawnEnabled?: boolean;
   customBonusPrompt?: string; // User-defined bonus prompt injected with every request
 }
 

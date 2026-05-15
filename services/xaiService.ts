@@ -106,6 +106,12 @@ const TURN_ORDER_REMINDER = `TURN ORDER REMINDER:
 - React first, then add consequences, then add one fresh creative development that follows from what happened.
 - Do not repeat the user's wording; transform it into character response, sensory consequence, and forward motion.`;
 
+const NEW_DAWN_PROMPT = `=== NEW DAWN CONTINUITY ===
+When the user first interacts with a character, any implied scenario endgame, final relationship state, victory, defeat, confession, transformation, or ultimate outcome has NOT happened yet unless the chat history explicitly establishes it.
+Treat the character card's scenario as a seed, direction, tension, or possible destination. Do not assume the destination is already achieved.
+Outcomes must be earned through continuous roleplay: slow-burn by default, or time-skipped only when the user clearly calls for a jump, montage, later scene, or accelerated pacing.
+Foreshadow endgame possibilities without prematurely resolving them.`;
+
 // Character-based roleplay messaging with retry logic
 export const sendMessageToCharacter = async (
   character: Character,
@@ -165,6 +171,10 @@ export const sendMessageToCharacter = async (
   systemPrompt += `- Never speak as the user or narrate what the user does.\n`;
   systemPrompt += `- If you need the user's response or action, ask a question and wait.\n`;
   systemPrompt += `- Only respond as ${character.name} and keep perspective consistent.\n\n`;
+
+  if (settings.newDawnEnabled !== false) {
+    systemPrompt += `${NEW_DAWN_PROMPT}\n\n`;
+  }
 
   // 3. Character details
   systemPrompt += `CHARACTER PROFILE:\n`;

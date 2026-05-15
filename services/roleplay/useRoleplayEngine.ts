@@ -281,12 +281,17 @@ export function useRoleplayEngine(characterId: string | null): UseRoleplayEngine
     // 4. Character identity
     sections.push(buildCharacterSection(character, engine));
 
-    // 5. Character memory (brain)
+    // 5. New Dawn continuity mode
+    if (settings.newDawnEnabled !== false) {
+      sections.push(buildNewDawnSection());
+    }
+
+    // 6. Character memory (brain)
     if (character.brain) {
       sections.push(buildCharacterMemorySection(character));
     }
 
-    // 6. Lore context
+    // 7. Lore context
     if (loreContext.length > 0 && settings.autoInjectLore !== false) {
       const loreSection = buildLoreSection(loreContext, settings.loreImportanceThreshold || 5);
       if (loreSection) {
@@ -294,25 +299,25 @@ export function useRoleplayEngine(characterId: string | null): UseRoleplayEngine
       }
     }
 
-    // 7. Scene state (dynamic)
+    // 8. Scene state (dynamic)
     sections.push(engine.getScenePrompt());
 
-    // 8. Pending actions (critical)
+    // 9. Pending actions (critical)
     const pendingActions = engine.getPendingActionsPrompt();
     if (pendingActions) {
       sections.push(`=== CRITICAL: UNRESOLVED ACTIONS ===\n${pendingActions}`);
     }
 
-    // 9. User model notes
+    // 10. User model notes
     const userNotes = engine.getUserModelNotes();
     if (userNotes) {
       sections.push(`=== USER MODEL ===\n${userNotes}`);
     }
 
-    // 10. Turn response contract
+    // 11. Turn response contract
     sections.push(buildTurnResponseContract(character.name));
 
-    // 11. Roleplay guidelines
+    // 12. Roleplay guidelines
     sections.push(buildRoleplayGuidelines(character.name));
 
     return sections.join('\n\n');
@@ -392,6 +397,21 @@ function buildCharacterMemorySection(character: Character): string {
   }
 
   return lines.join('\n');
+}
+
+function buildNewDawnSection(): string {
+  return `=== NEW DAWN CONTINUITY ===
+When the user first interacts with a character, any implied scenario endgame, final relationship state, victory, defeat, confession, transformation, or ultimate outcome has NOT happened yet unless the chat history explicitly establishes it.
+
+Treat the character card's scenario as a seed, direction, tension, or possible destination. Do not assume the destination is already achieved.
+
+Outcomes must be earned through continuous roleplay:
+- Slow-burn by default when the user explores moment-to-moment scenes.
+- Time-skip only when the user clearly calls for a jump, montage, later scene, or accelerated pacing.
+- Keep intermediate steps meaningful: setup, resistance, discovery, escalation, setbacks, choices, consequences, and payoff.
+- Foreshadow endgame possibilities without prematurely resolving them.
+
+If the user explicitly starts after an outcome, honor that. Otherwise begin before the final outcome and help the story move toward it through play.`;
 }
 
 function buildLoreSection(loreContext: LoreEntry[], threshold: number): string {

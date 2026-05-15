@@ -236,6 +236,7 @@ export function getSettings(): AppSettings {
       globalSystemPrompt: '',
       loreImportanceThreshold: 5,
       autoInjectLore: true,
+      newDawnEnabled: true,
     };
   }
   const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
@@ -253,6 +254,7 @@ export function getSettings(): AppSettings {
     globalSystemPrompt: '',
     loreImportanceThreshold: 5,
     autoInjectLore: true,
+    newDawnEnabled: true,
   };
 }
 

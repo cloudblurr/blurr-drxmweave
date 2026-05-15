@@ -210,6 +210,33 @@ export const Settings: React.FC<SettingsProps> = ({ onNavigate }) => {
           </div>
         </div>
 
+        {/* New Dawn Feature */}
+        <div className="holo-panel p-5 space-y-4">
+          <h2 className="text-sm font-bold holo-text-glow flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-holo-cyan" />
+            New Dawn
+          </h2>
+          <p className="text-xs text-slate-500">
+            Treat a character's implied endgame as a destination, not a preloaded fact.
+            First interactions begin before final outcomes have happened.
+          </p>
+
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={settings.newDawnEnabled !== false}
+              onChange={(e) => setSettings({ ...settings, newDawnEnabled: e.target.checked })}
+              className="mt-0.5 w-4 h-4 rounded border-holo-cyan/30 text-holo-cyan focus:ring-holo-cyan focus:ring-offset-black"
+            />
+            <span className="text-xs text-slate-400">
+              Enable New Dawn continuity for first character interactions
+              <span className="block text-[10px] text-slate-600 mt-1">
+                Outcomes should be earned through continuous roleplay, either slow-burn or time-skipped when the user calls for it.
+              </span>
+            </span>
+          </label>
+        </div>
+
         {/* Model Parameters */}
         <div className="holo-panel p-5 space-y-4">
           <h2 className="text-sm font-bold holo-text-glow">Model Parameters</h2>
