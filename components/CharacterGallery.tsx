@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Plus, Search, Upload, Download, Trash2, Edit, MessageSquare, BookOpen, FileText, Share2, ChevronDown } from 'lucide-react';
 import { Character, ViewType, GalleryItem, Lorebook } from '../types';
-import { getCharacters, saveCharacter, deleteCharacter, generateId, exportCharacter, importCharacter, getLorebooks, exportCharacterHTML, getNodesForCharacter } from '../services/storage';
+import { getCharacters, saveCharacter, deleteCharacter, generateId, exportCharacter, importCharacters, getLorebooks, exportCharacterHTML, getNodesForCharacter } from '../services/storage';
 import { getGalleryItemsByCharacter, saveGalleryItem, deleteGalleryItem, updateGalleryItem } from '../services/galleryDB';
 import { OracleViewer } from './OracleViewer';
 import { Button } from './ui/button';
@@ -136,10 +136,14 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ onNavigate }
           const reader = new FileReader();
           reader.onload = (event) => {
             try {
-              const char = importCharacter(event.target?.result as string);
-              saveCharacter(char);
+              const importedCharacters = importCharacters(event.target?.result as string);
+              importedCharacters.forEach(saveCharacter);
               setCharacters(getCharacters());
-              alert(`Successfully imported: ${char.name}`);
+              alert(
+                importedCharacters.length === 1
+                  ? `Successfully imported: ${importedCharacters[0].name}`
+                  : `Successfully imported ${importedCharacters.length} characters: ${importedCharacters.map((char) => char.name).join(', ')}`
+              );
             } catch (err) {
               console.error(err);
               alert('Failed to import character. Please check the JSON file format and try again.');
@@ -182,10 +186,14 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ onNavigate }
               }
               
               if (jsonString) {
-                const char = importCharacter(jsonString);
-                saveCharacter(char);
+                const importedCharacters = importCharacters(jsonString);
+                importedCharacters.forEach(saveCharacter);
                 setCharacters(getCharacters());
-                alert(`Successfully imported: ${char.name}`);
+                alert(
+                  importedCharacters.length === 1
+                    ? `Successfully imported: ${importedCharacters[0].name}`
+                    : `Successfully imported ${importedCharacters.length} characters: ${importedCharacters.map((char) => char.name).join(', ')}`
+                );
               } else {
                 alert('No character data found in PNG file. This may not be a character card image.');
               }

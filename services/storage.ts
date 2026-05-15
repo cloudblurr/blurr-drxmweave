@@ -995,6 +995,211 @@ export function importCharacter(jsonString: string): Character {
   return character;
 }
 
+const MULTI_CHARACTER_CONTAINER_KEYS = [
+  'characters',
+  'character_cards',
+  'cards',
+  'cast',
+  'crew',
+  'personas',
+  'agents',
+  'bots',
+  'members',
+];
+
+const MULTI_CONTEXT_KEYS = [
+  'scenario',
+  'world_scenario',
+  'setting',
+  'world',
+  'worldbuilding',
+  'premise',
+  'context',
+  'shared_context',
+  'sharedScenario',
+  'shared_scenario',
+];
+
+const MULTI_STYLE_KEYS = [
+  'writing_style',
+  'writingStyle',
+  'style',
+  'voice',
+  'speech_style',
+  'speechStyle',
+  'narration_style',
+  'narrationStyle',
+  'dialogue_style',
+  'dialogueStyle',
+];
+
+function isImportObject(value: any): value is Record<string, any> {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function getImportValue(obj: any, keys: string[]): any {
+  if (!isImportObject(obj)) return undefined;
+  for (const key of keys) {
+    if (obj[key] !== undefined && obj[key] !== null) return obj[key];
+  }
+  const entries = Object.entries(obj);
+  for (const key of keys) {
+    const found = entries.find(([candidate]) => candidate.toLowerCase() === key.toLowerCase());
+    if (found && found[1] !== undefined && found[1] !== null) return found[1];
+  }
+  return undefined;
+}
+
+function importValueToText(value: any): string {
+  if (typeof value === 'string') return value.trim();
+  if (Array.isArray(value)) return value.map(importValueToText).filter(Boolean).join('\n');
+  if (isImportObject(value)) {
+    return Object.entries(value)
+      .map(([key, entryValue]) => {
+        const rendered = importValueToText(entryValue);
+        return rendered ? `${key}: ${rendered}` : '';
+      })
+      .filter(Boolean)
+      .join('\n');
+  }
+  if (value === undefined || value === null) return '';
+  return String(value).trim();
+}
+
+function importValueToArray(value: any): string[] {
+  if (Array.isArray(value)) return value.flatMap(importValueToArray).map((item) => item.trim()).filter(Boolean);
+  if (typeof value === 'string') return value.split(',').map((item) => item.trim()).filter(Boolean);
+  return [];
+}
+
+function mergeImportText(sections: Array<[string, any]>): string {
+  return sections
+    .map(([label, value]) => {
+      const text = importValueToText(value);
+      return text ? `${label}: ${text}` : '';
+    })
+    .filter(Boolean)
+    .join('\n\n');
+}
+
+function mergeImportTags(...groups: any[]): string[] {
+  const seen = new Set<string>();
+  const merged: string[] = [];
+  groups.flatMap(importValueToArray).forEach((item) => {
+    const key = item.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      merged.push(item);
+    }
+  });
+  return merged;
+}
+
+function extractImportCharacterEntries(raw: any): { entries: any[]; root: any; isMulti: boolean } {
+  if (Array.isArray(raw)) return { entries: raw, root: {}, isMulti: raw.length > 1 };
+  if (!isImportObject(raw)) return { entries: [], root: {}, isMulti: false };
+
+  for (const key of MULTI_CHARACTER_CONTAINER_KEYS) {
+    const value = getImportValue(raw, [key]);
+    if (Array.isArray(value)) return { entries: value, root: raw, isMulti: true };
+    if (isImportObject(value)) return { entries: Object.values(value), root: raw, isMulti: true };
+  }
+
+  return { entries: [raw], root: raw, isMulti: false };
+}
+
+function buildImportGroupContext(root: any): Record<string, any> {
+  if (!isImportObject(root)) return {};
+  return {
+    name: importValueToText(getImportValue(root, ['name', 'title', 'group_name', 'collection_name'])),
+    description: importValueToText(getImportValue(root, ['description', 'desc', 'summary', 'about'])),
+    scenario: importValueToText(getImportValue(root, MULTI_CONTEXT_KEYS)),
+    personality: importValueToText(getImportValue(root, ['shared_personality', 'sharedPersonality', 'group_personality', 'ensemble_personality', 'tone'])),
+    instructions: importValueToText(getImportValue(root, ['instructions', 'shared_instructions', 'sharedInstructions', 'system_prompt', 'systemPrompt', 'prompt', 'rules'])),
+    examples: getImportValue(root, ['message_examples', 'msg_examples', 'examples', 'mes_example', 'sample_dialogue', 'sample_chat']),
+    writingStyle: getImportValue(root, MULTI_STYLE_KEYS),
+    tags: importValueToArray(getImportValue(root, ['tags', 'genres', 'categories', 'labels'])),
+    source: importValueToText(getImportValue(root, ['source', 'creator', 'author'])),
+  };
+}
+
+function compileMultiCharacterEntry(entry: any, group: Record<string, any>, index: number): Character {
+  const root = isImportObject(entry?.data) && (entry.spec === 'chara_card_v2' || entry.spec_version === '2.0') ? entry.data : entry;
+  const enriched: Record<string, any> = isImportObject(root) ? { ...root } : { description: importValueToText(root) };
+
+  const description = mergeImportText([
+    ['Description', getImportValue(enriched, ['description', 'desc', 'bio', 'char_persona', 'about', 'summary'])],
+    ['Appearance', getImportValue(enriched, ['appearance', 'looks', 'physical_description', 'visual_description'])],
+    ['Background', getImportValue(enriched, ['background', 'backstory', 'history', 'origin'])],
+    ['Goals', getImportValue(enriched, ['goals', 'motivation', 'motivations', 'drives'])],
+    ['Relationships', getImportValue(enriched, ['relationships', 'relationship_map', 'dynamics'])],
+  ]);
+  const personality = mergeImportText([
+    ['Personality', getImportValue(enriched, ['personality', 'persona', 'traits', 'character_traits'])],
+    ['Behavior', getImportValue(enriched, ['behavior', 'behaviour', 'mannerisms', 'quirks', 'habits'])],
+    ['Writing style', getImportValue(enriched, MULTI_STYLE_KEYS)],
+    ['Secrets', getImportValue(enriched, ['secrets', 'hidden_traits', 'private_notes'])],
+    ['Shared personality', group.personality],
+    ['Shared instructions', group.instructions],
+  ]);
+  const scenario = mergeImportText([
+    ['Scenario', getImportValue(enriched, MULTI_CONTEXT_KEYS)],
+    ['Collection', group.name],
+    ['Collection description', group.description],
+    ['Shared scenario', group.scenario],
+  ]);
+  const examples = mergeImportText([
+    ['Example messages', getImportValue(enriched, ['mes_example', 'example_dialogue', 'example_messages', 'examples', 'sampleChat', 'sample_chat'])],
+    ['Message examples', getImportValue(enriched, ['message_examples', 'msg_examples', 'sample_messages', 'sample_dialogue', 'dialogue_samples', 'writing_samples'])],
+    ['Shared examples', group.examples],
+    ['Shared writing style', group.writingStyle],
+  ]);
+
+  const nativeish = {
+    ...enriched,
+    extensions: {
+      ...(isImportObject(enriched.extensions) ? enriched.extensions : {}),
+      importFormat: 'blurr_multi_character_card',
+      importSource: group.source,
+      multiCharacterGroup: {
+        name: group.name,
+        description: group.description,
+        source: group.source,
+      },
+    },
+    name: getImportValue(enriched, ['name', 'char_name', 'character_name', 'characterName', 'displayName', 'display_name', 'title', 'id', 'slug']) || (group.name ? `${group.name} Character ${index + 1}` : undefined),
+    description: description || enriched.description,
+    personality: personality || enriched.personality || description,
+    scenario: scenario || enriched.scenario,
+    first_mes: getImportValue(enriched, ['first_mes', 'first_message', 'firstMessage', 'greeting', 'char_greeting', 'intro', 'opening', 'opening_message']) || enriched.first_mes,
+    mes_example: examples || enriched.mes_example,
+    tags: mergeImportTags(enriched.tags, enriched.categories, enriched.labels, getImportValue(enriched, ['aliases', 'alternate_names', 'nicknames']), group.tags),
+    data: {
+      ...(isImportObject(enriched.data) ? enriched.data : {}),
+      importFormat: 'blurr_multi_character_card',
+      importSource: group.source,
+      multiCharacterGroup: {
+        name: group.name,
+        description: group.description,
+        source: group.source,
+      },
+    },
+  };
+
+  return importCharacter(JSON.stringify(nativeish));
+}
+
+export function importCharacters(jsonString: string): Character[] {
+  const raw = forgivingParse(jsonString);
+  if (raw === null) return [importCharacter(jsonString)];
+
+  const { entries, root, isMulti } = extractImportCharacterEntries(raw);
+  if (!isMulti || entries.length <= 1) return [importCharacter(jsonString)];
+
+  const group = buildImportGroupContext(root);
+  return entries.map((entry, index) => compileMultiCharacterEntry(entry, group, index));
+}
+
 export function exportLorebook(lorebook: Lorebook): string {
   return JSON.stringify(lorebook, null, 2);
 }
