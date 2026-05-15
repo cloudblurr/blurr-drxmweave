@@ -7,7 +7,7 @@ export const XAI_API_KEY = "";
 export const XAI_API_URL = "https://api.x.ai/v1/chat/completions";
 
 // Recommended model
-export const XAI_MODEL = "grok-4.20-0309-reasoning";  
+export const XAI_MODEL = "grok-4.3";
 
 // OpenRouter configuration
 export const OPENROUTER_API_KEY = import.meta.env?.VITE_OPENROUTER_API_KEY || "";
@@ -60,6 +60,7 @@ export const INITIAL_GREETING = {
 // All OpenRouter IDs verified against https://openrouter.ai/api/v1/models (2026-02-20)
 export const NSFW_ROLEPLAY_MODELS: any[] = [
   // ── xAI Direct Models (api.x.ai) ───────────────────────────────
+  { id: 'grok-4.3', name: 'Grok 4.3', provider: 'xai', contextLength: 1000000, isNsfw: true, description: 'xAI flagship with strong instruction following, configurable reasoning, and 1M context' },
   { id: 'grok-4.20-0309-reasoning', name: 'Grok 4.20 Reasoning', provider: 'xai', contextLength: 2000000, isNsfw: true, description: 'xAI flagship — lowest hallucination rate, strict prompt adherence, 2M context' },
   { id: 'grok-4.20-0309-non-reasoning', name: 'Grok 4.20', provider: 'xai', contextLength: 2000000, isNsfw: true, description: 'xAI flagship without reasoning — fast, 2M context' },
   { id: 'grok-4.20-multi-agent-0309', name: 'Grok 4.20 Multi-Agent', provider: 'xai', contextLength: 2000000, isNsfw: true, description: 'Grok 4.20 multi-agent — parallel agents for deep research, 2M context' },
@@ -71,6 +72,7 @@ export const NSFW_ROLEPLAY_MODELS: any[] = [
   { id: 'grok-2-latest', name: 'Grok 2 Latest', provider: 'xai', contextLength: 131072, isNsfw: true, description: 'Grok 2 with strong roleplay capabilities' },
 
   // ── xAI via OpenRouter (includes Grok 4) ───────────────────────
+  { id: 'x-ai/grok-4.3', name: 'Grok 4.3', provider: 'openrouter', contextLength: 1000000, isNsfw: true, description: 'xAI Grok 4.3 via OpenRouter - flagship reasoning and instruction following, 1M context.' },
   { id: 'x-ai/grok-4.20', name: 'Grok 4.20 (Flagship)', provider: 'openrouter', contextLength: 2000000, isNsfw: true, description: 'xAI newest flagship — lowest hallucination rate, strict prompt adherence, 2M context. Reasoning via parameter.' },
   { id: 'x-ai/grok-4.20-multi-agent', name: 'Grok 4.20 Multi-Agent', provider: 'openrouter', contextLength: 2000000, isNsfw: true, description: 'Grok 4.20 multi-agent variant — parallel agents for deep research & complex tasks. 2M context.' },
   { id: 'x-ai/grok-4.1-fast', name: 'Grok 4.1 Fast Reasoning', provider: 'openrouter', contextLength: 2000000, isNsfw: true, description: 'xAI best agentic model — top-tier tool calling & deep research. 2M context. Reasoning via parameter.' },
@@ -243,6 +245,7 @@ export const AI_MODES: AiMode[] = [
 ];
 
 export const XAI_MODEL_OPTIONS = [
+  { id: 'grok-4.3', name: 'Grok 4.3' },
   { id: 'grok-4.20-0309-reasoning', name: 'Grok 4.20 Reasoning' },
   { id: 'grok-4.20-0309-non-reasoning', name: 'Grok 4.20' },
   { id: 'grok-4.20-multi-agent-0309', name: 'Grok 4.20 Multi-Agent' },
@@ -256,6 +259,7 @@ export const XAI_MODEL_OPTIONS = [
 
 export const OPENROUTER_MODEL_OPTIONS = [
   // xAI via OpenRouter
+  { id: 'x-ai/grok-4.3', name: 'Grok 4.3' },
   { id: 'x-ai/grok-4.20', name: 'Grok 4.20 (Flagship)' },
   { id: 'x-ai/grok-4.20-multi-agent', name: 'Grok 4.20 Multi-Agent' },
   { id: 'x-ai/grok-4.1-fast', name: 'Grok 4.1 Fast Reasoning' },

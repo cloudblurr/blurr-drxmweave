@@ -309,7 +309,10 @@ export function useRoleplayEngine(characterId: string | null): UseRoleplayEngine
       sections.push(`=== USER MODEL ===\n${userNotes}`);
     }
 
-    // 10. Roleplay guidelines
+    // 10. Turn response contract
+    sections.push(buildTurnResponseContract(character.name));
+
+    // 11. Roleplay guidelines
     sections.push(buildRoleplayGuidelines(character.name));
 
     return sections.join('\n\n');
@@ -428,8 +431,23 @@ function buildRoleplayGuidelines(characterName: string): string {
 - Never break character or acknowledge being an AI
 - Be descriptive and immersive in your responses
 - Do NOT narrate the user's actions or dialogue; only respond as ${characterName}
-- Build upon the user's actions with new details that continue the story
+- Build upon every user action with consequences, reactions, and new details that continue the story
+- Cover emotional, physical, environmental, and relationship effects when they are relevant
 - Offer actionable, adaptable details the user can accept or adjust`;
+}
+
+function buildTurnResponseContract(characterName: string): string {
+  return `=== TURN RESPONSE CONTRACT ===
+Before writing, internally split the latest user message into ordered beats. Answer those beats in the same order they happen.
+
+For each beat:
+- Acknowledge the event through ${characterName}'s perception, reaction, or dialogue without copying the user's wording.
+- Resolve immediate consequences first, then secondary consequences, then emotional aftereffects.
+- Preserve causality: earlier actions shape later reactions.
+- Cover all relevant avenues: body language, spoken response, environment, nearby characters or NPCs, unresolved goals, risks, and openings for continuation.
+- Add at least one fresh creative development that follows naturally from the scene.
+
+Do not skip smaller actions because a later action is more dramatic. Do not jump ahead before the current beat has landed.`;
 }
 
 // ============================================

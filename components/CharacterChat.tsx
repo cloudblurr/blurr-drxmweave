@@ -204,18 +204,17 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
       // Get lore context using the roleplay engine helper
       const loreContext = getLoreContextForCharacter(character);
 
-      // Build enhanced system prompt using the roleplay engine
-      // This includes: System Prompt (narrative rules), Developer Prompt (content style),
-      // Scene Prompt (dynamic state), Action Ledger (unresolved actions), and User Model
-      const enhancedSystemPrompt = roleplayEngine.buildFullSystemPrompt(character, loreContext);
-      
       // Prepare the turn (parses user message for actions, updates scene state)
       roleplayEngine.prepareMessage(userMessage.content);
+
+      // Build enhanced system prompt after preparing the turn so current actions are present.
+      // This includes narrative rules, content style, scene state, action ledger, and user model.
+      const enhancedSystemPrompt = roleplayEngine.buildFullSystemPrompt(character, loreContext);
 
       // Send message with the enhanced roleplay engine prompt
       const response = await sendMessageWithCustomPrompt(
         enhancedSystemPrompt,
-        updatedMessages,
+        activeNode.messages,
         userMessage.content
       );
 
@@ -336,17 +335,15 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
     setIsLoading(true);
     
     try {
-      // Get history up to (but not including) this assistant message
-      const historyMessages = activeNode.messages.slice(0, messageIndex);
-      
-      // Get lore context using the roleplay engine helper
-      const loreContext = getLoreContextForCharacter(character);
-      
-      // Build enhanced system prompt using the roleplay engine
-      const enhancedSystemPrompt = roleplayEngine.buildFullSystemPrompt(character, loreContext);
+      // Get history up to (but not including) the user message being answered.
+      const historyMessages = activeNode.messages.slice(0, Math.max(messageIndex - 1, 0));
       
       // Prepare the turn (this re-parses the user message for actions)
       roleplayEngine.prepareMessage(previousUserMessage.content);
+
+      // Get lore context and build prompt after preparing current-turn actions.
+      const loreContext = getLoreContextForCharacter(character);
+      const enhancedSystemPrompt = roleplayEngine.buildFullSystemPrompt(character, loreContext);
       
       // Generate new response with enhanced prompt
       const response = await sendMessageWithCustomPrompt(
@@ -407,15 +404,15 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
     setShowRegenerateModal(false);
     
     try {
-      // Get history up to (but not including) this assistant message
-      const historyMessages = activeNode.messages.slice(0, messageIndex);
-      
-      // Get lore context and build enhanced system prompt
-      const loreContext = getLoreContextForCharacter(character);
-      const enhancedSystemPrompt = roleplayEngine.buildFullSystemPrompt(character, loreContext);
+      // Get history up to (but not including) the user message being answered.
+      const historyMessages = activeNode.messages.slice(0, Math.max(messageIndex - 1, 0));
       
       // Prepare the turn
       roleplayEngine.prepareMessage(previousUserMessage.content);
+
+      // Get lore context and build prompt after preparing current-turn actions.
+      const loreContext = getLoreContextForCharacter(character);
+      const enhancedSystemPrompt = roleplayEngine.buildFullSystemPrompt(character, loreContext);
       
       // Generate response using the selected model
       const response = await sendMessageWithModel(

@@ -22,6 +22,7 @@ interface XAIResponse {
 
 // OpenRouter reasoning-capable Grok models
 const OPENROUTER_REASONING_MODELS = [
+  'x-ai/grok-4.3',
   'x-ai/grok-4.20',
   'x-ai/grok-4.20-multi-agent',
   'x-ai/grok-4.1-fast',
@@ -31,7 +32,7 @@ const OPENROUTER_REASONING_MODELS = [
 
 // xAI direct reasoning models — do not support stop, presencePenalty, frequencyPenalty, or min_tokens
 const isXaiReasoningModel = (model: string) =>
-  model.includes('-reasoning') || model.includes('multi-agent');
+  model === 'grok-4.3' || model.includes('-reasoning') || model.includes('multi-agent');
 
 // Build provider-appropriate request body (handles xAI vs OpenRouter parameter differences)
 const buildRequestBody = (
@@ -98,6 +99,12 @@ const getProviderConfig = () => {
 };
 
 const getProviderLabel = (provider: string) => provider === 'openrouter' ? 'OpenRouter' : 'xAI';
+
+const TURN_ORDER_REMINDER = `TURN ORDER REMINDER:
+- Split the latest user message into chronological beats and answer those beats in the same order.
+- Cover every significant action, line of dialogue, implied intent, and environmental opening before advancing.
+- React first, then add consequences, then add one fresh creative development that follows from what happened.
+- Do not repeat the user's wording; transform it into character response, sensory consequence, and forward motion.`;
 
 // Character-based roleplay messaging with retry logic
 export const sendMessageToCharacter = async (
@@ -247,7 +254,7 @@ export const sendMessageToCharacter = async (
     })),
     { role: 'user' as const, content: newUserMessage },
     // Post-user system reminder — this is the LAST thing the model sees before generating
-    { role: 'system' as const, content: `REMINDER: Write your response in THIRD-PERSON LIMITED perspective (he/she/they). Do NOT use first person (I/me/my) in narration — only inside "dialogue quotes." Minimum 800 words. Begin narrating now as ${character.name} in third person.` }
+    { role: 'system' as const, content: `${TURN_ORDER_REMINDER}\n\nREMINDER: Write your response in THIRD-PERSON LIMITED perspective (he/she/they). Do NOT use first person (I/me/my) in narration - only inside \"dialogue quotes.\" Minimum 800 words. Begin narrating now as ${character.name} in third person.` }
   ];
 
   try {
@@ -316,7 +323,7 @@ export const sendMessageWithCustomPrompt = async (
     })),
     { role: 'user' as const, content: newUserMessage },
     // Post-user enforcement
-    { role: 'system' as const, content: `REMINDER: Write in THIRD-PERSON LIMITED (he/she/they). NEVER use "I/me/my" in narration. Minimum 800 words.` }
+    { role: 'system' as const, content: `${TURN_ORDER_REMINDER}\n\nREMINDER: Write in THIRD-PERSON LIMITED (he/she/they). NEVER use \"I/me/my\" in narration. Minimum 800 words.` }
   ];
 
   try {
@@ -773,7 +780,12 @@ export const sendMessageWithModel = async (
     }
   };
   if (!apiConfig.apiKey || apiConfig.apiKey.trim() === '') throw new Error(`${provider === 'openrouter' ? 'OpenRouter' : 'xAI'} API key not configured.`);
-  const apiMessages = [{ role: 'system' as const, content: systemPrompt }, ...history.map(msg => ({ role: msg.role as 'user' | 'assistant', content: msg.content })), { role: 'user' as const, content: newUserMessage }];
+  const apiMessages = [
+    { role: 'system' as const, content: systemPrompt },
+    ...history.map(msg => ({ role: msg.role as 'user' | 'assistant', content: msg.content })),
+    { role: 'user' as const, content: newUserMessage },
+    { role: 'system' as const, content: TURN_ORDER_REMINDER }
+  ];
   const response = await fetch(apiConfig.apiUrl, { method: 'POST', headers: apiConfig.headers, body: JSON.stringify(buildRequestBody(provider, modelId, apiMessages, { temperature: settings.temperature || 0.85, max_tokens: Math.max(settings.maxTokens || 6000, 6000), top_p: 0.95, min_tokens: 800 })) });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const data: XAIResponse = await response.json();
