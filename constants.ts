@@ -19,7 +19,7 @@ export const OPENROUTER_MODELS_URL = "https://openrouter.ai/api/v1/models";
 
 // Ollama OpenAI-compatible local endpoint
 export const OLLAMA_BASE_URL = envValue('VITE_OLLAMA_BASE_URL', 'http://127.0.0.1:11434/v1').replace(/\/$/, '');
-export const OLLAMA_API_URL = envValue('VITE_OLLAMA_API_URL', `${OLLAMA_BASE_URL}/chat/completions`);
+export const OLLAMA_API_URL = envValue('VITE_OLLAMA_API_URL', '/api/ollama/chat');
 export const OLLAMA_MODEL = envValue('VITE_OLLAMA_MODEL', 'fredrezones55/Qwen3.5-Uncensored-HauhauCS-Aggressive:9b');
 export const OLLAMA_ROLEPLAY_MODELS = [
   {
