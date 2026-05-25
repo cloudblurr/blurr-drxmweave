@@ -1,4 +1,5 @@
 import { Character, ChatNode, LoreEntry, Lorebook, AppSettings } from '../types';
+import { OLLAMA_MODEL } from '../constants';
 import { DEFAULT_THEME_ID } from '../themePresets';
 import * as bunnyClient from './bunnyClient';
 import { getCurrentUser } from './authService';
@@ -228,8 +229,8 @@ export function getSettings(): AppSettings {
     return {
       apiKey: '',
       openrouterApiKey: '',
-      provider: 'xai',
-      defaultModel: 'grok-4.3',
+      provider: 'ollama',
+      defaultModel: OLLAMA_MODEL,
       temperature: 0.85,
       maxTokens: 6000,
       theme: DEFAULT_THEME_ID,
@@ -246,8 +247,8 @@ export function getSettings(): AppSettings {
   return {
     apiKey: '',
     openrouterApiKey: '',
-    provider: 'xai',
-    defaultModel: 'grok-4.3',
+    provider: 'ollama',
+    defaultModel: OLLAMA_MODEL,
     temperature: 0.85,
     maxTokens: 6000,
     theme: DEFAULT_THEME_ID,

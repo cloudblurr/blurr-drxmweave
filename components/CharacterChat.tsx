@@ -1198,6 +1198,32 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
               
               {/* Model Groups */}
               <div className="space-y-4">
+                {/* Ollama Models */}
+                <div>
+                  <h4 className="holo-label text-[10px] mb-2 text-holo-green">Ollama Models</h4>
+                  <div className="space-y-1">
+                    {NSFW_ROLEPLAY_MODELS.filter(m => m.provider === 'ollama').map(model => (
+                      <button
+                        key={model.id}
+                        onClick={() => setSelectedRegenerateModel(model)}
+                        className={`w-full text-left px-3 py-2 rounded-lg transition-all ${
+                          selectedRegenerateModel?.id === model.id
+                            ? 'holo-sidebar-item-active'
+                            : 'holo-sidebar-item'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-holo-cyan text-sm">{model.name}</span>
+                          {model.isNsfw && (
+                            <span className="holo-badge-danger text-[9px]">NSFW</span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-slate-600 mt-0.5">{model.description?.substring(0, 60)}...</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* xAI Models */}
                 <div>
                   <h4 className="holo-label text-[10px] mb-2 text-holo-blue">xAI Models</h4>

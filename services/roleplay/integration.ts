@@ -7,6 +7,7 @@
 
 import { Message, Role, Character, LoreEntry } from '../../types';
 import { getSettings } from '../storage';
+import { OLLAMA_API_URL, OLLAMA_MODEL } from '../../constants';
 import {
   RoleplayEngine,
   createRoleplayEngine,
@@ -19,7 +20,7 @@ import {
 // Provider configuration (mirrors xaiService)
 const getProviderConfig = () => {
   const settings = getSettings();
-  const provider = settings.provider || 'xai';
+  const provider = settings.provider || 'ollama';
   
   if (provider === 'openrouter') {
     const apiKey = settings.openrouterApiKey || '';
@@ -37,6 +38,19 @@ const getProviderConfig = () => {
     };
   }
 
+  if (provider === 'ollama') {
+    return {
+      provider,
+      apiKey: '',
+      apiUrl: OLLAMA_API_URL,
+      model: settings.defaultModel || OLLAMA_MODEL,
+      requiresApiKey: false,
+      headers: {
+        'Content-Type': 'application/json'
+      } as Record<string, string>
+    };
+  }
+
   const apiKey = settings.apiKey || '';
   return {
     provider,
@@ -49,6 +63,9 @@ const getProviderConfig = () => {
     } as Record<string, string>
   };
 };
+
+const isApiKeyMissing = (providerConfig: any) =>
+  providerConfig.requiresApiKey !== false && (!providerConfig.apiKey || providerConfig.apiKey.trim() === '');
 
 // ============================================
 // ENHANCED CHARACTER CHAT
@@ -122,7 +139,7 @@ export async function sendEnhancedMessage(
   const settings = getSettings();
   const providerConfig = getProviderConfig();
   
-  if (!providerConfig.apiKey || providerConfig.apiKey.trim() === '') {
+  if (isApiKeyMissing(providerConfig)) {
     throw new Error('API key is not configured. Please check your settings.');
   }
 
@@ -182,18 +199,22 @@ export async function sendEnhancedMessage(
     }
 
     try {
+      const requestBody: any = {
+        messages: apiMessages,
+        model: providerConfig.model,
+        stream: false,
+        temperature: 1.05,
+        max_tokens: Math.max(settings.maxTokens || 6000, 6000),
+        top_p: 0.98
+      };
+      if (providerConfig.provider === 'xai') {
+        requestBody.min_tokens = 800;
+      }
+
       const apiResponse = await fetch(providerConfig.apiUrl, {
         method: 'POST',
         headers: providerConfig.headers,
-        body: JSON.stringify({
-          messages: apiMessages,
-          model: providerConfig.model,
-          stream: false,
-          temperature: 1.05,
-          max_tokens: Math.max(settings.maxTokens || 6000, 6000),
-          top_p: 0.98,
-          min_tokens: 800
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (!apiResponse.ok) {

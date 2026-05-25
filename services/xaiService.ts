@@ -1,6 +1,8 @@
-import { XAI_API_KEY, XAI_API_URL, XAI_MODEL, OPENROUTER_API_KEY, OPENROUTER_API_URL, SYSTEM_INSTRUCTION as DEFAULT_SYSTEM_INSTRUCTION } from '../constants';
+import { XAI_API_KEY, XAI_API_URL, XAI_MODEL, OPENROUTER_API_KEY, OPENROUTER_API_URL, OLLAMA_API_URL, OLLAMA_MODEL, SYSTEM_INSTRUCTION as DEFAULT_SYSTEM_INSTRUCTION } from '../constants';
 import { Message, Role, MemoryFact, Character, LoreEntry } from '../types';
 import { getSettings } from './storage';
+
+type AIProvider = 'xai' | 'openrouter' | 'ollama';
 
 interface XAIChoice {
   message: {
@@ -56,7 +58,7 @@ const buildRequestBody = (
       body.reasoning = { enabled: true };
     }
     // Do NOT send min_tokens to OpenRouter — it's xAI-specific and can cause errors
-  } else {
+  } else if (provider === 'xai') {
     // xAI direct API: reasoning models don't support min_tokens
     if (options.min_tokens && !isXaiReasoningModel(model)) {
       body.min_tokens = options.min_tokens;
@@ -68,7 +70,7 @@ const buildRequestBody = (
 
 const getProviderConfig = () => {
   const settings = getSettings();
-  const provider = settings.provider || 'xai';
+  const provider = settings.provider || 'ollama';
   if (provider === 'openrouter') {
     const apiKey = OPENROUTER_API_KEY || settings.openrouterApiKey || '';
     return {
@@ -81,6 +83,19 @@ const getProviderConfig = () => {
         'Authorization': `Bearer ${apiKey}`,
         'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'http://localhost',
         'X-Title': 'Ooda Muse Engine'
+      }
+    };
+  }
+
+  if (provider === 'ollama') {
+    return {
+      provider,
+      apiKey: '',
+      apiUrl: OLLAMA_API_URL,
+      model: settings.defaultModel || OLLAMA_MODEL,
+      requiresApiKey: false,
+      headers: {
+        'Content-Type': 'application/json'
       }
     };
   }
@@ -98,7 +113,47 @@ const getProviderConfig = () => {
   };
 };
 
-const getProviderLabel = (provider: string) => provider === 'openrouter' ? 'OpenRouter' : 'xAI';
+const getProviderLabel = (provider: string) => provider === 'openrouter' ? 'OpenRouter' : provider === 'ollama' ? 'Ollama' : 'xAI';
+const isApiKeyMissing = (providerConfig: any) =>
+  providerConfig.requiresApiKey !== false && (!providerConfig.apiKey || providerConfig.apiKey.trim() === '');
+
+const getModelProviderConfig = (provider: AIProvider) => {
+  const settings = getSettings();
+  if (provider === 'openrouter') {
+    const apiKey = OPENROUTER_API_KEY || settings.openrouterApiKey || '';
+    return {
+      apiKey,
+      apiUrl: OPENROUTER_API_URL,
+      requiresApiKey: true,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'http://localhost',
+        'X-Title': 'Ooda Muse Engine'
+      }
+    };
+  }
+  if (provider === 'ollama') {
+    return {
+      apiKey: '',
+      apiUrl: OLLAMA_API_URL,
+      requiresApiKey: false,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+  }
+  const apiKey = XAI_API_KEY || settings.apiKey || '';
+  return {
+    apiKey,
+    apiUrl: XAI_API_URL,
+    requiresApiKey: true,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    }
+  };
+};
 
 const TURN_ORDER_REMINDER = `TURN ORDER REMINDER:
 - Split the latest user message into chronological beats and answer those beats in the same order.
@@ -124,7 +179,7 @@ export const sendMessageToCharacter = async (
   const providerConfig = getProviderConfig();
   const providerLabel = getProviderLabel(providerConfig.provider);
   
-  if (!providerConfig.apiKey || providerConfig.apiKey.trim() === '') {
+  if (isApiKeyMissing(providerConfig)) {
     throw new Error(`${providerLabel} API key is not configured. Please check your settings.`);
   }
   
@@ -320,7 +375,7 @@ export const sendMessageWithCustomPrompt = async (
   const providerConfig = getProviderConfig();
   const providerLabel = getProviderLabel(providerConfig.provider);
   
-  if (!providerConfig.apiKey || providerConfig.apiKey.trim() === '') {
+  if (isApiKeyMissing(providerConfig)) {
     throw new Error(`${providerLabel} API key is not configured. Please check your settings.`);
   }
 
@@ -391,7 +446,7 @@ export const chatWithLoreAI = async (
   const providerConfig = getProviderConfig();
   const providerLabel = getProviderLabel(providerConfig.provider);
   
-  if (!providerConfig.apiKey || providerConfig.apiKey.trim() === '') {
+  if (isApiKeyMissing(providerConfig)) {
     throw new Error(`${providerLabel} API key is not configured. Please check your settings.`);
   }
   
@@ -505,7 +560,7 @@ export const summarizeResponsesToMemory = async (
   const providerConfig = getProviderConfig();
   const providerLabel = getProviderLabel(providerConfig.provider);
 
-  if (!providerConfig.apiKey || providerConfig.apiKey.trim() === '') {
+  if (isApiKeyMissing(providerConfig)) {
     throw new Error(`${providerLabel} API key is not configured. Please check your settings.`);
   }
 
@@ -559,7 +614,7 @@ export const summarizeMemoryBankOverview = async (
   const providerConfig = getProviderConfig();
   const providerLabel = getProviderLabel(providerConfig.provider);
 
-  if (!providerConfig.apiKey || providerConfig.apiKey.trim() === '') {
+  if (isApiKeyMissing(providerConfig)) {
     throw new Error(`${providerLabel} API key is not configured. Please check your settings.`);
   }
 
@@ -645,7 +700,7 @@ export const sendMessageToKoda = async (
   ];
 
   try {
-    if (!providerConfig.apiKey || providerConfig.apiKey.trim() === '') {
+    if (isApiKeyMissing(providerConfig)) {
       throw new Error(`${providerLabel} API key is not configured. Please check your settings.`);
     }
 
@@ -715,7 +770,7 @@ export const analyzeInteractionForMemory = async (
   `;
 
   try {
-    if (!providerConfig.apiKey || providerConfig.apiKey.trim() === '') return [];
+    if (isApiKeyMissing(providerConfig)) return [];
 
     const response = await fetch(providerConfig.apiUrl, {
       method: 'POST',
@@ -750,13 +805,13 @@ export const analyzeInteractionForMemory = async (
 export interface ModelTestConfig {
   modelId: string;
   modelName: string;
-  provider: 'xai' | 'openrouter';
+  provider: AIProvider;
 }
 
 export interface ModelTestResponse {
   modelId: string;
   modelName: string;
-  provider: 'xai' | 'openrouter';
+  provider: AIProvider;
   response?: string;
   error?: string;
   duration: number;
@@ -766,30 +821,14 @@ export interface ModelTestResponse {
 // Test message with a specific model
 export const sendMessageWithModel = async (
   modelId: string,
-  provider: 'xai' | 'openrouter',
+  provider: AIProvider,
   systemPrompt: string,
   history: Message[],
   newUserMessage: string
 ): Promise<string> => {
   const settings = getSettings();
-  const apiConfig = provider === 'openrouter' ? {
-    apiKey: OPENROUTER_API_KEY || settings.openrouterApiKey || '',
-    apiUrl: OPENROUTER_API_URL,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${OPENROUTER_API_KEY || settings.openrouterApiKey || ''}`,
-      'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'http://localhost',
-      'X-Title': 'Ooda Muse Engine'
-    }
-  } : {
-    apiKey: XAI_API_KEY || settings.apiKey || '',
-    apiUrl: XAI_API_URL,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${XAI_API_KEY || settings.apiKey || ''}`
-    }
-  };
-  if (!apiConfig.apiKey || apiConfig.apiKey.trim() === '') throw new Error(`${provider === 'openrouter' ? 'OpenRouter' : 'xAI'} API key not configured.`);
+  const apiConfig = getModelProviderConfig(provider);
+  if (isApiKeyMissing(apiConfig)) throw new Error(`${getProviderLabel(provider)} API key not configured.`);
   const apiMessages = [
     { role: 'system' as const, content: systemPrompt },
     ...history.map(msg => ({ role: msg.role as 'user' | 'assistant', content: msg.content })),
@@ -808,8 +847,8 @@ export const testMultipleModels = async (models: ModelTestConfig[], systemPrompt
   const testModel = async (config: ModelTestConfig): Promise<void> => {
     const startTime = Date.now();
     try {
-      const apiConfig = config.provider === 'openrouter' ? { apiKey: OPENROUTER_API_KEY || settings.openrouterApiKey || '', apiUrl: OPENROUTER_API_URL, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENROUTER_API_KEY || settings.openrouterApiKey || ''}`, 'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'http://localhost', 'X-Title': 'Ooda Muse Engine' } } : { apiKey: XAI_API_KEY || settings.apiKey || '', apiUrl: XAI_API_URL, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${XAI_API_KEY || settings.apiKey || ''}` } };
-      if (!apiConfig.apiKey) throw new Error('API key not configured');
+      const apiConfig = getModelProviderConfig(config.provider);
+      if (isApiKeyMissing(apiConfig)) throw new Error(`${getProviderLabel(config.provider)} API key not configured`);
       const response = await fetch(apiConfig.apiUrl, { method: 'POST', headers: apiConfig.headers, body: JSON.stringify(buildRequestBody(config.provider, config.modelId, [{ role: 'system', content: systemPrompt }, { role: 'user', content: testPrompt }], { temperature: 0.85, max_tokens: 2000 })) });
       const duration = Date.now() - startTime;
       if (!response.ok) throw new Error(`HTTP ${response.status}`);

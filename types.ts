@@ -86,7 +86,7 @@ export interface Lorebook {
 export interface AppSettings {
   apiKey: string;
   openrouterApiKey?: string;
-  provider?: 'xai' | 'openrouter';
+  provider?: 'xai' | 'openrouter' | 'ollama';
   defaultModel: string;
   temperature: number;
   maxTokens: number;
@@ -102,7 +102,7 @@ export interface AppSettings {
 export interface AIModel {
   id: string;
   name: string;
-  provider: 'xai' | 'openrouter';
+  provider: 'xai' | 'openrouter' | 'ollama';
   contextLength?: number;
   isNsfw?: boolean;
   description?: string;
@@ -113,7 +113,7 @@ export interface AIModel {
 export interface ModelTestResult {
   modelId: string;
   modelName: string;
-  provider: 'xai' | 'openrouter';
+  provider: 'xai' | 'openrouter' | 'ollama';
   response: string;
   error?: string;
   duration?: number;

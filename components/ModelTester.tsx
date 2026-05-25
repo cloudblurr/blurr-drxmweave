@@ -27,6 +27,7 @@ export const ModelTester: React.FC<ModelTesterProps> = ({ onBack }) => {
   );
 
   // Group models by provider
+  const ollamaModels = filteredModels.filter(m => m.provider === 'ollama');
   const xaiModels = filteredModels.filter(m => m.provider === 'xai');
   const openrouterModels = filteredModels.filter(m => m.provider === 'openrouter');
 
@@ -184,7 +185,7 @@ export const ModelTester: React.FC<ModelTesterProps> = ({ onBack }) => {
                         <span className="text-holo-cyan font-mono text-xs">{idx + 1}</span>
                         <span className="text-holo-cyan text-sm truncate max-w-[180px]">{model.modelName}</span>
                         <span className={`text-xs px-1.5 py-0.5 rounded ${
-                          model.provider === 'xai' ? 'bg-holo-blue/20 text-holo-blue' : 'bg-holo-purple/20 text-holo-purple'
+                          model.provider === 'xai' ? 'bg-holo-blue/20 text-holo-blue' : model.provider === 'ollama' ? 'bg-holo-green/20 text-holo-green' : 'bg-holo-purple/20 text-holo-purple'
                         }`}>
                           {model.provider}
                         </span>
@@ -214,6 +215,23 @@ export const ModelTester: React.FC<ModelTesterProps> = ({ onBack }) => {
               />
 
               <div className="max-h-[400px] overflow-y-auto space-y-4">
+                {/* Ollama Models */}
+                {ollamaModels.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-holo-green mb-2">Ollama</h4>
+                    <div className="space-y-1">
+                      {ollamaModels.map(model => (
+                        <ModelCard
+                          key={model.id}
+                          model={model}
+                          isSelected={selectedModels.some(m => m.modelId === model.id)}
+                          onSelect={() => addModel(model)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* xAI Models */}
                 {xaiModels.length > 0 && (
                   <div>
@@ -418,7 +436,7 @@ const ResultCard: React.FC<{
         <span className="text-holo-cyan font-mono text-sm">#{index + 1}</span>
         <h4 className="text-holo-cyan font-medium">{result.modelName}</h4>
         <span className={`text-xs px-1.5 py-0.5 rounded ${
-          result.provider === 'xai' ? 'bg-holo-blue/20 text-holo-blue' : 'bg-holo-purple/20 text-holo-purple'
+          result.provider === 'xai' ? 'bg-holo-blue/20 text-holo-blue' : result.provider === 'ollama' ? 'bg-holo-green/20 text-holo-green' : 'bg-holo-purple/20 text-holo-purple'
         }`}>
           {result.provider}
         </span>

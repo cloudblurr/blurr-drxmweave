@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Settings as SettingsIcon, Save, Zap, Sparkles } from 'lucide-react';
 import { getSettings, saveSettings } from '../services/storage';
 import { AppSettings, ViewType } from '../types';
-import { OPENROUTER_MODEL_OPTIONS, XAI_MODEL_OPTIONS, NSFW_ROLEPLAY_MODELS, getAllModelOptions } from '../constants';
+import { OLLAMA_API_URL, OLLAMA_BASE_URL, NSFW_ROLEPLAY_MODELS } from '../constants';
 import { ModelTester } from './ModelTester';
 import { THEME_PRESETS, DEFAULT_THEME_ID } from '../themePresets';
 
@@ -19,13 +19,8 @@ export const Settings: React.FC<SettingsProps> = ({ onNavigate }) => {
   
   // Get models based on provider - now includes NSFW models
   const getModelOptions = () => {
-    if (activeProvider === 'openrouter') {
-      return NSFW_ROLEPLAY_MODELS
-        .filter(m => m.provider === 'openrouter')
-        .map(m => ({ value: m.id, label: m.name }));
-    }
     return NSFW_ROLEPLAY_MODELS
-      .filter(m => m.provider === 'xai')
+      .filter(m => m.provider === activeProvider)
       .map(m => ({ value: m.id, label: m.name }));
   };
   
@@ -76,10 +71,8 @@ export const Settings: React.FC<SettingsProps> = ({ onNavigate }) => {
             <select
               value={activeProvider}
               onChange={(e) => {
-                const provider = e.target.value as 'xai' | 'openrouter';
-                const newModelOptions = provider === 'openrouter'
-                  ? NSFW_ROLEPLAY_MODELS.filter(m => m.provider === 'openrouter')
-                  : NSFW_ROLEPLAY_MODELS.filter(m => m.provider === 'xai');
+                const provider = e.target.value as 'xai' | 'openrouter' | 'ollama';
+                const newModelOptions = NSFW_ROLEPLAY_MODELS.filter(m => m.provider === provider);
                 const defaultModel = newModelOptions[0]?.id || '';
                 setSettings({
                   ...settings,
@@ -91,6 +84,7 @@ export const Settings: React.FC<SettingsProps> = ({ onNavigate }) => {
             >
               <option value="xai">xAI</option>
               <option value="openrouter">OpenRouter</option>
+              <option value="ollama">Ollama</option>
             </select>
             <p className="text-[10px] text-slate-600 mt-1">
               Choose the API provider used for responses.
@@ -111,6 +105,20 @@ export const Settings: React.FC<SettingsProps> = ({ onNavigate }) => {
               />
               <p className="text-[10px] text-slate-600 mt-1">
                 <span className="text-holo-green">✓ API Key is hardcoded</span> for maximum reliability. Override here if needed.
+              </p>
+            </div>
+          )}
+
+          {activeProvider === 'ollama' && (
+            <div className="rounded-lg border border-holo-cyan/10 bg-black/20 px-4 py-3">
+              <p className="text-xs text-slate-400">
+                Ollama uses your local OpenAI-compatible endpoint and does not require an API key.
+              </p>
+              <p className="text-[10px] text-slate-600 mt-1">
+                Base URL: {OLLAMA_BASE_URL}
+              </p>
+              <p className="text-[10px] text-slate-600">
+                Chat Completions URL: {OLLAMA_API_URL}
               </p>
             </div>
           )}
@@ -147,7 +155,7 @@ export const Settings: React.FC<SettingsProps> = ({ onNavigate }) => {
               ))}
             </select>
             <p className="text-[10px] text-slate-600 mt-1">
-              If a model fails, verify the exact OpenRouter model ID.
+              If a model fails, verify the provider is reachable and the model ID is available.
             </p>
           </div>
         </div>
@@ -343,7 +351,7 @@ export const Settings: React.FC<SettingsProps> = ({ onNavigate }) => {
             <p><strong className="text-holo-cyan/80">Version:</strong> 1.0.0</p>
             <p><strong className="text-holo-cyan/80">Engine:</strong> Blurr Drxmweave</p>
             <p><strong className="text-holo-cyan/80">Community Hub:</strong> BlurrVerse</p>
-            <p><strong className="text-holo-cyan/80">Powered by:</strong> xAI and OpenRouter</p>
+            <p><strong className="text-holo-cyan/80">Powered by:</strong> xAI, OpenRouter, and Ollama</p>
             <p><strong className="text-holo-cyan/80">Supported Formats:</strong> ChubAI, SillyTavern JSON</p>
           </div>
         </div>

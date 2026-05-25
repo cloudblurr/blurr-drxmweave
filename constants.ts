@@ -14,6 +14,31 @@ export const OPENROUTER_API_KEY = import.meta.env?.VITE_OPENROUTER_API_KEY || ""
 export const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 export const OPENROUTER_MODELS_URL = "https://openrouter.ai/api/v1/models";
 
+// Ollama OpenAI-compatible local endpoint
+export const OLLAMA_BASE_URL = "http://127.0.0.1:11434/v1";
+export const OLLAMA_API_URL = "http://127.0.0.1:11434/v1/chat/completions";
+export const OLLAMA_MODEL = "fredrezones55/Qwen3.5-Uncensored-HauhauCS-Aggressive:9b";
+export const OLLAMA_ROLEPLAY_MODELS = [
+  {
+    id: "fredrezones55/Qwen3.5-Uncensored-HauhauCS-Aggressive:9b",
+    name: "Qwen3.5 HauhauCS Aggressive 9B",
+    contextLength: 131072,
+    description: "Local Qwen3.5 uncensored aggressive roleplay model via Ollama."
+  },
+  {
+    id: "reefer/monica",
+    name: "Monica",
+    contextLength: 131072,
+    description: "Local Monica roleplay model via Ollama."
+  },
+  {
+    id: "reefer/monicamaxlvl",
+    name: "Monica Max Lvl",
+    contextLength: 131072,
+    description: "Local Monica Max Lvl roleplay model via Ollama."
+  }
+];
+
 // Default System Instruction (Fallback) - NSFW Roleplay Optimized
 export const SYSTEM_INSTRUCTION = `You are an advanced AI designed for immersive, unrestricted adult roleplay and creative storytelling.
 
@@ -59,6 +84,14 @@ export const INITIAL_GREETING = {
 // NSFW Roleplay Models for Model Tester and Character Chats
 // All OpenRouter IDs verified against https://openrouter.ai/api/v1/models (2026-02-20)
 export const NSFW_ROLEPLAY_MODELS: any[] = [
+  // Ollama Local Models
+  ...OLLAMA_ROLEPLAY_MODELS.map((model) => ({
+    ...model,
+    provider: 'ollama',
+    isNsfw: true,
+    pricing: 'Local'
+  })),
+
   // ── xAI Direct Models (api.x.ai) ───────────────────────────────
   { id: 'grok-4.3', name: 'Grok 4.3', provider: 'xai', contextLength: 1000000, isNsfw: true, description: 'xAI flagship with strong instruction following, configurable reasoning, and 1M context' },
   { id: 'grok-4.20-0309-reasoning', name: 'Grok 4.20 Reasoning', provider: 'xai', contextLength: 2000000, isNsfw: true, description: 'xAI flagship — lowest hallucination rate, strict prompt adherence, 2M context' },
@@ -257,6 +290,10 @@ export const XAI_MODEL_OPTIONS = [
   { id: 'grok-2-latest', name: 'Grok 2 Latest' }
 ];
 
+export const OLLAMA_MODEL_OPTIONS = [
+  ...OLLAMA_ROLEPLAY_MODELS.map(({ id, name }) => ({ id, name }))
+];
+
 export const OPENROUTER_MODEL_OPTIONS = [
   // xAI via OpenRouter
   { id: 'x-ai/grok-4.3', name: 'Grok 4.3' },
@@ -322,5 +359,5 @@ export const OPENROUTER_MODEL_OPTIONS = [
 ];
 
 export const getAllModelOptions = () => {
-  return [...XAI_MODEL_OPTIONS, ...OPENROUTER_MODEL_OPTIONS];
+  return [...OLLAMA_MODEL_OPTIONS, ...XAI_MODEL_OPTIONS, ...OPENROUTER_MODEL_OPTIONS];
 };
