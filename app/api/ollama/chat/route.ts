@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 
 const OLLAMA_BASE_URL = (process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434/v1').replace(/\/$/, '');
 const OLLAMA_CHAT_URL = process.env.OLLAMA_CHAT_URL || `${OLLAMA_BASE_URL}/chat/completions`;
+const OLLAMA_API_KEY = process.env.OLLAMA_API_KEY || '';
 
 export async function POST(request: NextRequest) {
   let body: unknown;
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': request.headers.get('authorization') || 'Bearer ollama',
+      'Authorization': OLLAMA_API_KEY ? `Bearer ${OLLAMA_API_KEY}` : request.headers.get('authorization') || 'Bearer ollama',
     },
     body: JSON.stringify(body),
   });
