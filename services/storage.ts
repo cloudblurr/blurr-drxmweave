@@ -1,5 +1,5 @@
 import { Character, ChatNode, LoreEntry, Lorebook, AppSettings } from '../types';
-import { OLLAMA_MODEL } from '../constants';
+import { OLLAMA_MODEL, OLLAMA_ROLEPLAY_MODELS } from '../constants';
 import { DEFAULT_THEME_ID } from '../themePresets';
 import * as bunnyClient from './bunnyClient';
 import { getCurrentUser } from './authService';
@@ -224,9 +224,19 @@ export function deleteLorebook(id: string): void {
 }
 
 // --- Settings ---
+function normalizeSettings(settings: AppSettings): AppSettings {
+  if (settings.provider === 'ollama') {
+    const availableModels = new Set(OLLAMA_ROLEPLAY_MODELS.map((model) => model.id));
+    if (!availableModels.has(settings.defaultModel)) {
+      return { ...settings, defaultModel: OLLAMA_MODEL };
+    }
+  }
+  return settings;
+}
+
 export function getSettings(): AppSettings {
   if (typeof window === 'undefined') {
-    return {
+    return normalizeSettings({
       apiKey: '',
       openrouterApiKey: '',
       provider: 'ollama',
@@ -238,13 +248,15 @@ export function getSettings(): AppSettings {
       loreImportanceThreshold: 5,
       autoInjectLore: true,
       newDawnEnabled: true,
-    };
+    });
   }
   const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
   if (data) {
-    return JSON.parse(data);
+    const settings = normalizeSettings(JSON.parse(data));
+    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+    return settings;
   }
-  return {
+  return normalizeSettings({
     apiKey: '',
     openrouterApiKey: '',
     provider: 'ollama',
@@ -256,7 +268,7 @@ export function getSettings(): AppSettings {
     loreImportanceThreshold: 5,
     autoInjectLore: true,
     newDawnEnabled: true,
-  };
+  });
 }
 
 export function saveSettings(settings: AppSettings): void {
