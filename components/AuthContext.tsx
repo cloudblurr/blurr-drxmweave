@@ -22,7 +22,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let settled = false;
+    const fallbackTimer = window.setTimeout(() => {
+      if (!settled) {
+        console.warn('[Auth] Auth state did not resolve quickly; showing signed-out state.');
+        setUser(null);
+        setLoading(false);
+      }
+    }, 5000);
+
     const unsubscribe = onAuthChange(async (firebaseUser) => {
+      settled = true;
+      window.clearTimeout(fallbackTimer);
       setUser(firebaseUser);
 
       if (!firebaseUser) {
@@ -52,7 +63,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setLoading(false);
     });
-    return unsubscribe;
+    return () => {
+      settled = true;
+      window.clearTimeout(fallbackTimer);
+      unsubscribe();
+    };
   }, []);
 
   return (
