@@ -8,6 +8,7 @@ interface XAIChoice {
   message: {
     role: string;
     content: string;
+    reasoning?: string;
   };
   finish_reason: string;
 }
@@ -116,6 +117,11 @@ const getProviderConfig = () => {
 const getProviderLabel = (provider: string) => provider === 'openrouter' ? 'OpenRouter' : provider === 'ollama' ? 'Ollama' : 'xAI';
 const isApiKeyMissing = (providerConfig: any) =>
   providerConfig.requiresApiKey !== false && (!providerConfig.apiKey || providerConfig.apiKey.trim() === '');
+
+const getAssistantText = (data: XAIResponse) => {
+  const message = data.choices?.[0]?.message;
+  return (message?.content || message?.reasoning || '').trim();
+};
 
 const getModelProviderConfig = (provider: AIProvider) => {
   const settings = getSettings();
@@ -346,8 +352,9 @@ export const sendMessageToCharacter = async (
     }
 
     const data: XAIResponse = await response.json();
-    if (data.choices && data.choices.length > 0 && data.choices[0].message?.content) {
-      return data.choices[0].message.content.trim();
+    const assistantText = getAssistantText(data);
+    if (assistantText) {
+      return assistantText;
     } else {
       throw new Error('Empty or invalid response from xAI.');
     }
@@ -416,8 +423,9 @@ export const sendMessageWithCustomPrompt = async (
 
     const data: XAIResponse = await response.json();
     
-    if (data.choices && data.choices.length > 0 && data.choices[0].message?.content) {
-      return data.choices[0].message.content.trim();
+    const assistantText = getAssistantText(data);
+    if (assistantText) {
+      return assistantText;
     } else {
       throw new Error('Empty or invalid response from API.');
     }
@@ -499,8 +507,9 @@ You can propose multiple lore cards in a single response. Be creative, ask quest
 
     const data: XAIResponse = await response.json();
     
-    if (data.choices && data.choices.length > 0 && data.choices[0].message?.content) {
-      return data.choices[0].message.content.trim();
+    const assistantText = getAssistantText(data);
+    if (assistantText) {
+      return assistantText;
     } else {
       throw new Error('Empty response from xAI.');
     }
@@ -600,7 +609,7 @@ Rules:
   }
 
   const data: XAIResponse = await response.json();
-  const content = data.choices?.[0]?.message?.content?.trim();
+  const content = getAssistantText(data);
   if (!content) {
     throw new Error('Empty memory summary response.');
   }
@@ -654,7 +663,7 @@ Rules:
   }
 
   const data: XAIResponse = await response.json();
-  const content = data.choices?.[0]?.message?.content?.trim();
+  const content = getAssistantText(data);
   if (!content) {
     throw new Error('Empty memory overview response.');
   }
@@ -727,8 +736,9 @@ export const sendMessageToKoda = async (
 
     const data: XAIResponse = await response.json();
     
-    if (data.choices && data.choices.length > 0 && data.choices[0].message?.content) {
-      return data.choices[0].message.content.trim();
+    const assistantText = getAssistantText(data);
+    if (assistantText) {
+      return assistantText;
     } else {
       throw new Error('Empty or invalid response from KodaAI.');
     }
@@ -784,7 +794,7 @@ export const analyzeInteractionForMemory = async (
     if (!response.ok) return [];
 
     const data: XAIResponse = await response.json();
-    const content = data.choices[0]?.message?.content || "[]";
+    const content = getAssistantText(data) || "[]";
     
     // Clean up markdown code blocks if present
     const jsonString = content.replace(/```json\n?|\n?```/g, '').trim();
@@ -838,7 +848,8 @@ export const sendMessageWithModel = async (
   const response = await fetch(apiConfig.apiUrl, { method: 'POST', headers: apiConfig.headers, body: JSON.stringify(buildRequestBody(provider, modelId, apiMessages, { temperature: settings.temperature || 0.85, max_tokens: Math.max(settings.maxTokens || 6000, 6000), top_p: 0.95, min_tokens: 800 })) });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const data: XAIResponse = await response.json();
-  if (data.choices?.[0]?.message?.content) return data.choices[0].message.content.trim();
+  const assistantText = getAssistantText(data);
+  if (assistantText) return assistantText;
   throw new Error('Empty response');
 };
 
@@ -853,7 +864,7 @@ export const testMultipleModels = async (models: ModelTestConfig[], systemPrompt
       const duration = Date.now() - startTime;
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data: XAIResponse = await response.json();
-      onResult({ modelId: config.modelId, modelName: config.modelName, provider: config.provider, response: data.choices?.[0]?.message?.content?.trim(), duration, timestamp: Date.now() });
+      onResult({ modelId: config.modelId, modelName: config.modelName, provider: config.provider, response: getAssistantText(data), duration, timestamp: Date.now() });
     } catch (error: any) {
       onResult({ modelId: config.modelId, modelName: config.modelName, provider: config.provider, error: error.message, duration: Date.now() - startTime, timestamp: Date.now() });
     }

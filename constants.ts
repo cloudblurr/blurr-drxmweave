@@ -1,5 +1,8 @@
 import { Role, AiMode } from './types';
 
+const env = typeof import.meta !== 'undefined' ? (import.meta as any).env || {} : {};
+const envValue = (key: string, fallback: string) => env[key] || fallback;
+
 // IMPORTANT: In production, ALWAYS use environment variables.
 export const XAI_API_KEY = "";
 
@@ -10,14 +13,14 @@ export const XAI_API_URL = "https://api.x.ai/v1/chat/completions";
 export const XAI_MODEL = "grok-4.3";
 
 // OpenRouter configuration
-export const OPENROUTER_API_KEY = import.meta.env?.VITE_OPENROUTER_API_KEY || "";
+export const OPENROUTER_API_KEY = envValue('VITE_OPENROUTER_API_KEY', '');
 export const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 export const OPENROUTER_MODELS_URL = "https://openrouter.ai/api/v1/models";
 
 // Ollama OpenAI-compatible local endpoint
-export const OLLAMA_BASE_URL = "http://127.0.0.1:11434/v1";
-export const OLLAMA_API_URL = "http://127.0.0.1:11434/v1/chat/completions";
-export const OLLAMA_MODEL = "fredrezones55/Qwen3.5-Uncensored-HauhauCS-Aggressive:9b";
+export const OLLAMA_BASE_URL = envValue('VITE_OLLAMA_BASE_URL', 'http://127.0.0.1:11434/v1').replace(/\/$/, '');
+export const OLLAMA_API_URL = envValue('VITE_OLLAMA_API_URL', `${OLLAMA_BASE_URL}/chat/completions`);
+export const OLLAMA_MODEL = envValue('VITE_OLLAMA_MODEL', 'fredrezones55/Qwen3.5-Uncensored-HauhauCS-Aggressive:9b');
 export const OLLAMA_ROLEPLAY_MODELS = [
   {
     id: "fredrezones55/Qwen3.5-Uncensored-HauhauCS-Aggressive:9b",
