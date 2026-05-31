@@ -1,8 +1,9 @@
-import { XAI_API_KEY, XAI_API_URL, XAI_MODEL, OPENROUTER_API_KEY, OPENROUTER_API_URL, OLLAMA_API_URL, OLLAMA_MODEL, SYSTEM_INSTRUCTION as DEFAULT_SYSTEM_INSTRUCTION } from '../constants';
+import { XAI_API_KEY, XAI_API_URL, XAI_MODEL, OPENROUTER_API_KEY, OPENROUTER_API_URL, OLLAMA_API_URL, OLLAMA_MODEL, SYSTEM_INSTRUCTION as DEFAULT_SYSTEM_INSTRUCTION, CLOUDFLARE_API_URL, CLOUDFLARE_API_KEY, CLOUDFLARE_MODEL_OPTIONS, CLOUDFLARE_GATEWAY_ID, CLOUDFLARE_ACCOUNT_ID, TOGETHER_API_KEY, TOGETHER_API_URL, TOGETHER_MODEL_OPTIONS } from '../constants';
 import { Message, Role, MemoryFact, Character, LoreEntry } from '../types';
 import { getSettings } from './storage';
+import callCloudflareAI from './cloudflareClient';
 
-type AIProvider = 'xai' | 'openrouter' | 'ollama';
+type AIProvider = 'xai' | 'openrouter' | 'ollama' | 'cloudflare' | 'together';
 
 interface XAIChoice {
   message: {
@@ -88,6 +89,21 @@ const getProviderConfig = () => {
     };
   }
 
+  if (provider === 'together') {
+    const apiKey = TOGETHER_API_KEY || settings.togetherApiKey || '';
+    return {
+      provider,
+      apiKey,
+      apiUrl: settings.togetherApiUrl || TOGETHER_API_URL,
+      model: settings.defaultModel || TOGETHER_MODEL_OPTIONS[0]?.id || 'MiniMaxAI/MiniMax-M2.7',
+      requiresApiKey: false,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {})
+      }
+    };
+  }
+
   if (provider === 'ollama') {
     return {
       provider,
@@ -97,6 +113,21 @@ const getProviderConfig = () => {
       requiresApiKey: false,
       headers: {
         'Content-Type': 'application/json'
+      }
+    };
+  }
+
+  if (provider === 'cloudflare') {
+    const apiKey = settings.cloudflareApiKey || CLOUDFLARE_API_KEY || '';
+    return {
+      provider,
+      apiKey,
+      apiUrl: CLOUDFLARE_API_URL,
+      model: settings.defaultModel || CLOUDFLARE_MODEL_OPTIONS?.[0]?.id || XAI_MODEL,
+      requiresApiKey: !!apiKey,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {})
       }
     };
   }
@@ -114,7 +145,16 @@ const getProviderConfig = () => {
   };
 };
 
-const getProviderLabel = (provider: string) => provider === 'openrouter' ? 'OpenRouter' : provider === 'ollama' ? 'Ollama' : 'xAI';
+const getProviderLabel = (provider: string) =>
+  provider === 'openrouter'
+    ? 'OpenRouter'
+    : provider === 'together'
+      ? 'Together AI'
+    : provider === 'ollama'
+      ? 'Ollama'
+      : provider === 'cloudflare'
+        ? 'Cloudflare Worker'
+        : 'xAI';
 const isApiKeyMissing = (providerConfig: any) =>
   providerConfig.requiresApiKey !== false && (!providerConfig.apiKey || providerConfig.apiKey.trim() === '');
 
@@ -139,6 +179,18 @@ const getModelProviderConfig = (provider: AIProvider) => {
       }
     };
   }
+  if (provider === 'together') {
+    const apiKey = TOGETHER_API_KEY || settings.togetherApiKey || '';
+    return {
+      apiKey,
+      apiUrl: settings.togetherApiUrl || TOGETHER_API_URL,
+      requiresApiKey: false,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {})
+      }
+    };
+  }
   if (provider === 'ollama') {
     return {
       apiKey: '',
@@ -146,6 +198,18 @@ const getModelProviderConfig = (provider: AIProvider) => {
       requiresApiKey: false,
       headers: {
         'Content-Type': 'application/json'
+      }
+    };
+  }
+  if (provider === 'cloudflare') {
+    const apiKey = settings.cloudflareApiKey || CLOUDFLARE_API_KEY || '';
+    return {
+      apiKey,
+      apiUrl: CLOUDFLARE_API_URL,
+      requiresApiKey: !!apiKey,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {})
       }
     };
   }
@@ -329,6 +393,22 @@ export const sendMessageToCharacter = async (
   ];
 
   try {
+    if (providerConfig.provider === 'cloudflare') {
+      const assistantText = await callCloudflareAI({
+        model: providerConfig.model || XAI_MODEL,
+        messages: apiMessages,
+        temperature: 1.05,
+        max_tokens: 6000,
+        top_p: 0.98,
+        reasoning_effort: settings.reasoningEffort || 'high',
+        apiKey: settings.cloudflareApiKey || CLOUDFLARE_API_KEY,
+        gatewayId: settings.cloudflareGatewayId || CLOUDFLARE_GATEWAY_ID,
+        accountId: settings.cloudflareAccountId || CLOUDFLARE_ACCOUNT_ID
+      });
+      if (assistantText) return assistantText;
+      throw new Error('Empty or invalid response from Cloudflare AI.');
+    }
+
     const response = await fetch(providerConfig.apiUrl, {
       method: 'POST',
       headers: providerConfig.headers,
@@ -399,6 +479,22 @@ export const sendMessageWithCustomPrompt = async (
   ];
 
   try {
+    if (providerConfig.provider === 'cloudflare') {
+      const assistantText = await callCloudflareAI({
+        model: providerConfig.model || XAI_MODEL,
+        messages: apiMessages,
+        temperature: 1.05,
+        max_tokens: Math.max(settings.maxTokens || 6000, 6000),
+        top_p: 0.98,
+        reasoning_effort: settings.reasoningEffort || 'high',
+        apiKey: settings.cloudflareApiKey || CLOUDFLARE_API_KEY,
+        gatewayId: settings.cloudflareGatewayId || CLOUDFLARE_GATEWAY_ID,
+        accountId: settings.cloudflareAccountId || CLOUDFLARE_ACCOUNT_ID
+      });
+      if (assistantText) return assistantText;
+      throw new Error('Empty or invalid response from Cloudflare AI.');
+    }
+
     const response = await fetch(providerConfig.apiUrl, {
       method: 'POST',
       headers: providerConfig.headers,
@@ -490,6 +586,22 @@ You can propose multiple lore cards in a single response. Be creative, ask quest
   ];
 
   try {
+    if (providerConfig.provider === 'cloudflare') {
+    const assistantText = await callCloudflareAI({
+      model: providerConfig.model || XAI_MODEL,
+      messages: apiMessages,
+      temperature: 0.85,
+      max_tokens: Math.max(settings.maxTokens || 4000, 4000),
+      top_p: 0.95,
+      reasoning_effort: settings.reasoningEffort || 'high',
+      apiKey: settings.cloudflareApiKey || CLOUDFLARE_API_KEY,
+      gatewayId: settings.cloudflareGatewayId || CLOUDFLARE_GATEWAY_ID,
+      accountId: settings.cloudflareAccountId || CLOUDFLARE_ACCOUNT_ID
+    });
+      if (assistantText) return assistantText;
+      throw new Error('Empty or invalid response from Cloudflare AI.');
+    }
+
     const response = await fetch(providerConfig.apiUrl, {
       method: 'POST',
       headers: providerConfig.headers,
@@ -566,6 +678,7 @@ export const summarizeResponsesToMemory = async (
   characterName: string,
   responseChunks: string[]
 ): Promise<string> => {
+  const settings = getSettings();
   const providerConfig = getProviderConfig();
   const providerLabel = getProviderLabel(providerConfig.provider);
 
@@ -583,6 +696,25 @@ Rules:
 - Keep it under 8 bullet points.`;
 
   const userPrompt = responseChunks.map((chunk, idx) => `${idx + 1}. ${chunk}`).join('\n');
+
+  if (providerConfig.provider === 'cloudflare') {
+    const assistantText = await callCloudflareAI({
+      model: providerConfig.model || XAI_MODEL,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      temperature: 0.4,
+      max_tokens: 800,
+      top_p: 0.9,
+      reasoning_effort: settings.reasoningEffort || 'high',
+      apiKey: settings.cloudflareApiKey || CLOUDFLARE_API_KEY,
+      gatewayId: settings.cloudflareGatewayId || CLOUDFLARE_GATEWAY_ID,
+      accountId: settings.cloudflareAccountId || CLOUDFLARE_ACCOUNT_ID
+    });
+    if (!assistantText) throw new Error('Empty memory summary response.');
+    return assistantText;
+  }
 
   const response = await fetch(providerConfig.apiUrl, {
     method: 'POST',
@@ -620,6 +752,7 @@ export const summarizeMemoryBankOverview = async (
   characterName: string,
   summaries: string[]
 ): Promise<string> => {
+  const settings = getSettings();
   const providerConfig = getProviderConfig();
   const providerLabel = getProviderLabel(providerConfig.provider);
 
@@ -637,6 +770,25 @@ Rules:
 - Keep it under 12 bullet points.`;
 
   const userPrompt = summaries.map((summary, idx) => `${idx + 1}. ${summary}`).join('\n');
+
+  if (providerConfig.provider === 'cloudflare') {
+    const assistantText = await callCloudflareAI({
+      model: providerConfig.model || XAI_MODEL,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      temperature: 0.4,
+      max_tokens: 1200,
+      top_p: 0.9,
+      reasoning_effort: settings.reasoningEffort || 'high',
+      apiKey: settings.cloudflareApiKey || CLOUDFLARE_API_KEY,
+      gatewayId: settings.cloudflareGatewayId || CLOUDFLARE_GATEWAY_ID,
+      accountId: settings.cloudflareAccountId || CLOUDFLARE_ACCOUNT_ID
+    });
+    if (!assistantText) throw new Error('Empty memory overview response.');
+    return assistantText;
+  }
 
   const response = await fetch(providerConfig.apiUrl, {
     method: 'POST',
@@ -677,6 +829,7 @@ export const sendMessageToKoda = async (
   customSystemInstruction?: string,
   memoryContext: MemoryFact[] = []
 ): Promise<string> => {
+  const settings = getSettings();
   const providerConfig = getProviderConfig();
   const providerLabel = getProviderLabel(providerConfig.provider);
   
@@ -711,6 +864,22 @@ export const sendMessageToKoda = async (
   try {
     if (isApiKeyMissing(providerConfig)) {
       throw new Error(`${providerLabel} API key is not configured. Please check your settings.`);
+    }
+
+    if (providerConfig.provider === 'cloudflare') {
+      const assistantText = await callCloudflareAI({
+        model: providerConfig.model || XAI_MODEL,
+        messages: apiMessages,
+        temperature: 0.7,
+        max_tokens: 4096,
+        top_p: 0.95,
+        reasoning_effort: settings.reasoningEffort || 'high',
+        apiKey: settings.cloudflareApiKey || CLOUDFLARE_API_KEY,
+        gatewayId: settings.cloudflareGatewayId || CLOUDFLARE_GATEWAY_ID,
+        accountId: settings.cloudflareAccountId || CLOUDFLARE_ACCOUNT_ID
+      });
+      if (assistantText) return assistantText;
+      throw new Error('Empty or invalid response from Cloudflare AI.');
     }
 
     const response = await fetch(providerConfig.apiUrl, {
@@ -754,6 +923,7 @@ export const analyzeInteractionForMemory = async (
   lastAiMessage: string
 ): Promise<Partial<MemoryFact>[]> => {
   const providerConfig = getProviderConfig();
+  const settings = getSettings();
   const analysisPrompt = `
   You are the Memory Engine for KodaAI. Analyze the following interaction.
   Extract KEY facts that should be stored for long-term memory.
@@ -781,6 +951,28 @@ export const analyzeInteractionForMemory = async (
 
   try {
     if (isApiKeyMissing(providerConfig)) return [];
+
+    if (providerConfig.provider === 'cloudflare') {
+      const assistantText = await callCloudflareAI({
+        model: providerConfig.model || XAI_MODEL,
+        messages: [{ role: 'user', content: analysisPrompt }],
+        temperature: 0.3,
+        max_tokens: 1000,
+        reasoning_effort: settings.reasoningEffort || 'high',
+        apiKey: settings.cloudflareApiKey || CLOUDFLARE_API_KEY,
+        gatewayId: settings.cloudflareGatewayId || CLOUDFLARE_GATEWAY_ID,
+        accountId: settings.cloudflareAccountId || CLOUDFLARE_ACCOUNT_ID
+      });
+      const content = assistantText || "[]";
+      const jsonString = content.replace(/```json\n?|\n?```/g, '').trim();
+      try {
+        const facts = JSON.parse(jsonString);
+        return Array.isArray(facts) ? facts : [];
+      } catch (e) {
+        console.warn("Failed to parse memory JSON", e);
+        return [];
+      }
+    }
 
     const response = await fetch(providerConfig.apiUrl, {
       method: 'POST',
@@ -845,6 +1037,22 @@ export const sendMessageWithModel = async (
     { role: 'user' as const, content: newUserMessage },
     { role: 'system' as const, content: TURN_ORDER_REMINDER }
   ];
+  if (provider === 'cloudflare') {
+    const assistantText = await callCloudflareAI({
+      model: modelId,
+      messages: apiMessages,
+      temperature: settings.temperature || 0.85,
+      max_tokens: Math.max(settings.maxTokens || 6000, 6000),
+      top_p: 0.95,
+      reasoning_effort: settings.reasoningEffort || 'high',
+      apiKey: settings.cloudflareApiKey || CLOUDFLARE_API_KEY,
+      gatewayId: settings.cloudflareGatewayId || CLOUDFLARE_GATEWAY_ID,
+      accountId: settings.cloudflareAccountId || CLOUDFLARE_ACCOUNT_ID
+    });
+    if (assistantText) return assistantText;
+    throw new Error('Empty response from Cloudflare AI');
+  }
+
   const response = await fetch(apiConfig.apiUrl, { method: 'POST', headers: apiConfig.headers, body: JSON.stringify(buildRequestBody(provider, modelId, apiMessages, { temperature: settings.temperature || 0.85, max_tokens: Math.max(settings.maxTokens || 6000, 6000), top_p: 0.95, min_tokens: 800 })) });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const data: XAIResponse = await response.json();
@@ -860,11 +1068,18 @@ export const testMultipleModels = async (models: ModelTestConfig[], systemPrompt
     try {
       const apiConfig = getModelProviderConfig(config.provider);
       if (isApiKeyMissing(apiConfig)) throw new Error(`${getProviderLabel(config.provider)} API key not configured`);
-      const response = await fetch(apiConfig.apiUrl, { method: 'POST', headers: apiConfig.headers, body: JSON.stringify(buildRequestBody(config.provider, config.modelId, [{ role: 'system', content: systemPrompt }, { role: 'user', content: testPrompt }], { temperature: 0.85, max_tokens: 2000 })) });
+      let assistant = '';
+      const startCall = Date.now();
+      if (config.provider === 'cloudflare') {
+        assistant = await callCloudflareAI({ model: config.modelId, messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: testPrompt }], temperature: 0.85, max_tokens: 2000, reasoning_effort: settings.reasoningEffort || 'high', apiKey: settings.cloudflareApiKey || CLOUDFLARE_API_KEY, gatewayId: settings.cloudflareGatewayId || CLOUDFLARE_GATEWAY_ID, accountId: settings.cloudflareAccountId || CLOUDFLARE_ACCOUNT_ID });
+      } else {
+        const response = await fetch(apiConfig.apiUrl, { method: 'POST', headers: apiConfig.headers, body: JSON.stringify(buildRequestBody(config.provider, config.modelId, [{ role: 'system', content: systemPrompt }, { role: 'user', content: testPrompt }], { temperature: 0.85, max_tokens: 2000 })) });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data: XAIResponse = await response.json();
+        assistant = getAssistantText(data);
+      }
       const duration = Date.now() - startTime;
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data: XAIResponse = await response.json();
-      onResult({ modelId: config.modelId, modelName: config.modelName, provider: config.provider, response: getAssistantText(data), duration, timestamp: Date.now() });
+      onResult({ modelId: config.modelId, modelName: config.modelName, provider: config.provider, response: assistant, duration, timestamp: Date.now() });
     } catch (error: any) {
       onResult({ modelId: config.modelId, modelName: config.modelName, provider: config.provider, error: error.message, duration: Date.now() - startTime, timestamp: Date.now() });
     }

@@ -29,6 +29,8 @@ export const ModelTester: React.FC<ModelTesterProps> = ({ onBack }) => {
   // Group models by provider
   const ollamaModels = filteredModels.filter(m => m.provider === 'ollama');
   const xaiModels = filteredModels.filter(m => m.provider === 'xai');
+  const togetherModels = filteredModels.filter(m => m.provider === 'together');
+  const cloudflareModels = filteredModels.filter(m => m.provider === 'cloudflare');
   const openrouterModels = filteredModels.filter(m => m.provider === 'openrouter');
 
   const addModel = (model: AIModel) => {
@@ -136,8 +138,8 @@ export const ModelTester: React.FC<ModelTesterProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="max-w-7xl mx-auto p-6">
+    <div className="h-full min-h-0 overflow-y-auto overscroll-contain pb-8">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <button
@@ -185,7 +187,7 @@ export const ModelTester: React.FC<ModelTesterProps> = ({ onBack }) => {
                         <span className="text-holo-cyan font-mono text-xs">{idx + 1}</span>
                         <span className="text-holo-cyan text-sm truncate max-w-[180px]">{model.modelName}</span>
                         <span className={`text-xs px-1.5 py-0.5 rounded ${
-                          model.provider === 'xai' ? 'bg-holo-blue/20 text-holo-blue' : model.provider === 'ollama' ? 'bg-holo-green/20 text-holo-green' : 'bg-holo-purple/20 text-holo-purple'
+                          model.provider === 'xai' ? 'bg-holo-blue/20 text-holo-blue' : model.provider === 'ollama' ? 'bg-holo-green/20 text-holo-green' : model.provider === 'cloudflare' ? 'bg-holo-amber/20 text-holo-amber' : model.provider === 'together' ? 'bg-fuchsia-500/20 text-fuchsia-300' : 'bg-holo-purple/20 text-holo-purple'
                         }`}>
                           {model.provider}
                         </span>
@@ -238,6 +240,40 @@ export const ModelTester: React.FC<ModelTesterProps> = ({ onBack }) => {
                     <h4 className="text-sm font-medium text-holo-blue mb-2">xAI</h4>
                     <div className="space-y-1">
                       {xaiModels.map(model => (
+                        <ModelCard
+                          key={model.id}
+                          model={model}
+                          isSelected={selectedModels.some(m => m.modelId === model.id)}
+                          onSelect={() => addModel(model)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Together AI Models */}
+                {togetherModels.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-fuchsia-300 mb-2">Together AI</h4>
+                    <div className="space-y-1">
+                      {togetherModels.map(model => (
+                        <ModelCard
+                          key={model.id}
+                          model={model}
+                          isSelected={selectedModels.some(m => m.modelId === model.id)}
+                          onSelect={() => addModel(model)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Cloudflare Models */}
+                {cloudflareModels.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-holo-amber mb-2">Cloudflare Worker</h4>
+                    <div className="space-y-1">
+                      {cloudflareModels.map(model => (
                         <ModelCard
                           key={model.id}
                           model={model}
@@ -436,7 +472,7 @@ const ResultCard: React.FC<{
         <span className="text-holo-cyan font-mono text-sm">#{index + 1}</span>
         <h4 className="text-holo-cyan font-medium">{result.modelName}</h4>
         <span className={`text-xs px-1.5 py-0.5 rounded ${
-          result.provider === 'xai' ? 'bg-holo-blue/20 text-holo-blue' : result.provider === 'ollama' ? 'bg-holo-green/20 text-holo-green' : 'bg-holo-purple/20 text-holo-purple'
+          result.provider === 'xai' ? 'bg-holo-blue/20 text-holo-blue' : result.provider === 'ollama' ? 'bg-holo-green/20 text-holo-green' : result.provider === 'cloudflare' ? 'bg-holo-amber/20 text-holo-amber' : result.provider === 'together' ? 'bg-fuchsia-500/20 text-fuchsia-300' : 'bg-holo-purple/20 text-holo-purple'
         }`}>
           {result.provider}
         </span>

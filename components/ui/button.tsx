@@ -5,17 +5,17 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../../lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/40 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[10px] text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/35 disabled:pointer-events-none disabled:opacity-45",
   {
     variants: {
       variant: {
         default:
-          "neo-button glass-glow shadow-glow hover:shadow-neon hover:-translate-y-0.5",
+          "neo-button",
         secondary:
-          "glass-haze text-amber-50 border border-amber-200/25 hover:border-amber-200/45 hover:bg-blue-400/10",
-        ghost: "bg-transparent border border-amber-200/20 hover:bg-amber-200/10 text-amber-50",
+          "holo-btn holo-btn-primary",
+        ghost: "holo-btn holo-btn-ghost border-transparent shadow-none",
         outline:
-          "border border-amber-200/40 bg-slate-950/55 text-amber-50 hover:bg-blue-300/10"
+          "holo-btn holo-btn-ghost bg-transparent"
       },
       size: {
         default: "h-11 px-5 py-2",

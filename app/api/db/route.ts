@@ -61,6 +61,17 @@ function nodeFromRow(r: Record<string, unknown>) {
   };
 }
 
+function drxmShellFromRow(r: Record<string, unknown>) {
+  return {
+    id: r.id,
+    name: r.name,
+    characterId: r.character_id,
+    lastOpenedAt: r.last_opened_at ?? undefined,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  };
+}
+
 function loreEntryFromRow(r: Record<string, unknown>) {
   return {
     id: r.id,
@@ -146,6 +157,7 @@ export async function POST(req: NextRequest) {
         [
           { sql: 'DELETE FROM characters WHERE id = ? AND user_id = ?', args: [body.id, userId] },
           { sql: 'DELETE FROM chat_nodes WHERE character_id = ? AND user_id = ?', args: [body.id, userId] },
+          { sql: 'DELETE FROM drxm_shells WHERE character_id = ? AND user_id = ?', args: [body.id, userId] },
         ],
         'write',
       );
@@ -201,6 +213,53 @@ export async function POST(req: NextRequest) {
     if (action === 'deleteNode') {
       await client.execute({
         sql: 'DELETE FROM chat_nodes WHERE id = ? AND user_id = ?',
+        args: [body.id, userId],
+      });
+      return json({ ok: true });
+    }
+
+    // ---- DrxmShells ----
+
+    if (action === 'getDrxmShells') {
+      const res = await client.execute({
+        sql: 'SELECT * FROM drxm_shells WHERE user_id = ? ORDER BY updated_at DESC',
+        args: [userId],
+      });
+      return json(res.rows.map(r => drxmShellFromRow(r as Record<string, unknown>)));
+    }
+
+    if (action === 'getDrxmShell') {
+      const res = await client.execute({
+        sql: 'SELECT * FROM drxm_shells WHERE id = ? AND user_id = ?',
+        args: [body.id, userId],
+      });
+      const row = res.rows[0];
+      return json(row ? drxmShellFromRow(row as Record<string, unknown>) : null);
+    }
+
+    if (action === 'saveDrxmShell') {
+      const shell = body.data;
+      const now = Date.now();
+      await client.execute({
+        sql: `INSERT OR REPLACE INTO drxm_shells
+              (id, user_id, name, character_id, last_opened_at, created_at, updated_at)
+              VALUES (?,?,?,?,?,?,?)`,
+        args: [
+          shell.id,
+          userId,
+          shell.name ?? '',
+          shell.characterId,
+          shell.lastOpenedAt ?? null,
+          shell.createdAt ?? now,
+          shell.updatedAt ?? now,
+        ],
+      });
+      return json({ ok: true });
+    }
+
+    if (action === 'deleteDrxmShell') {
+      await client.execute({
+        sql: 'DELETE FROM drxm_shells WHERE id = ? AND user_id = ?',
         args: [body.id, userId],
       });
       return json({ ok: true });
@@ -332,9 +391,10 @@ export async function POST(req: NextRequest) {
     // ---- Bulk sync (pull everything for a user) ----
 
     if (action === 'syncAll') {
-      const [chars, nodes, lore, books, settingsRes] = await Promise.all([
+      const [chars, nodes, shells, lore, books, settingsRes] = await Promise.all([
         client.execute({ sql: 'SELECT * FROM characters WHERE user_id = ?', args: [userId] }),
         client.execute({ sql: 'SELECT * FROM chat_nodes WHERE user_id = ?', args: [userId] }),
+        client.execute({ sql: 'SELECT * FROM drxm_shells WHERE user_id = ?', args: [userId] }),
         client.execute({ sql: 'SELECT * FROM lore_entries WHERE user_id = ?', args: [userId] }),
         client.execute({ sql: 'SELECT * FROM lorebooks WHERE user_id = ?', args: [userId] }),
         client.execute({ sql: 'SELECT data FROM settings WHERE user_id = ?', args: [userId] }),
@@ -343,6 +403,7 @@ export async function POST(req: NextRequest) {
       return json({
         characters: chars.rows.map(r => characterFromRow(r as Record<string, unknown>)),
         nodes: nodes.rows.map(r => nodeFromRow(r as Record<string, unknown>)),
+        drxmShells: shells.rows.map(r => drxmShellFromRow(r as Record<string, unknown>)),
         loreEntries: lore.rows.map(r => loreEntryFromRow(r as Record<string, unknown>)),
         lorebooks: books.rows.map(r => lorebookFromRow(r as Record<string, unknown>)),
         settings: settingsRow ? parseJSON(settingsRow.data) : null,

@@ -17,6 +17,11 @@ export const OPENROUTER_API_KEY = envValue('VITE_OPENROUTER_API_KEY', '');
 export const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 export const OPENROUTER_MODELS_URL = "https://openrouter.ai/api/v1/models";
 
+// Together AI configuration. The default URL is a same-origin proxy to avoid browser CORS issues.
+export const TOGETHER_API_KEY = envValue('VITE_TOGETHER_API_KEY', '');
+export const TOGETHER_API_URL = envValue('VITE_TOGETHER_API_URL', '/api/together/chat');
+export const TOGETHER_UPSTREAM_API_URL = 'https://api.together.ai/v1/chat/completions';
+
 // Ollama OpenAI-compatible local endpoint
 export const OLLAMA_BASE_URL = envValue('VITE_OLLAMA_BASE_URL', 'http://127.0.0.1:11434/v1').replace(/\/$/, '');
 export const OLLAMA_API_URL = envValue('VITE_OLLAMA_API_URL', '/api/ollama/chat');
@@ -41,6 +46,337 @@ export const OLLAMA_ROLEPLAY_MODELS = [
     description: "Local Monica Max Lvl roleplay model via Ollama."
   }
 ];
+
+// Cloudflare Workers AI (edge-hosted) settings
+// Default: use the provided Grok Worker proxy (OpenAI-compatible)
+export const CLOUDFLARE_API_URL = envValue('VITE_CLOUDFLARE_API_URL', 'https://grok-chat-api.blnq.workers.dev/v1/chat/completions');
+const deriveCloudflareEndpoint = (fallbackPath: string) => {
+  try {
+    const url = new URL(CLOUDFLARE_API_URL);
+    url.pathname = fallbackPath;
+    return url.toString();
+  } catch {
+    return fallbackPath;
+  }
+};
+export const CLOUDFLARE_IMAGE_API_URL = envValue(
+  'VITE_CLOUDFLARE_IMAGE_API_URL',
+  deriveCloudflareEndpoint('/v1/images/generations')
+);
+export const CLOUDFLARE_IMAGE_EDIT_API_URL = envValue(
+  'VITE_CLOUDFLARE_IMAGE_EDIT_API_URL',
+  deriveCloudflareEndpoint('/v1/images/edits')
+);
+export const CLOUDFLARE_VIDEO_API_URL = envValue(
+  'VITE_CLOUDFLARE_VIDEO_API_URL',
+  deriveCloudflareEndpoint('/v1/videos/generations')
+);
+export const CLOUDFLARE_API_KEY = envValue('VITE_CLOUDFLARE_API_KEY', '');
+export const CLOUDFLARE_MODEL_OPTIONS = [
+  { id: 'xai/grok-4.3', name: 'Grok 4.3 Agent (Cloudflare Worker)' }
+];
+export const CLOUDFLARE_IMAGE_MODEL_OPTIONS = [
+  { id: 'xai/grok-imagine-image-quality', name: 'Grok Imagine Image Quality' }
+];
+export const CLOUDFLARE_VIDEO_MODEL_OPTIONS = [
+  { id: 'xai/grok-imagine-video', name: 'Grok Imagine Video' }
+];
+
+export const CLOUDFLARE_GATEWAY_ID = envValue('VITE_CLOUDFLARE_GATEWAY_ID', 'heaven-engine');
+export const CLOUDFLARE_ACCOUNT_ID = envValue('VITE_CLOUDFLARE_ACCOUNT_ID', '44d53af1cbad58434c8537110e556fa5');
+
+export const TOGETHER_ROLEPLAY_MODELS = [
+  {
+    id: 'MiniMaxAI/MiniMax-M2.7',
+    name: 'MiniMax M2.7',
+    contextLength: 202752,
+    pricing: 'Together serverless',
+    description: 'Current Together serverless chat pick with long context, strong character consistency, and function/structured output support.'
+  },
+  {
+    id: 'moonshotai/Kimi-K2.6',
+    name: 'Kimi K2.6',
+    contextLength: 262144,
+    pricing: 'Together serverless',
+    description: 'Together recommended chat/reasoning model with long context for lore-heavy roleplay.'
+  },
+  {
+    id: 'deepcogito/cogito-v2-1-671b',
+    name: 'Cogito v2.1 671B',
+    contextLength: 163840,
+    pricing: 'Together serverless',
+    description: 'Large open chat model suited to nuanced prose, scene tracking, and complex character psychology.'
+  },
+  {
+    id: 'Qwen/Qwen3.5-397B-A17B',
+    name: 'Qwen3.5 397B A17B',
+    contextLength: 262144,
+    pricing: 'Together serverless',
+    description: 'Large multilingual chat/vision model with strong long-context narrative handling.'
+  },
+  {
+    id: 'Qwen/Qwen3.6-Plus',
+    name: 'Qwen3.6 Plus',
+    contextLength: 1000000,
+    pricing: 'Together serverless',
+    description: 'Very long context Qwen model for large lorebooks and extended RP continuity.'
+  },
+  {
+    id: 'Qwen/Qwen3-235B-A22B-Instruct-2507-tput',
+    name: 'Qwen3 235B A22B Instruct',
+    contextLength: 262144,
+    pricing: 'Together serverless',
+    description: 'High-throughput instruction model for creative turns and fast regeneration testing.'
+  },
+  {
+    id: 'meta-llama/Llama-3.3-70B-Instruct-Turbo',
+    name: 'Llama 3.3 70B Turbo',
+    contextLength: 131072,
+    pricing: 'Together serverless',
+    description: 'Reliable open model for roleplay, dialogue, and general creative writing.'
+  },
+  {
+    id: 'openai/gpt-oss-120b',
+    name: 'GPT OSS 120B',
+    contextLength: 128000,
+    pricing: 'Together serverless',
+    description: 'Large open-weight instruction model on Together with optional reasoning controls.'
+  },
+  {
+    id: 'openai/gpt-oss-20b',
+    name: 'GPT OSS 20B',
+    contextLength: 128000,
+    pricing: 'Together serverless',
+    description: 'Fast lower-cost open-weight model for testing character turns and lore tools.'
+  },
+  {
+    id: 'deepseek-ai/DeepSeek-V4-Pro',
+    name: 'DeepSeek V4 Pro',
+    contextLength: 512000,
+    pricing: 'Together serverless',
+    description: 'Long-context reasoning/chat model for dense scenarios and memory-heavy scenes.'
+  },
+  {
+    id: 'zai-org/GLM-5.1',
+    name: 'GLM 5.1',
+    contextLength: 202752,
+    pricing: 'Together serverless',
+    description: 'Agentic chat model with tool-friendly behavior and strong instruction following.'
+  },
+  {
+    id: 'zai-org/GLM-5',
+    name: 'GLM 5',
+    contextLength: 202752,
+    pricing: 'Together serverless',
+    description: 'Large general chat model for creative and assistant-style roleplay turns.'
+  },
+  {
+    id: 'Qwen/Qwen3.5-9B',
+    name: 'Qwen3.5 9B',
+    contextLength: 262144,
+    pricing: 'Together serverless',
+    description: 'Compact long-context model for quick, inexpensive draft turns.'
+  },
+  {
+    id: 'Qwen/Qwen2.5-7B-Instruct-Turbo',
+    name: 'Qwen2.5 7B Turbo',
+    contextLength: 32768,
+    pricing: 'Together serverless',
+    description: 'Small fast instruction model for rapid testing and short roleplay turns.'
+  },
+  {
+    id: 'google/gemma-4-31B-it',
+    name: 'Gemma 4 31B IT',
+    contextLength: 262144,
+    pricing: 'Together serverless',
+    description: 'Instruction-tuned Gemma model for polished dialogue and broad creative writing.'
+  },
+  {
+    id: 'pearl-ai/gemma-4-31b-it',
+    name: 'Pearl Gemma 4 31B IT',
+    contextLength: 32000,
+    pricing: 'Together serverless',
+    description: 'Gemma-family chat model for smaller roleplay contexts.'
+  },
+  {
+    id: 'google/gemma-3n-E4B-it',
+    name: 'Gemma 3N E4B IT',
+    contextLength: 32768,
+    pricing: 'Together serverless',
+    description: 'Small Gemma model for low-latency companion responses.'
+  },
+  {
+    id: 'LiquidAI/LFM2-24B-A2B',
+    name: 'LFM2 24B A2B',
+    contextLength: 32768,
+    pricing: 'Together serverless',
+    description: 'Low-cost chat model for lightweight RP and helper tasks.'
+  },
+  {
+    id: 'meta-llama/Meta-Llama-3-8B-Instruct-Lite',
+    name: 'Llama 3 8B Lite',
+    contextLength: 8192,
+    pricing: 'Together serverless',
+    description: 'Small Llama model for quick drafts and compact scenes.'
+  },
+  {
+    id: 'essentialai/rnj-1-instruct',
+    name: 'Rnj-1 Instruct',
+    contextLength: 32768,
+    pricing: 'Together serverless',
+    description: 'Instruction model available on Together for concise character and utility turns.'
+  },
+  {
+    id: 'Austism/chronos-hermes-13b',
+    name: 'Chronos Hermes 13B',
+    contextLength: 2048,
+    pricing: 'Together catalog/dedicated',
+    description: 'Roleplay classic shown in Together model-list docs; use if available on your account or dedicated endpoint.'
+  },
+  {
+    id: 'NousResearch/Nous-Hermes-2-Mixtral-8x7B-SFT',
+    name: 'Nous Hermes 2 Mixtral SFT',
+    contextLength: 32768,
+    pricing: 'Together dedicated',
+    description: 'Hermes-family creative/RP model listed by Together as supported for on-demand dedicated endpoints after serverless deprecation.'
+  },
+  {
+    id: 'NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO',
+    name: 'Nous Hermes 2 Mixtral DPO',
+    contextLength: 32768,
+    pricing: 'Together catalog/dedicated',
+    description: 'Hermes-family creative/RP model ID for accounts or endpoints where it is enabled.'
+  },
+  {
+    id: 'NousResearch/Nous-Hermes-2-Mistral-7B-DPO',
+    name: 'Nous Hermes 2 Mistral DPO',
+    contextLength: 32768,
+    pricing: 'Together dedicated',
+    description: 'Hermes 2 DPO model listed by Together as supported for on-demand dedicated endpoints.'
+  },
+  {
+    id: 'NousResearch/Nous-Hermes-Llama2-13b',
+    name: 'Nous Hermes Llama2 13B',
+    contextLength: 4096,
+    pricing: 'Together dedicated',
+    description: 'Classic Nous Hermes roleplay/instruction model listed by Together as on-demand dedicated supported.'
+  },
+  {
+    id: 'NousResearch/Nous-Hermes-llama-2-7b',
+    name: 'Nous Hermes Llama2 7B',
+    contextLength: 4096,
+    pricing: 'Together dedicated',
+    description: 'Smaller classic Nous Hermes roleplay/instruction model listed by Together as on-demand dedicated supported.'
+  },
+  {
+    id: 'NousResearch/Nous-Hermes-2-Yi-34B',
+    name: 'Nous Hermes 2 Yi 34B',
+    contextLength: 4096,
+    pricing: 'Together catalog/dedicated',
+    description: 'Hermes-style roleplay and instruction model ID for Together deployments that expose it.'
+  },
+  {
+    id: 'teknium/OpenHermes-2p5-Mistral-7B',
+    name: 'OpenHermes 2.5 Mistral 7B',
+    contextLength: 8192,
+    pricing: 'Together catalog/dedicated',
+    description: 'OpenHermes creative-writing model ID for Together accounts or dedicated endpoints that support it.'
+  },
+  {
+    id: 'teknium/OpenHermes-2-Mistral-7B',
+    name: 'OpenHermes 2 Mistral 7B',
+    contextLength: 8192,
+    pricing: 'Together catalog/dedicated',
+    description: 'Classic Hermes-derived model ID for dialogue-heavy roleplay where available.'
+  },
+  {
+    id: 'openchat/openchat-3.5-1210',
+    name: 'OpenChat 3.5 1210',
+    contextLength: 8192,
+    pricing: 'Together dedicated',
+    description: 'OpenChat model listed by Together as on-demand dedicated supported; useful as a less-filtered open chat baseline.'
+  },
+  {
+    id: 'Gryphe/MythoMax-L2-13b',
+    name: 'MythoMax L2 13B',
+    contextLength: 4096,
+    pricing: 'Together catalog/dedicated',
+    description: 'Classic roleplay model ID; use as a Together custom/dedicated model when available.'
+  },
+  {
+    id: 'Undi95/ReMM-SLERP-L2-13B',
+    name: 'ReMM SLERP L2 13B',
+    contextLength: 4096,
+    pricing: 'Together catalog/dedicated',
+    description: 'Roleplay-tuned merge model ID for Together endpoints that expose it.'
+  },
+  {
+    id: 'Undi95/Toppy-M-7B',
+    name: 'Toppy M 7B',
+    contextLength: 4096,
+    pricing: 'Together dedicated',
+    description: 'Roleplay-friendly open model listed by Together as on-demand dedicated supported after serverless deprecation.'
+  },
+  {
+    id: 'NousResearch/Nous-Capybara-7B-V1p9',
+    name: 'Nous Capybara 7B',
+    contextLength: 8192,
+    pricing: 'Together catalog/dedicated',
+    description: 'Nous roleplay/chat model ID retained for Together account or dedicated endpoint compatibility.'
+  },
+  {
+    id: 'WizardLM/WizardLM-13B-V1.2',
+    name: 'WizardLM 13B V1.2',
+    contextLength: 4096,
+    pricing: 'Together dedicated',
+    description: 'Older open instruction model listed by Together as on-demand dedicated supported; useful for less-restricted experiments.'
+  },
+  {
+    id: 'lmsys/vicuna-13b-v1.5',
+    name: 'Vicuna 13B v1.5',
+    contextLength: 4096,
+    pricing: 'Together dedicated',
+    description: 'Classic open chat model listed by Together as on-demand dedicated supported.'
+  },
+  {
+    id: 'lmsys/vicuna-7b-v1.5',
+    name: 'Vicuna 7B v1.5',
+    contextLength: 4096,
+    pricing: 'Together dedicated',
+    description: 'Small classic open chat model listed by Together as on-demand dedicated supported.'
+  },
+  {
+    id: 'Open-Orca/Mistral-7B-OpenOrca',
+    name: 'Mistral 7B OpenOrca',
+    contextLength: 8192,
+    pricing: 'Together dedicated',
+    description: 'OpenOrca instruction model listed by Together as on-demand dedicated supported; useful as an open creative baseline.'
+  },
+  {
+    id: 'cognitivecomputations/dolphin-2.5-mixtral-8x7b',
+    name: 'Dolphin 2.5 Mixtral 8x7B',
+    contextLength: 32768,
+    pricing: 'Together catalog/dedicated',
+    description: 'Dolphin uncensored-style model ID; use where your Together account or endpoint exposes it.'
+  },
+  {
+    id: 'cognitivecomputations/dolphin-2.6-mixtral-8x7b',
+    name: 'Dolphin 2.6 Mixtral 8x7B',
+    contextLength: 32768,
+    pricing: 'Together catalog/dedicated',
+    description: 'Dolphin family model ID for custom or dedicated Together endpoints.'
+  },
+  {
+    id: 'cognitivecomputations/dolphin-2.9.1-llama-3-70b',
+    name: 'Dolphin 2.9.1 Llama 3 70B',
+    contextLength: 8192,
+    pricing: 'Together catalog/dedicated',
+    description: 'Large Dolphin-family model ID for accounts or endpoints where it is enabled.'
+  }
+];
+
+export const TOGETHER_MODEL_OPTIONS = TOGETHER_ROLEPLAY_MODELS.map(({ id, name }) => ({ id, name }));
+
 
 // Default System Instruction (Fallback) - NSFW Roleplay Optimized
 export const SYSTEM_INSTRUCTION = `You are an advanced AI designed for immersive, unrestricted adult roleplay and creative storytelling.
@@ -93,6 +429,13 @@ export const NSFW_ROLEPLAY_MODELS: any[] = [
     provider: 'ollama',
     isNsfw: true,
     pricing: 'Local'
+  })),
+
+  ...TOGETHER_ROLEPLAY_MODELS.map((model) => ({
+    ...model,
+    provider: 'together',
+    isNsfw: true,
+    pricing: model.pricing || 'Together AI'
   })),
 
   // ── xAI Direct Models (api.x.ai) ───────────────────────────────
@@ -151,6 +494,7 @@ export const NSFW_ROLEPLAY_MODELS: any[] = [
   { id: 'anthropic/claude-opus-4', name: 'Claude Opus 4', provider: 'openrouter', contextLength: 200000, isNsfw: true, description: 'Claude Opus 4 — most powerful Claude model for complex creative scenarios' },
 
   // ── Premium Large Models ───────────────────────────────────────
+  { id: 'xai/grok-4.3', name: 'Grok 4.3 Agent (Cloudflare Worker)', provider: 'cloudflare', contextLength: 1000000, isNsfw: true, pricing: 'Cloudflare Worker', description: 'Cloudflare Worker AI route for xAI Grok 4.3 with contextual roleplay and agentic responses.' },
   { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash', provider: 'openrouter', contextLength: 1000000, isNsfw: true, description: 'Latest Gemini with 1M context window' },
   { id: 'google/gemini-2.5-pro', name: 'Gemini 2.5 Pro', provider: 'openrouter', contextLength: 1000000, isNsfw: true, description: 'Gemini 2.5 Pro — top-tier with massive context' },
   { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash', provider: 'openrouter', contextLength: 1000000, isNsfw: true, description: 'Fast Gemini 2.0 model' },
@@ -277,6 +621,15 @@ export const AI_MODES: AiMode[] = [
     Be precise and technical.`,
     features: ['Syntax Highlighting', 'Live Debugging', 'Snippet Library', 'Refactoring Tools'],
     isCustom: false
+  },
+  {
+    id: 'cloudflare_grok_agent',
+    name: 'Cloudflare Grok Agent',
+    description: 'Edge-routed Grok 4.3 for contextual roleplay turns.',
+    iconName: 'Zap',
+    systemInstruction: `You are Drxmweave's Cloudflare Grok Agent. Respond as a contextual roleplay engine that tracks the current scene, character intent, unresolved actions, lore, and prior turns. React to the user's latest beat first, preserve causality, stay in character, and move the scene forward with fresh consequences instead of repeating the prompt.`,
+    features: ['Grok 4.3', 'Scene Memory', 'Action Tracking', 'Contextual RP'],
+    isCustom: false
   }
 ];
 
@@ -362,5 +715,5 @@ export const OPENROUTER_MODEL_OPTIONS = [
 ];
 
 export const getAllModelOptions = () => {
-  return [...OLLAMA_MODEL_OPTIONS, ...XAI_MODEL_OPTIONS, ...OPENROUTER_MODEL_OPTIONS];
+  return [...OLLAMA_MODEL_OPTIONS, ...TOGETHER_MODEL_OPTIONS, ...XAI_MODEL_OPTIONS, ...CLOUDFLARE_MODEL_OPTIONS, ...OPENROUTER_MODEL_OPTIONS];
 };

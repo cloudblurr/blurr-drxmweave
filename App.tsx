@@ -1,16 +1,29 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { Home, Users, BookOpen, Settings as SettingsIcon, Sparkles, LogOut, Compass } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+  BookOpen,
+  Command,
+  Compass,
+  Home,
+  Image as ImageIcon,
+  LogOut,
+  Search,
+  Settings as SettingsIcon,
+  Sparkles,
+  Users,
+} from 'lucide-react';
 import { Dashboard } from './components/Dashboard';
 import { CharacterGallery } from './components/CharacterGallery';
 import { CharacterChat } from './components/CharacterChat';
 import { LoreWorld } from './components/LoreWorld';
+import { GrokImagineStudio } from './components/GrokImagineStudio';
 import { Settings } from './components/Settings';
 import { SharedProfile } from './components/SharedProfile';
 import { ViewType } from './types';
 import { getSettings, saveSettings } from './services/storage';
-import { getThemePreset, THEME_PRESETS } from './themePresets';
+import { THEME_PRESETS } from './themePresets';
 import { useAuth } from './components/AuthContext';
 import LoginScreen from './components/LoginScreen';
 import { signOut } from './services/authService';
@@ -22,34 +35,26 @@ const App: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
   const [currentView, setCurrentView] = useState<ViewType>(ViewType.Dashboard);
   const [selectedCharacterId, setSelectedCharacterId] = useState<string | undefined>();
-  const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>();
+  const [selectedNodeId] = useState<string | undefined>();
   const [sharedProfileData, setSharedProfileData] = useState<string | null>(null);
   const [sharedProfileCharacterId, setSharedProfileCharacterId] = useState<string | null>(null);
-  const [themePreset, setThemePreset] = useState(() => getThemePreset(getSettings().theme));
   const [showSplash, setShowSplash] = useState(true);
-  const [currentThemeId, setCurrentThemeId] = useState(() => getSettings().theme || 'cosmic-wave');
+  const [currentThemeId, setCurrentThemeId] = useState(() => getSettings().theme || 'neural-forge');
 
-  // Next.js image imports can be StaticImageData; Vite typically returns a string URL.
   const logoSrc: string = ((logoUrl as unknown as { src?: string })?.src ?? (logoUrl as unknown as string)) || '';
 
-  // Handle URL routes on mount
   useEffect(() => {
     const handleRoute = () => {
       const path = window.location.pathname;
       const params = new URLSearchParams(window.location.search);
-      
+
       if (path.startsWith('/share/')) {
         const encodedData = params.get('data');
         const parts = path.split('/').filter(Boolean);
         const characterId = parts[1] || null;
-        if (encodedData) {
-          setSharedProfileData(encodedData);
-        } else {
-          setSharedProfileData(null);
-        }
+        setSharedProfileData(encodedData || null);
         setSharedProfileCharacterId(characterId);
         setCurrentView(ViewType.SharedProfile);
-        return;
       }
     };
 
@@ -59,20 +64,14 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const updateTheme = () => {
-      const latestSettings = getSettings();
-      setThemePreset(getThemePreset(latestSettings.theme));
-      setCurrentThemeId(latestSettings.theme || 'cosmic-wave');
-    };
+    const updateTheme = () => setCurrentThemeId(getSettings().theme || 'neural-forge');
     updateTheme();
     window.addEventListener('settings-updated', updateTheme);
     return () => window.removeEventListener('settings-updated', updateTheme);
   }, []);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setShowSplash(false);
-    }, 1800);
+    const timer = window.setTimeout(() => setShowSplash(false), 1100);
     return () => window.clearTimeout(timer);
   }, []);
 
@@ -83,8 +82,7 @@ const App: React.FC = () => {
     } else {
       setSelectedCharacterId(undefined);
     }
-    
-    // Update URL without page reload
+
     if (view === ViewType.Dashboard) {
       window.history.pushState({}, '', '/');
     }
@@ -96,6 +94,8 @@ const App: React.FC = () => {
     setCurrentThemeId(themeId);
   };
 
+  const isImmersiveView = currentView === ViewType.CharacterDetail || currentView === ViewType.SharedProfile;
+
   const renderView = () => {
     switch (currentView) {
       case ViewType.Dashboard:
@@ -104,16 +104,18 @@ const App: React.FC = () => {
         return <CharacterGallery onNavigate={handleNavigate} />;
       case ViewType.CharacterDetail:
         return selectedCharacterId ? (
-          <CharacterChat 
-            characterId={selectedCharacterId} 
+          <CharacterChat
+            characterId={selectedCharacterId}
             nodeId={selectedNodeId}
-            onNavigate={handleNavigate} 
+            onNavigate={handleNavigate}
           />
         ) : (
           <CharacterGallery onNavigate={handleNavigate} />
         );
       case ViewType.LoreWorld:
         return <LoreWorld onNavigate={handleNavigate} />;
+      case ViewType.ImageStudio:
+        return <GrokImagineStudio onNavigate={handleNavigate} />;
       case ViewType.Settings:
         return <Settings onNavigate={handleNavigate} />;
       case ViewType.SharedProfile:
@@ -131,104 +133,148 @@ const App: React.FC = () => {
     }
   };
 
-  const appStyle = useMemo(() => {
-    const isGradient = themePreset.colors.bg.includes('gradient');
-    return {
-      background: isGradient ? undefined : themePreset.colors.bg,
-      backgroundImage: isGradient ? themePreset.colors.bg : undefined,
-      color: themePreset.colors.text
-    } as React.CSSProperties;
-  }, [themePreset]);
+  const navItems = [
+    { view: ViewType.Dashboard, label: 'Home', icon: <Home className="h-4 w-4" /> },
+    { view: ViewType.Characters, label: 'Characters', icon: <Users className="h-4 w-4" /> },
+    { view: ViewType.LoreWorld, label: 'Lore', icon: <BookOpen className="h-4 w-4" /> },
+    { view: ViewType.ImageStudio, label: 'Imagine', icon: <ImageIcon className="h-4 w-4" /> },
+    { view: ViewType.Settings, label: 'Settings', icon: <SettingsIcon className="h-4 w-4" /> },
+  ];
 
-  // Auth loading spinner
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center h-screen"
-        style={{ background: 'linear-gradient(135deg, #0b1220 0%, #111827 100%)' }}>
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-400"></div>
+      <div className="neuro-app flex h-screen items-center justify-center">
+        <div className="h-12 w-12 rounded-full border-2 border-cyan-300/20 border-t-cyan-200 animate-spin" />
       </div>
     );
   }
 
-  // Show login screen when not authenticated
   if (!user) {
     return <LoginScreen />;
   }
 
   if (showSplash) {
     return (
-      <div
-        className="flex flex-col h-screen overflow-hidden items-center justify-center text-center relative"
-        style={appStyle}
-      >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_45%),radial-gradient(circle_at_bottom,rgba(245,158,11,0.15),transparent_40%)]" />
-        <Card className="relative z-10 w-[92%] max-w-lg p-8 text-center space-y-5">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-900/70 border border-slate-700/70">
-            <img src={logoSrc} alt="Blurr Drxmweave logo" className="w-16 h-16 rounded-xl object-cover" />
-          </div>
-          <div>
-            <h1 className="text-3xl md:text-4xl font-semibold text-slate-100">Blurr Drxmweave</h1>
-            <p className="mt-2 text-sm text-slate-300">Syncing the cosmic colorwave workspace...</p>
-          </div>
-          <div className="mx-auto h-1.5 w-36 overflow-hidden rounded-full bg-slate-800">
-            <div className="h-full w-1/2 rounded-full bg-sky-400 animate-pulse" />
-          </div>
-        </Card>
+      <div className="neuro-app flex h-screen items-center justify-center overflow-hidden p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 16, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.45, ease: 'easeOut' }}
+        >
+          <Card className="w-[92vw] max-w-md p-8 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[10px] border border-slate-700/70 bg-slate-950/70">
+              <img src={logoSrc} alt="Blurr Drxmweave logo" className="h-14 w-14 rounded-[8px] object-cover" />
+            </div>
+            <h1 className="mt-5 text-3xl font-semibold tracking-tight text-slate-50">Blurr Drxmweave</h1>
+            <p className="mt-2 text-sm text-slate-400">Preparing the engine workspace</p>
+            <div className="mx-auto mt-6 h-1.5 w-40 overflow-hidden rounded-full bg-slate-950/80 shadow-inner">
+              <motion.div
+                className="h-full rounded-full bg-cyan-200"
+                initial={{ x: '-100%' }}
+                animate={{ x: '240%' }}
+                transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
+              />
+            </div>
+          </Card>
+        </motion.div>
       </div>
     );
   }
 
-  return (
-    <div className="flex h-screen flex-col overflow-hidden" style={appStyle}>
-      {currentView !== ViewType.SharedProfile && (
-        <header className="relative z-20 border-b border-slate-800/80 bg-slate-950/65 backdrop-blur px-4 py-3 md:px-6">
-          <div className="mx-auto max-w-7xl flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div>
-                <img
-                  src={logoSrc}
-                  alt="Blurr Drxmweave logo"
-                  className="w-14 h-14 rounded-2xl border border-slate-700/70 object-cover"
-                />
-              </div>
-              <div className="leading-tight hidden sm:block">
-                <div className="text-base font-semibold tracking-wide text-slate-100">Blurr Drxmweave</div>
-                <div className="text-xs text-slate-300">Cosmic Colorwave Command Hub</div>
-              </div>
-            </div>
+  if (currentView === ViewType.SharedProfile) {
+    return <div className="neuro-app h-screen overflow-hidden">{renderView()}</div>;
+  }
 
-            <div className="flex items-center gap-2 overflow-x-auto">
-              <NavButton icon={<Home className="w-4 h-4" />} active={currentView === ViewType.Dashboard} onClick={() => handleNavigate(ViewType.Dashboard)} label="Home" />
-              <NavButton icon={<Users className="w-4 h-4" />} active={currentView === ViewType.Characters || currentView === ViewType.CharacterDetail} onClick={() => handleNavigate(ViewType.Characters)} label="Characters" />
-              <NavButton icon={<BookOpen className="w-4 h-4" />} active={currentView === ViewType.LoreWorld} onClick={() => handleNavigate(ViewType.LoreWorld)} label="Lore" />
-              <NavButton icon={<Compass className="w-4 h-4" />} active={false} href="/blurrverse" label="BlurrVerse" />
-              <NavButton icon={<SettingsIcon className="w-4 h-4" />} active={currentView === ViewType.Settings} onClick={() => handleNavigate(ViewType.Settings)} label="Settings" />
-              <select
-                value={currentThemeId}
-                onChange={(event: React.ChangeEvent<HTMLSelectElement>) => handleThemeChange(event.target.value)}
-                className="neo-input h-9 min-w-47.5 rounded-xl px-3 py-1.5 text-xs"
-                aria-label="Theme Switcher"
-              >
-                {THEME_PRESETS.map((theme) => (
-                  <option key={theme.id} value={theme.id}>{theme.name}</option>
-                ))}
-              </select>
-              <Button variant="outline" onClick={() => signOut()} className="text-xs">
-                <LogOut className="w-4 h-4" />
-                Sign Out
-              </Button>
+  return (
+    <div className="neuro-app flex h-screen overflow-hidden text-slate-100">
+      <aside className="neuro-sidebar hidden w-72 shrink-0 flex-col gap-5 p-4 lg:flex">
+        <div className="flex items-center gap-3 px-2 pt-1">
+          <img src={logoSrc} alt="Blurr Drxmweave logo" className="h-12 w-12 rounded-[10px] object-cover ring-1 ring-cyan-200/20" />
+          <div className="min-w-0">
+            <div className="truncate text-sm font-semibold text-slate-50">Blurr Drxmweave</div>
+            <div className="text-xs text-slate-500">Roleplay Engine</div>
+          </div>
+        </div>
+
+        <div className="command-surface flex items-center gap-2 rounded-[10px] px-3 py-2 text-xs text-slate-500">
+          <Search className="h-4 w-4 text-slate-500" />
+          <span className="flex-1">Search workspace</span>
+          <Command className="h-3.5 w-3.5" />
+        </div>
+
+        <nav className="flex flex-1 flex-col gap-1">
+          {navItems.map((item) => (
+            <NavButton
+              key={item.view}
+              icon={item.icon}
+              active={
+                currentView === item.view ||
+                (item.view === ViewType.Characters && currentView === ViewType.CharacterDetail)
+              }
+              onClick={() => handleNavigate(item.view)}
+              label={item.label}
+            />
+          ))}
+          <NavButton icon={<Compass className="h-4 w-4" />} active={false} href="/blurrverse" label="BlurrVerse" />
+        </nav>
+
+        <div className="space-y-3">
+          <select
+            value={currentThemeId}
+            onChange={(event: React.ChangeEvent<HTMLSelectElement>) => handleThemeChange(event.target.value)}
+            className="neo-input h-10 w-full rounded-[10px] px-3 text-xs"
+            aria-label="Theme Switcher"
+          >
+            {THEME_PRESETS.map((theme) => (
+              <option key={theme.id} value={theme.id}>{theme.name}</option>
+            ))}
+          </select>
+          <Button variant="outline" onClick={() => signOut()} className="w-full justify-start text-xs">
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </Button>
+        </div>
+      </aside>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="neuro-topbar z-20 flex shrink-0 items-center justify-between gap-3 px-3 py-3 md:px-5 lg:hidden">
+          <div className="flex items-center gap-3">
+            <img src={logoSrc} alt="Blurr Drxmweave logo" className="h-10 w-10 rounded-[10px] object-cover" />
+            <div>
+              <div className="text-sm font-semibold text-slate-50">Drxmweave</div>
+              <div className="text-[11px] text-slate-500">Engine</div>
             </div>
           </div>
+          <div className="flex items-center gap-1 overflow-x-auto">
+            {navItems.slice(0, 4).map((item) => (
+              <Button
+                key={item.view}
+                variant={currentView === item.view ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => handleNavigate(item.view)}
+                className="h-9 w-9 p-0"
+                aria-label={item.label}
+              >
+                {item.icon}
+              </Button>
+            ))}
+          </div>
         </header>
-      )}
 
-      <div
-        className={
-          `flex-1 flex flex-col overflow-hidden ` +
-          (currentView !== ViewType.SharedProfile ? 'p-4 md:p-6' : '')
-        }
-      >
-        {renderView()}
+        <main className={`min-h-0 flex-1 ${isImmersiveView ? 'overflow-hidden p-3 md:p-5' : 'overflow-y-auto p-3 md:p-5'}`}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`${currentView}-${selectedCharacterId || ''}`}
+              className={isImmersiveView ? 'h-full min-h-0' : 'min-h-full'}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+            >
+              {renderView()}
+            </motion.div>
+          </AnimatePresence>
+        </main>
       </div>
     </div>
   );
@@ -252,18 +298,19 @@ const NavButton: React.FC<NavButtonProps> = ({ icon, active, onClick, href, labe
   };
 
   return (
-    <Button
+    <button
       onClick={handlePress}
-      variant={active ? "secondary" : "ghost"}
-      size="sm"
       className={
-        `min-w-fit flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs ` +
-        (active ? 'text-slate-100' : 'text-slate-300 hover:text-white')
+        `flex h-11 items-center gap-3 rounded-[10px] px-3 text-sm font-medium transition-all ` +
+        (active
+          ? 'holo-sidebar-item-active text-slate-50'
+          : 'holo-sidebar-item text-slate-400 hover:text-slate-100')
       }
     >
-      {icon}
-      <span className="font-medium">{label}</span>
-    </Button>
+      <span className={active ? 'text-cyan-200' : 'text-slate-500'}>{icon}</span>
+      <span>{label}</span>
+      {active && <Sparkles className="ml-auto h-3.5 w-3.5 text-cyan-200" />}
+    </button>
   );
 };
 

@@ -5,7 +5,7 @@
  * but sends data to BunnyDB via the Next.js API route. All methods are async.
  */
 
-import type { Character, ChatNode, LoreEntry, Lorebook, AppSettings } from '../types';
+import type { Character, ChatNode, DrxmShell, LoreEntry, Lorebook, AppSettings } from '../types';
 import { getCurrentUser } from './authService';
 
 // ---------------------------------------------------------------------------
@@ -76,6 +76,26 @@ export async function deleteNode(id: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// DrxmShells
+// ---------------------------------------------------------------------------
+
+export async function getDrxmShells(): Promise<DrxmShell[]> {
+  return dbFetch<DrxmShell[]>('getDrxmShells');
+}
+
+export async function getDrxmShell(id: string): Promise<DrxmShell | null> {
+  return dbFetch<DrxmShell | null>('getDrxmShell', { id });
+}
+
+export async function saveDrxmShell(shell: DrxmShell): Promise<void> {
+  await dbFetch('saveDrxmShell', { data: shell });
+}
+
+export async function deleteDrxmShell(id: string): Promise<void> {
+  await dbFetch('deleteDrxmShell', { id });
+}
+
+// ---------------------------------------------------------------------------
 // Lore Entries
 // ---------------------------------------------------------------------------
 
@@ -134,6 +154,7 @@ export async function saveSettings(settings: AppSettings): Promise<void> {
 export interface SyncAllResult {
   characters: Character[];
   nodes: ChatNode[];
+  drxmShells?: DrxmShell[];
   loreEntries: LoreEntry[];
   lorebooks: Lorebook[];
   settings: AppSettings | null;
@@ -151,6 +172,7 @@ export async function migrateLocalStorageToBunny(): Promise<void> {
   const STORAGE_KEYS = {
     CHARACTERS: 'rp_characters',
     NODES: 'rp_nodes',
+    DRXM_SHELLS: 'rp_drxm_shells',
     LORE_ENTRIES: 'rp_lore_entries',
     LOREBOOKS: 'rp_lorebooks',
     SETTINGS: 'rp_settings',
@@ -166,6 +188,12 @@ export async function migrateLocalStorageToBunny(): Promise<void> {
   if (nodesRaw) {
     const nodes: ChatNode[] = JSON.parse(nodesRaw);
     for (const n of nodes) await saveNode(n);
+  }
+
+  const shellsRaw = localStorage.getItem(STORAGE_KEYS.DRXM_SHELLS);
+  if (shellsRaw) {
+    const shells: DrxmShell[] = JSON.parse(shellsRaw);
+    for (const shell of shells) await saveDrxmShell(shell);
   }
 
   const loreRaw = localStorage.getItem(STORAGE_KEYS.LORE_ENTRIES);

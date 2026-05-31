@@ -74,6 +74,18 @@ export async function ensureSchema(): Promise<void> {
       `CREATE INDEX IF NOT EXISTS idx_nodes_user ON chat_nodes(user_id)`,
       `CREATE INDEX IF NOT EXISTS idx_nodes_character ON chat_nodes(character_id)`,
 
+      `CREATE TABLE IF NOT EXISTS drxm_shells (
+        id             TEXT PRIMARY KEY,
+        user_id        TEXT NOT NULL,
+        name           TEXT NOT NULL DEFAULT '',
+        character_id   TEXT NOT NULL,
+        last_opened_at INTEGER,
+        created_at     INTEGER,
+        updated_at     INTEGER
+      )`,
+      `CREATE INDEX IF NOT EXISTS idx_drxm_shells_user ON drxm_shells(user_id)`,
+      `CREATE INDEX IF NOT EXISTS idx_drxm_shells_character ON drxm_shells(character_id)`,
+
       `CREATE TABLE IF NOT EXISTS lore_entries (
         id         TEXT PRIMARY KEY,
         user_id    TEXT NOT NULL,

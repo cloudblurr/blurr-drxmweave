@@ -53,6 +53,19 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
     mode.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Add a special Cloudflare Worker AI tile to make it easy to select the edge Grok option
+  const cloudflareTile: AiMode = {
+    id: 'cloudflare_grok_agent',
+    name: 'Cloudflare Grok Agent',
+    description: 'Use the Cloudflare Worker route with Grok 4.3 for contextual roleplay responses.',
+    iconName: 'Zap',
+    systemInstruction: `You are Drxmweave's Cloudflare Grok Agent. Track the current scene, unresolved actions, character state, lore, and prior turns. React to the latest user beat in order, stay in character, and move the scene forward with fresh consequences.`,
+    features: ['Grok 4.3', 'Scene Memory', 'Contextual RP'],
+    isCustom: false
+  };
+
+  const displayModes = [cloudflareTile, ...filteredModes.filter(m => m.id !== cloudflareTile.id)];
+
   const handleDelete = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (window.confirm("Delete this custom mode? This cannot be undone.")) {
@@ -111,7 +124,7 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
           {/* Grid Content */}
           <div className="p-6 overflow-y-auto bg-zinc-950/95 scrollbar-thin scrollbar-thumb-zinc-800">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filteredModes.map((mode) => {
+              {displayModes.map((mode) => {
                 const isActive = activeModeId === mode.id;
                 return (
                   <motion.div

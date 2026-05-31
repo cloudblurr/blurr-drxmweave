@@ -7,7 +7,19 @@
 
 import { Message, Role, Character, LoreEntry } from '../../types';
 import { getSettings } from '../storage';
-import { OLLAMA_API_URL, OLLAMA_MODEL } from '../../constants';
+import {
+  CLOUDFLARE_API_KEY,
+  CLOUDFLARE_API_URL,
+  CLOUDFLARE_ACCOUNT_ID,
+  CLOUDFLARE_GATEWAY_ID,
+  CLOUDFLARE_MODEL_OPTIONS,
+  OLLAMA_API_URL,
+  OLLAMA_MODEL,
+  TOGETHER_API_KEY,
+  TOGETHER_API_URL,
+  TOGETHER_MODEL_OPTIONS,
+} from '../../constants';
+import callCloudflareAI from '../cloudflareClient';
 import {
   RoleplayEngine,
   createRoleplayEngine,
@@ -38,6 +50,21 @@ const getProviderConfig = () => {
     };
   }
 
+  if (provider === 'together') {
+    const apiKey = settings.togetherApiKey || TOGETHER_API_KEY || '';
+    return {
+      provider,
+      apiKey,
+      apiUrl: settings.togetherApiUrl || TOGETHER_API_URL,
+      model: settings.defaultModel || TOGETHER_MODEL_OPTIONS[0]?.id || 'MiniMaxAI/MiniMax-M2.7',
+      requiresApiKey: false,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {})
+      } as Record<string, string>
+    };
+  }
+
   if (provider === 'ollama') {
     return {
       provider,
@@ -47,6 +74,21 @@ const getProviderConfig = () => {
       requiresApiKey: false,
       headers: {
         'Content-Type': 'application/json'
+      } as Record<string, string>
+    };
+  }
+
+  if (provider === 'cloudflare') {
+    const apiKey = settings.cloudflareApiKey || CLOUDFLARE_API_KEY || '';
+    return {
+      provider,
+      apiKey,
+      apiUrl: CLOUDFLARE_API_URL,
+      model: settings.defaultModel || CLOUDFLARE_MODEL_OPTIONS[0]?.id || 'xai/grok-4.3',
+      requiresApiKey: !!apiKey,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {})
       } as Record<string, string>
     };
   }
@@ -211,18 +253,32 @@ export async function sendEnhancedMessage(
         requestBody.min_tokens = 800;
       }
 
-      const apiResponse = await fetch(providerConfig.apiUrl, {
-        method: 'POST',
-        headers: providerConfig.headers,
-        body: JSON.stringify(requestBody)
-      });
+      if (providerConfig.provider === 'cloudflare') {
+        response = await callCloudflareAI({
+          model: providerConfig.model,
+          messages: apiMessages,
+          temperature: 1.05,
+          max_tokens: Math.max(settings.maxTokens || 6000, 6000),
+          top_p: 0.98,
+          reasoning_effort: settings.reasoningEffort || 'high',
+          apiKey: settings.cloudflareApiKey || CLOUDFLARE_API_KEY,
+          gatewayId: settings.cloudflareGatewayId || CLOUDFLARE_GATEWAY_ID,
+          accountId: settings.cloudflareAccountId || CLOUDFLARE_ACCOUNT_ID,
+        });
+      } else {
+        const apiResponse = await fetch(providerConfig.apiUrl, {
+          method: 'POST',
+          headers: providerConfig.headers,
+          body: JSON.stringify(requestBody)
+        });
 
-      if (!apiResponse.ok) {
-        throw new Error(`API Error: ${apiResponse.status}`);
+        if (!apiResponse.ok) {
+          throw new Error(`API Error: ${apiResponse.status}`);
+        }
+
+        const data = await apiResponse.json();
+        response = data.choices?.[0]?.message?.content?.trim() || '';
       }
-
-      const data = await apiResponse.json();
-      response = data.choices?.[0]?.message?.content?.trim() || '';
 
       if (!response) {
         throw new Error('Empty response from API');

@@ -1,5 +1,5 @@
-import { Character, ChatNode, LoreEntry, Lorebook, AppSettings } from '../types';
-import { OLLAMA_MODEL, OLLAMA_ROLEPLAY_MODELS } from '../constants';
+import { Character, ChatNode, DrxmShell, LoreEntry, Lorebook, AppSettings } from '../types';
+import { CLOUDFLARE_MODEL_OPTIONS, OLLAMA_MODEL, OLLAMA_ROLEPLAY_MODELS, TOGETHER_MODEL_OPTIONS } from '../constants';
 import { DEFAULT_THEME_ID } from '../themePresets';
 import * as bunnyClient from './bunnyClient';
 import { getCurrentUser } from './authService';
@@ -41,6 +41,7 @@ export async function syncFromBunnyDB(): Promise<void> {
     const result = await bunnyClient.syncAll();
     if (result.characters?.length)  localStorage.setItem(STORAGE_KEYS.CHARACTERS, JSON.stringify(result.characters));
     if (result.nodes?.length)       localStorage.setItem(STORAGE_KEYS.NODES, JSON.stringify(result.nodes));
+    if (result.drxmShells?.length)  localStorage.setItem(STORAGE_KEYS.DRXM_SHELLS, JSON.stringify(result.drxmShells));
     if (result.loreEntries?.length) localStorage.setItem(STORAGE_KEYS.LORE_ENTRIES, JSON.stringify(result.loreEntries));
     if (result.lorebooks?.length)   localStorage.setItem(STORAGE_KEYS.LOREBOOKS, JSON.stringify(result.lorebooks));
     if (result.settings)            localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(result.settings));
@@ -54,6 +55,7 @@ export async function syncFromBunnyDB(): Promise<void> {
 const STORAGE_KEYS = {
   CHARACTERS: 'rp_characters',
   NODES: 'rp_nodes',
+  DRXM_SHELLS: 'rp_drxm_shells',
   LORE_ENTRIES: 'rp_lore_entries',
   LOREBOOKS: 'rp_lorebooks',
   SETTINGS: 'rp_settings',
@@ -121,6 +123,10 @@ export function deleteCharacter(id: string): void {
   // Also delete related nodes
   const nodes = getNodes().filter(n => n.characterId !== id);
   localStorage.setItem(STORAGE_KEYS.NODES, JSON.stringify(nodes));
+
+  const shells = getDrxmShells().filter(shell => shell.characterId !== id);
+  localStorage.setItem(STORAGE_KEYS.DRXM_SHELLS, JSON.stringify(shells));
+
   if (isAuthenticated()) bunnyClient.deleteCharacter(id).catch(console.warn);
 }
 
@@ -156,6 +162,62 @@ export function deleteNode(id: string): void {
   const nodes = getNodes().filter(n => n.id !== id);
   localStorage.setItem(STORAGE_KEYS.NODES, JSON.stringify(nodes));
   if (isAuthenticated()) bunnyClient.deleteNode(id).catch(console.warn);
+}
+
+// --- DrxmShells ---
+export function getDrxmShells(): DrxmShell[] {
+  if (typeof window === 'undefined') return [];
+  const data = localStorage.getItem(STORAGE_KEYS.DRXM_SHELLS);
+  return data ? JSON.parse(data) : [];
+}
+
+export function getDrxmShell(id: string): DrxmShell | undefined {
+  return getDrxmShells().find(shell => shell.id === id);
+}
+
+export function getDrxmShellsForCharacter(characterId: string): DrxmShell[] {
+  return getDrxmShells().filter(shell => shell.characterId === characterId);
+}
+
+export function saveDrxmShell(shell: DrxmShell): void {
+  const shells = getDrxmShells();
+  const now = Date.now();
+  const index = shells.findIndex(existing => existing.id === shell.id);
+  const nextShell: DrxmShell = { ...shell, updatedAt: now };
+  if (index >= 0) {
+    shells[index] = nextShell;
+  } else {
+    shells.push(nextShell);
+  }
+  localStorage.setItem(STORAGE_KEYS.DRXM_SHELLS, JSON.stringify(shells));
+  if (isAuthenticated()) bunnyClient.saveDrxmShell(nextShell).catch(console.warn);
+}
+
+export function createDrxmShell(characterId: string, name?: string): DrxmShell {
+  const character = getCharacter(characterId);
+  const now = Date.now();
+  const shell: DrxmShell = {
+    id: generateId(),
+    name: name?.trim() || `${character?.name || 'Character'} Heaven's Engine`,
+    characterId,
+    createdAt: now,
+    updatedAt: now,
+    lastOpenedAt: now,
+  };
+  saveDrxmShell(shell);
+  return shell;
+}
+
+export function touchDrxmShell(id: string): void {
+  const shell = getDrxmShell(id);
+  if (!shell) return;
+  saveDrxmShell({ ...shell, lastOpenedAt: Date.now() });
+}
+
+export function deleteDrxmShell(id: string): void {
+  const shells = getDrxmShells().filter(shell => shell.id !== id);
+  localStorage.setItem(STORAGE_KEYS.DRXM_SHELLS, JSON.stringify(shells));
+  if (isAuthenticated()) bunnyClient.deleteDrxmShell(id).catch(console.warn);
 }
 
 // --- Lore Entries ---
@@ -231,6 +293,18 @@ function normalizeSettings(settings: AppSettings): AppSettings {
       return { ...settings, defaultModel: OLLAMA_MODEL };
     }
   }
+  if (settings.provider === 'cloudflare') {
+    const availableModels = new Set(CLOUDFLARE_MODEL_OPTIONS.map((model) => model.id));
+    if (!availableModels.has(settings.defaultModel)) {
+      return { ...settings, defaultModel: CLOUDFLARE_MODEL_OPTIONS[0]?.id || 'xai/grok-4.3' };
+    }
+  }
+  if (settings.provider === 'together') {
+    const availableModels = new Set(TOGETHER_MODEL_OPTIONS.map((model) => model.id));
+    if (!availableModels.has(settings.defaultModel)) {
+      return { ...settings, defaultModel: settings.defaultModel || TOGETHER_MODEL_OPTIONS[0]?.id || 'MiniMaxAI/MiniMax-M2.7' };
+    }
+  }
   return settings;
 }
 
@@ -239,6 +313,8 @@ export function getSettings(): AppSettings {
     return normalizeSettings({
       apiKey: '',
       openrouterApiKey: '',
+      togetherApiKey: '',
+      togetherApiUrl: '',
       provider: 'ollama',
       defaultModel: OLLAMA_MODEL,
       temperature: 0.85,
@@ -248,6 +324,13 @@ export function getSettings(): AppSettings {
       loreImportanceThreshold: 5,
       autoInjectLore: true,
       newDawnEnabled: true,
+      cloudflareApiKey: '',
+      cloudflareGatewayId: '',
+      cloudflareAccountId: '',
+      cloudflareImageApiUrl: '',
+      cloudflareImageEditApiUrl: '',
+      cloudflareVideoApiUrl: '',
+      reasoningEffort: 'high'
     });
   }
   const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
@@ -257,9 +340,11 @@ export function getSettings(): AppSettings {
     return settings;
   }
   return normalizeSettings({
-    apiKey: '',
-    openrouterApiKey: '',
-    provider: 'ollama',
+      apiKey: '',
+      openrouterApiKey: '',
+      togetherApiKey: '',
+      togetherApiUrl: '',
+      provider: 'ollama',
     defaultModel: OLLAMA_MODEL,
     temperature: 0.85,
     maxTokens: 6000,
@@ -268,6 +353,13 @@ export function getSettings(): AppSettings {
     loreImportanceThreshold: 5,
     autoInjectLore: true,
     newDawnEnabled: true,
+    cloudflareApiKey: '',
+    cloudflareGatewayId: '',
+    cloudflareAccountId: '',
+    cloudflareImageApiUrl: '',
+    cloudflareImageEditApiUrl: '',
+    cloudflareVideoApiUrl: '',
+    reasoningEffort: 'high'
   });
 }
 

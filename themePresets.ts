@@ -11,9 +11,21 @@ export type ThemePreset = {
   };
 };
 
-export const DEFAULT_THEME_ID = 'cosmic-wave';
+export const DEFAULT_THEME_ID = 'neural-forge';
 
 export const THEME_PRESETS: ThemePreset[] = [
+  {
+    id: 'neural-forge',
+    name: 'Neural Forge',
+    colors: {
+      bg: 'linear-gradient(145deg, #05070b 0%, #070b12 38%, #081118 70%, #0b0d12 100%)',
+      surface: '#0f141d',
+      primary: '#67e8f9',
+      accent: '#34d399',
+      text: '#eef4ff',
+      textSecondary: '#8d99aa'
+    }
+  },
   {
     id: 'cosmic-wave',
     name: 'Cosmic Wave',

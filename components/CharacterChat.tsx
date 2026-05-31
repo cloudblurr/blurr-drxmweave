@@ -15,9 +15,11 @@ interface CharacterChatProps {
   characterId: string;
   nodeId?: string;
   onNavigate: (view: ViewType, id?: string) => void;
+  embedded?: boolean;
+  hideBackButton?: boolean;
 }
 
-export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeId, onNavigate }) => {
+export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeId, onNavigate, embedded = false, hideBackButton = false }) => {
   const [character, setCharacter] = useState<Character | null>(null);
   const [nodes, setNodes] = useState<ChatNode[]>([]);
   const [activeNode, setActiveNode] = useState<ChatNode | null>(null);
@@ -639,23 +641,25 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
   }
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden">
+    <div className={`flex-1 flex flex-col overflow-hidden ${embedded ? 'h-full min-h-0' : 'h-screen'}`}>
       {/* Header */}
       <div className="holo-header p-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => onNavigate(ViewType.Characters)}
-              className="p-2 hover:bg-holo-cyan/10 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-holo-cyan/60" />
-            </button>
+            {!hideBackButton && (
+              <button
+                onClick={() => onNavigate(ViewType.Characters)}
+                className="p-2 hover:bg-holo-cyan/10 rounded-lg transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5 text-holo-cyan/60" />
+              </button>
+            )}
             {character.avatar && (
               <img src={character.avatar} alt={character.name} className="w-9 h-9 rounded-full object-cover ring-1 ring-holo-cyan/30" />
             )}
             <div>
               <h1 className="text-base font-bold holo-text-glow">{character.name}</h1>
-              <p className="text-[10px] holo-label">{activeNode?.title || 'Comm Channel Active'}</p>
+              <p className="text-[10px] holo-label">{activeNode?.title || 'Conversation active'}</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5">
@@ -691,7 +695,7 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
               className="holo-btn holo-btn-primary px-2.5 py-1.5 rounded-lg text-xs flex items-center gap-1.5"
             >
               <Plus className="w-3.5 h-3.5" />
-              New
+              New chat
             </button>
             <button
               onClick={handleCompileConversation}
@@ -724,7 +728,7 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
         {/* Sidebar - Conversation Nodes */}
         <div className="w-56 holo-sidebar overflow-y-auto">
           <div className="p-3 space-y-1.5">
-            <h3 className="holo-label text-[10px] mb-3">Comm Channels</h3>
+            <h3 className="holo-label text-[10px] mb-3">Conversations</h3>
             {nodes.map(node => (
               <div
                 key={node.id}
@@ -947,7 +951,7 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                     handleSendMessage();
                   }
                 }}
-                placeholder={activeNode?.isClosed ? 'This channel is archived. Open a new one to continue.' : `Transmit to ${character.name}... (Shift+Enter for new line)`}
+                placeholder={activeNode?.isClosed ? 'This conversation is archived. Open a new one to continue.' : `Message ${character.name}...`}
                 disabled={isLoading || activeNode?.isClosed}
                 rows={1}
                 className="flex-1 px-4 py-3 holo-textarea text-sm placeholder-slate-600 disabled:opacity-40 resize-none overflow-y-auto max-h-40"
@@ -1245,6 +1249,58 @@ export const CharacterChat: React.FC<CharacterChatProps> = ({ characterId, nodeI
                           )}
                         </div>
                         <p className="text-[10px] text-slate-600 mt-0.5">{model.pricing}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Together AI Models */}
+                <div>
+                  <h4 className="holo-label text-[10px] mb-2 text-fuchsia-300">Together AI Models</h4>
+                  <div className="space-y-1">
+                    {NSFW_ROLEPLAY_MODELS.filter(m => m.provider === 'together').map(model => (
+                      <button
+                        key={model.id}
+                        onClick={() => setSelectedRegenerateModel(model)}
+                        className={`w-full text-left px-3 py-2 rounded-lg transition-all ${
+                          selectedRegenerateModel?.id === model.id
+                            ? 'holo-sidebar-item-active'
+                            : 'holo-sidebar-item'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-holo-cyan text-sm">{model.name}</span>
+                          {model.isNsfw && (
+                            <span className="holo-badge-danger text-[9px]">NSFW</span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-slate-600 mt-0.5">{model.description?.substring(0, 60)}...</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Cloudflare Worker Models */}
+                <div>
+                  <h4 className="holo-label text-[10px] mb-2 text-holo-amber">Cloudflare Worker Models</h4>
+                  <div className="space-y-1">
+                    {NSFW_ROLEPLAY_MODELS.filter(m => m.provider === 'cloudflare').map(model => (
+                      <button
+                        key={model.id}
+                        onClick={() => setSelectedRegenerateModel(model)}
+                        className={`w-full text-left px-3 py-2 rounded-lg transition-all ${
+                          selectedRegenerateModel?.id === model.id
+                            ? 'holo-sidebar-item-active'
+                            : 'holo-sidebar-item'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-holo-cyan text-sm">{model.name}</span>
+                          {model.isNsfw && (
+                            <span className="holo-badge-danger text-[9px]">NSFW</span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-slate-600 mt-0.5">{model.description?.substring(0, 60)}...</p>
                       </button>
                     ))}
                   </div>

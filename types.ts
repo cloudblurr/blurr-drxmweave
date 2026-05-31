@@ -31,6 +31,15 @@ export interface Character {
   data?: Record<string, any>;
 }
 
+export interface DrxmShell {
+  id: string;
+  name: string;
+  characterId: string;
+  createdAt: number;
+  updatedAt: number;
+  lastOpenedAt?: number;
+}
+
 export interface CharacterMemoryChunk {
   id: string;
   createdAt: number;
@@ -86,7 +95,9 @@ export interface Lorebook {
 export interface AppSettings {
   apiKey: string;
   openrouterApiKey?: string;
-  provider?: 'xai' | 'openrouter' | 'ollama';
+  togetherApiKey?: string;
+  togetherApiUrl?: string;
+  provider?: 'xai' | 'openrouter' | 'ollama' | 'cloudflare' | 'together';
   defaultModel: string;
   temperature: number;
   maxTokens: number;
@@ -96,13 +107,21 @@ export interface AppSettings {
   autoInjectLore?: boolean;
   newDawnEnabled?: boolean;
   customBonusPrompt?: string; // User-defined bonus prompt injected with every request
+  // Cloudflare-specific settings
+  cloudflareApiKey?: string;
+  cloudflareGatewayId?: string;
+  cloudflareAccountId?: string;
+  cloudflareImageApiUrl?: string;
+  cloudflareImageEditApiUrl?: string;
+  cloudflareVideoApiUrl?: string;
+  reasoningEffort?: 'none' | 'low' | 'medium' | 'high';
 }
 
 // Model definition for dynamic model selection
 export interface AIModel {
   id: string;
   name: string;
-  provider: 'xai' | 'openrouter' | 'ollama';
+  provider: 'xai' | 'openrouter' | 'ollama' | 'cloudflare' | 'together';
   contextLength?: number;
   isNsfw?: boolean;
   description?: string;
@@ -113,7 +132,7 @@ export interface AIModel {
 export interface ModelTestResult {
   modelId: string;
   modelName: string;
-  provider: 'xai' | 'openrouter' | 'ollama';
+  provider: 'xai' | 'openrouter' | 'ollama' | 'cloudflare' | 'together';
   response: string;
   error?: string;
   duration?: number;
@@ -153,6 +172,7 @@ export enum ViewType {
   CharacterDetail = 'CharacterDetail',
   Chat = 'Chat',
   LoreWorld = 'LoreWorld',
+  ImageStudio = 'ImageStudio',
   Settings = 'Settings',
   SharedProfile = 'SharedProfile',
 }
